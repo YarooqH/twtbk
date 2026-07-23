@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "XMarks - Twitter Bookmark Manager",
+  "version": "1.0.0",
+  "description": "A privacy-first, local-first Chrome extension to search, tag, and organize your bookmarks.",
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "*://*.twitter.com/*",
+    "*://*.x.com/*"
+  ],
+  "icons": {
+    "16": "XMarks-logos/Xmarks-logo-white-round.svg",
+    "48": "XMarks-logos/Xmarks-logo-white-round.svg",
+    "128": "XMarks-logos/Xmarks-logo-white-round.svg"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "XMarks - Twitter Bookmark Manager",
+    "default_icon": {
+      "16": "XMarks-logos/Xmarks-logo-white-round.svg",
+      "48": "XMarks-logos/Xmarks-logo-white-round.svg",
+      "128": "XMarks-logos/Xmarks-logo-white-round.svg"
+    }
+  },
+  "options_page": "dashboard.html",
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.twitter.com/*",
+        "*://*.x.com/*"
+      ],
+      "js": ["src/content/index.ts"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; img-src * data: blob:;"
+  }
+}

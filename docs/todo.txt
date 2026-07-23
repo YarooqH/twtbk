@@ -1,0 +1,5 @@
+- fix auto-sync bookmark (it is not there in the top bar)
+- make settings in dashboard collapseable
+- need now to focus on marketing
+https://github.com/coreyhaines31/marketingskills
+https://github.com/elayadesign/redesign-skill
