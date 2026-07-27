@@ -1,3 +1,4 @@
+import { MSG } from '../messages';
 import {
   settingSaveMode,
   settingInjectedPosition,
@@ -8,6 +9,16 @@ import {
 } from './settings';
 import { extractTweetData } from './extract';
 import { showCategoryPopover } from './popover';
+import {
+  type ActionType,
+  findAction,
+  findAllTweets,
+  findActionBar,
+  getActionWrapper,
+  getTweetId,
+  scoreActionGroup,
+  MIN_ACTION_BAR_SCORE,
+} from './xDomAdapter';
 
 export function markButtonAsSaved(btnContainer: HTMLElement) {
   btnContainer.dataset.saved = 'true';
@@ -30,52 +41,32 @@ export function markButtonAsSaved(btnContainer: HTMLElement) {
   }
 }
 
+/** Map legacy testId strings to the adapter's ActionType. */
+function testIdToActionType(testId: string): ActionType | null {
+  switch (testId) {
+    case 'bookmark': return 'bookmark';
+    case 'like': return 'like';
+    case 'retweet': return 'retweet';
+    case 'reply': return 'reply';
+    case 'views':
+    case 'analytics': return 'views';
+    case 'share': return 'share';
+    default: return null;
+  }
+}
+
 // Helper: Find direct child wrapper of actionBar [role="group"]
 export function getDirectChildWrapper(actionBar: Element, target: Element): HTMLElement {
-  let curr: HTMLElement = target as HTMLElement;
-  while (curr.parentElement && curr.parentElement !== actionBar) {
-    curr = curr.parentElement;
-  }
-  return curr;
+  return getActionWrapper(actionBar, target);
 }
 
 export function findActionItem(actionBar: Element, testId: string): Element | null {
-  if (testId === 'bookmark') {
-    return actionBar.querySelector('[data-testid="bookmark"]') 
-        || actionBar.querySelector('[data-testid="removeBookmark"]') 
-        || actionBar.querySelector('[aria-label="Bookmark"]')
-        || actionBar.querySelector('[aria-label="Bookmarked"]')
-        || actionBar.querySelector('[aria-label*="Bookmark" i]')
-        || actionBar.querySelector('[aria-label*="bookmark" i]');
+  const actionType = testIdToActionType(testId);
+  if (actionType) {
+    const result = findAction(actionBar, actionType);
+    return result.element ?? null;
   }
-  if (testId === 'like') {
-    return actionBar.querySelector('[data-testid="like"]') 
-        || actionBar.querySelector('[data-testid="unlike"]')
-        || actionBar.querySelector('[aria-label="Like"]')
-        || actionBar.querySelector('[aria-label="Liked"]');
-  }
-  if (testId === 'retweet') {
-    return actionBar.querySelector('[data-testid="retweet"]') 
-        || actionBar.querySelector('[data-testid="unretweet"]')
-        || actionBar.querySelector('[aria-label="Repost"]')
-        || actionBar.querySelector('[aria-label="Retweet"]');
-  }
-  if (testId === 'reply') {
-    return actionBar.querySelector('[data-testid="reply"]')
-        || actionBar.querySelector('[aria-label="Reply"]');
-  }
-  if (testId === 'views' || testId === 'analytics') {
-    return actionBar.querySelector('[data-testid="analytics"]') 
-        || actionBar.querySelector('[data-testid="views"]')
-        || actionBar.querySelector('a[href*="/analytics"]');
-  }
-  if (testId === 'share') {
-    return actionBar.querySelector('[data-testid="share"]') 
-        || actionBar.querySelector('[aria-label="Share post"]')
-        || actionBar.querySelector('[aria-label="Share Tweet"]')
-        || actionBar.querySelector('[aria-label="Share"]')
-        || actionBar.querySelector('[aria-label*="Share" i]');
-  }
+  // Fallback for unrecognized testIds: direct data-testid lookup
   return actionBar.querySelector(`[data-testid="${testId}"]`);
 }
 
@@ -84,7 +75,7 @@ export function injectSaveButtons() {
   if (!settingsLoaded) return;
   if (settingSaveMode === 'native-override' && settingNativeOverrideAction !== 'arrow') return;
 
-  const tweets = document.querySelectorAll('[data-testid="tweet"]');
+  const tweets = findAllTweets();
   tweets.forEach(tweet => {
     // Prevent double injection or clean up stale empty wrappers
     const existingWrapper = tweet.querySelector('.twtbk-item-wrapper');
@@ -94,8 +85,12 @@ export function injectSaveButtons() {
     }
 
     // The action bar is typically a role="group" inside the tweet
-    const actionBar = tweet.querySelector('[role="group"]');
-    if (!actionBar) return;
+    const actionBarResult = findActionBar(tweet);
+    if (!actionBarResult.found || !actionBarResult.element) return;
+    const actionBar = actionBarResult.element;
+
+    // Only inject into a verified action bar with enough recognized native actions
+    if (scoreActionGroup(actionBar) < MIN_ACTION_BAR_SCORE) return;
 
     // Find a reference native action button to clone X's exact native DOM node structure & classes
     const refBtn = findActionItem(actionBar, 'bookmark') 
@@ -107,12 +102,8 @@ export function injectSaveButtons() {
     const refWrapper = getDirectChildWrapper(actionBar, refBtn);
 
     // Extract tweet ID for saved check
-    const timeLink = tweet.querySelector('a[href*="/status/"]');
-    let tweetId = '';
-    if (timeLink) {
-      const match = (timeLink.getAttribute('href') || '').match(/\/status\/(\d+)/);
-      if (match) tweetId = match[1];
-    }
+    const tweetIdResult = getTweetId(tweet);
+    const tweetId = tweetIdResult.element ?? '';
 
     // Clone refWrapper (shallow) to get X's exact item wrapper styling and flex attributes
     const itemWrapper = refWrapper.cloneNode(false) as HTMLElement;
@@ -184,7 +175,7 @@ export function injectSaveButtons() {
     // Check if this tweet is already saved in XMarks DB (C1)
     if (tweetId && chrome.runtime?.id) {
       try {
-        chrome.runtime.sendMessage({ type: 'CHECK_TWEET_SAVED', payload: { id: tweetId } }, (res) => {
+        chrome.runtime.sendMessage({ type: MSG.CHECK_TWEET_SAVED, payload: { id: tweetId } }, (res) => {
           if (chrome.runtime.lastError) return;
           if (res?.saved) {
             markButtonAsSaved(btnContainer);

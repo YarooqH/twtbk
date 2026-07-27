@@ -1,3 +1,4 @@
+import { MSG } from '../messages';
 import './styles';
 import './navigation';
 import {
@@ -8,6 +9,7 @@ import { injectSaveButtons } from './inject';
 import { extractTweetData } from './extract';
 import { showCategoryPopover } from './popover';
 import { showToast } from './toast';
+import { SELECTOR_CONFIG } from './xDomAdapter';
 
 // Re-inject buttons when relevant settings change
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -25,7 +27,10 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 document.addEventListener('click', (e) => {
   try {
     const target = e.target as HTMLElement;
-    const bookmarkBtn = target.closest('[data-testid="bookmark"], [data-testid="removeBookmark"]');
+    const bookmarkSelector = SELECTOR_CONFIG.bookmark.testIds
+      .map(t => `[data-testid="${t.value}"]`)
+      .join(', ');
+    const bookmarkBtn = target.closest(bookmarkSelector);
     if (bookmarkBtn) {
       if (!chrome.runtime?.id) {
         console.warn("XMarks: Context invalidated. Please refresh the page.");
@@ -46,7 +51,7 @@ document.addEventListener('click', (e) => {
         // Traditional passive save in background if setting is enabled (injected mode, OR native-override + arrow mode)
         chrome.storage.sync.get(['alsoSaveNativeBookmarks'], (result) => {
           if (result.alsoSaveNativeBookmarks) {
-            chrome.runtime.sendMessage({ type: 'SAVE_TWEET', payload: data }, (res) => {
+            chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (res) => {
               if (res && res.success) {
                 showToast("Saved to XMarks!");
               }

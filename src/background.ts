@@ -1,44 +1,36 @@
 import { db, Bookmark } from './db';
-
-// Message types
-export type ActionMessage = 
-  | { type: 'SAVE_TWEET'; payload: Partial<Bookmark> }
-  | { type: 'CHECK_TWEET_SAVED'; payload: { id: string } }
-  | { type: 'START_IMPORT' }
-  | { type: 'IMPORT_BATCH'; payload: Partial<Bookmark>[] }
-  | { type: 'GET_CATEGORIES' }
-  | { type: 'CREATE_CATEGORY'; payload: { name: string } };
+import { MSG, type ActionMessage } from './messages';
 
 chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendResponse) => {
-  if (message.type === 'SAVE_TWEET') {
+  if (message.type === MSG.SAVE_TWEET) {
     handleSaveTweet(message.payload)
       .then(sendResponse)
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true; // Keep channel open for async response
   }
   
-  if (message.type === 'CHECK_TWEET_SAVED') {
+  if (message.type === MSG.CHECK_TWEET_SAVED) {
     db.bookmarks.get(message.payload.id)
       .then(bookmark => sendResponse({ saved: !!bookmark }))
       .catch(err => sendResponse({ saved: false, error: err.message }));
     return true;
   }
 
-  if (message.type === 'IMPORT_BATCH') {
+  if (message.type === MSG.IMPORT_BATCH) {
     handleImportBatch(message.payload)
       .then(sendResponse)
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
 
-  if (message.type === 'GET_CATEGORIES') {
+  if (message.type === MSG.GET_CATEGORIES) {
     db.categories.toArray()
       .then(categories => sendResponse(categories))
       .catch(() => sendResponse([]));
     return true;
   }
 
-  if (message.type === 'CREATE_CATEGORY') {
+  if (message.type === MSG.CREATE_CATEGORY) {
     const newCat = {
       id: 'cat_' + Date.now(),
       name: message.payload.name,
@@ -51,7 +43,7 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
     return true;
   }
 
-  if ((message as any).type === 'OPEN_DASHBOARD') {
+  if (message.type === MSG.OPEN_DASHBOARD) {
     chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
     sendResponse({ success: true });
     return true;
