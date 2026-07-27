@@ -1,11 +1,7 @@
 import { MSG } from '../messages';
 import './styles';
 import './navigation';
-import {
-  settingSaveMode,
-  settingNativeOverrideAction,
-} from './settings';
-import { injectSaveButtons } from './inject';
+import { injectSaveButtons, resolveInjectMode } from './inject';
 import { extractTweetData } from './extract';
 import { showCategoryPopover } from './popover';
 import { showToast } from './toast';
@@ -16,7 +12,8 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace === 'sync') {
     if (changes.saveMode || changes.injectedPosition || changes.nativeOverrideAction || changes.buttonAlignment) {
       document.querySelectorAll('.twtbk-item-wrapper, .twtbk-save-btn').forEach(el => el.remove());
-      if (settingSaveMode === 'injected' || (settingSaveMode === 'native-override' && settingNativeOverrideAction === 'arrow')) {
+      const mode = resolveInjectMode();
+      if (mode === 'injected' || mode === 'arrow' || mode === 'augment') {
         injectSaveButtons();
       }
     }
@@ -42,22 +39,42 @@ document.addEventListener('click', (e) => {
       const data = extractTweetData(tweetElement);
       if (!data) return;
 
-      if (settingSaveMode === 'native-override' && settingNativeOverrideAction === 'replace') {
-        // This mode owns the bookmark click; do not let X rerender the anchor under the picker.
+      const mode = resolveInjectMode();
+
+      if (mode === 'replace') {
+        // Replace mode: own the native bookmark click — prevent X from
+        // rerendering and show the category picker anchored to X's button.
         e.preventDefault();
         e.stopImmediatePropagation();
         showCategoryPopover(data, bookmarkBtn as HTMLElement);
-      } else if (bookmarkBtn.getAttribute('data-testid') === 'bookmark') {
-        // Traditional passive save in background if setting is enabled (injected mode, OR native-override + arrow mode)
-        chrome.storage.sync.get(['alsoSaveNativeBookmarks'], (result) => {
-          if (result.alsoSaveNativeBookmarks) {
-            chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (res) => {
-              if (res && res.success) {
-                showToast("Saved to XMarks!");
-              }
-            });
-          }
-        });
+      } else if (mode === 'augment') {
+        // Augment mode: allow the native bookmark click through (no preventDefault)
+        // so X's bookmark toggle runs normally. Also save to XMarks in the background.
+        // TODO: capture anchor rectangle here before X rerenders for popover positioning.
+        if (bookmarkBtn.getAttribute('data-testid') === 'bookmark') {
+          chrome.storage.sync.get(['alsoSaveNativeBookmarks'], (result) => {
+            if (result.alsoSaveNativeBookmarks) {
+              chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (res) => {
+                if (res && res.success) {
+                  showToast("Saved to XMarks!");
+                }
+              });
+            }
+          });
+        }
+      } else {
+        // Injected / Arrow: traditional passive save in background if enabled.
+        if (bookmarkBtn.getAttribute('data-testid') === 'bookmark') {
+          chrome.storage.sync.get(['alsoSaveNativeBookmarks'], (result) => {
+            if (result.alsoSaveNativeBookmarks) {
+              chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (res) => {
+                if (res && res.success) {
+                  showToast("Saved to XMarks!");
+                }
+              });
+            }
+          });
+        }
       }
     }
   } catch (err) {

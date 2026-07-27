@@ -19,7 +19,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
   },
 };
 
-import { findActionItem, getDirectChildWrapper, injectSaveButtons } from './inject';
+import { findActionItem, getDirectChildWrapper, injectSaveButtons, resolveInjectMode, DATA_VERSION } from './inject';
 import { setSettingNativeOverrideAction, setSettingSaveMode, setSettingInjectedPosition } from './settings';
 
 // Helper to construct mock tweet DOM for different X.com views
@@ -280,6 +280,100 @@ describe('X Action Bar Hard Refresh & Re-Test Suite Across All Placements', () =
     completeLoad?.({ saveMode: 'native-override', nativeOverrideAction: 'replace' });
     delayedInject.injectSaveButtons();
     expect(actionBar.querySelector('.twtbk-item-wrapper')).toBeNull();
+  });
+
+  describe('5. Idempotent injection (Hardening Roadmap #4)', () => {
+    it('5 consecutive injectSaveButtons() calls on the SAME DOM produce exactly one wrapper', () => {
+      setSettingSaveMode('injected');
+      setSettingInjectedPosition('next-to-bookmark');
+      const { tweetEl, actionBar } = createMockTweet({ includeViews: true });
+      document.body.appendChild(tweetEl);
+
+      for (let i = 0; i < 5; i++) {
+        injectSaveButtons();
+      }
+
+      const wrappers = actionBar.querySelectorAll('.twtbk-item-wrapper');
+      expect(wrappers.length).toBe(1);
+    });
+
+    it('repeated calls do not remove and rebuild the wrapper', () => {
+      setSettingSaveMode('injected');
+      setSettingInjectedPosition('next-to-bookmark');
+      const { tweetEl, actionBar } = createMockTweet({ includeViews: true });
+      document.body.appendChild(tweetEl);
+
+      injectSaveButtons();
+      const firstWrapper = actionBar.querySelector('.twtbk-item-wrapper') as HTMLElement;
+      expect(firstWrapper).not.toBeNull();
+
+      // Second call must return the same DOM element (no remove + rebuild).
+      injectSaveButtons();
+      const secondWrapper = actionBar.querySelector('.twtbk-item-wrapper') as HTMLElement;
+      expect(secondWrapper).toBe(firstWrapper);
+    });
+
+    it('sets identity dataset attrs on the injected wrapper', () => {
+      setSettingSaveMode('injected');
+      setSettingInjectedPosition('next-to-bookmark');
+      const { tweetEl, actionBar } = createMockTweet({ includeViews: true });
+      document.body.appendChild(tweetEl);
+
+      // Add a /status/ link so tweet ID is detectable
+      const link = document.createElement('a');
+      link.setAttribute('href', '/tester/status/123456789');
+      tweetEl.insertBefore(link, actionBar);
+
+      injectSaveButtons();
+
+      const wrapper = actionBar.querySelector('.twtbk-item-wrapper') as HTMLElement;
+      expect(wrapper).not.toBeNull();
+      expect(wrapper.dataset.twtbkInjected).toBe('1');
+      expect(wrapper.dataset.twtbkAdapterVersion).toBe(String(DATA_VERSION));
+      expect(wrapper.dataset.twtbkTweetId).toBe('123456789');
+      expect(wrapper.dataset.twtbkMode).toBe('injected');
+      expect(wrapper.dataset.twtbkPlacement).toBe('next-to-bookmark');
+    });
+
+    it('rebuilds wrapper when the old one is detached from the action bar', () => {
+      setSettingSaveMode('injected');
+      setSettingInjectedPosition('next-to-bookmark');
+      const { tweetEl, actionBar } = createMockTweet({ includeViews: true });
+      document.body.appendChild(tweetEl);
+
+      injectSaveButtons();
+      const firstWrapper = actionBar.querySelector('.twtbk-item-wrapper') as HTMLElement;
+      expect(firstWrapper).not.toBeNull();
+
+      // Simulate detach: remove wrapper from DOM without WeakMap cleanup
+      firstWrapper.remove();
+
+      injectSaveButtons();
+      const newWrapper = actionBar.querySelector('.twtbk-item-wrapper') as HTMLElement;
+      expect(newWrapper).not.toBeNull();
+      expect(newWrapper).not.toBe(firstWrapper); // rebuilt
+      // Still exactly one wrapper
+      expect(actionBar.querySelectorAll('.twtbk-item-wrapper').length).toBe(1);
+    });
+  });
+
+  describe('6. resolveInjectMode (Hardening Roadmap #6)', () => {
+    it('returns "injected" when saveMode is injected', () => {
+      setSettingSaveMode('injected');
+      expect(resolveInjectMode()).toBe('injected');
+    });
+
+    it('returns "replace" when saveMode is native-override and action is replace', () => {
+      setSettingSaveMode('native-override');
+      setSettingNativeOverrideAction('replace');
+      expect(resolveInjectMode()).toBe('replace');
+    });
+
+    it('returns "arrow" when saveMode is native-override and action is arrow', () => {
+      setSettingSaveMode('native-override');
+      setSettingNativeOverrideAction('arrow');
+      expect(resolveInjectMode()).toBe('arrow');
+    });
   });
 
   it('native replace prevents X from receiving the bookmark click', async () => {

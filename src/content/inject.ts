@@ -18,7 +18,74 @@ import {
   getTweetId,
   scoreActionGroup,
   MIN_ACTION_BAR_SCORE,
+  ADAPTER_VERSION,
 } from './xDomAdapter';
+
+// ---------------------------------------------------------------------------
+// Idempotent injection helpers (Hardening Roadmap #4)
+// ---------------------------------------------------------------------------
+
+/** Baked into every injected wrapper so future adapter schema changes
+ *  invalidate stale wrappers automatically. */
+export const DATA_VERSION = ADAPTER_VERSION;
+
+/** Explicit injection modes (Hardening Roadmap #6). */
+export type InjectMode = 'injected' | 'replace' | 'augment' | 'arrow';
+
+/** Derive the active mode from persistent settings so every consumer
+ *  (inject.ts, index.ts) agrees without duplicating ad-hoc checks. */
+export function resolveInjectMode(): InjectMode {
+  if (settingSaveMode === 'native-override') {
+    if (settingNativeOverrideAction === 'replace') return 'replace';
+    if (settingNativeOverrideAction === 'arrow') return 'arrow';
+  }
+  // 'augment' is not yet wired to a setting; reserved for future use.
+  return 'injected';
+}
+
+/** Per-tweet injection state tracked in a WeakMap (auto-GC'd with the tweet). */
+export interface InjectedState {
+  wrapper: HTMLElement;
+  tweetId: string;
+  adapterVersion: number;
+  mode: InjectMode;
+  placement: string;
+  builtAt: number;
+}
+
+const injectionStates = new WeakMap<Element, InjectedState>();
+
+/** Compute the logical placement label for the current settings,
+ *  so we can detect placement changes without DOM diffing. */
+function computePlacement(): string {
+  if (settingSaveMode === 'native-override') return 'next-to-bookmark'; // arrow sits after bookmark
+  return settingInjectedPosition;
+}
+
+/**
+ * Validate an existing injected wrapper.
+ * Returns true when the wrapper is still attached, has a matching
+ * adapter version, tweet id, mode, and placement — i.e. it is healthy.
+ */
+function validateWrapper(
+  wrapper: HTMLElement,
+  actionBar: Element,
+  tweetId: string,
+  mode: InjectMode,
+  placement: string,
+): boolean {
+  if (!actionBar.contains(wrapper)) return false;
+  if (wrapper.dataset.twtbkAdapterVersion !== String(DATA_VERSION)) return false;
+  if (wrapper.dataset.twtbkTweetId !== tweetId) return false;
+  // Optional runtime mode/placement check (dataset stores the build-time values).
+  if (wrapper.dataset.twtbkMode !== mode) return false;
+  if (wrapper.dataset.twtbkPlacement !== placement) return false;
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Button rendering
+// ---------------------------------------------------------------------------
 
 export function markButtonAsSaved(btnContainer: HTMLElement) {
   btnContainer.dataset.saved = 'true';
@@ -73,18 +140,36 @@ export function findActionItem(actionBar: Element, testId: string): Element | nu
 export function injectSaveButtons() {
   // Never render a default-mode button before chrome.storage has supplied the user's mode.
   if (!settingsLoaded) return;
-  if (settingSaveMode === 'native-override' && settingNativeOverrideAction !== 'arrow') return;
+
+  const mode = resolveInjectMode();
+  // 'replace' mode owns the native bookmark click; it does NOT inject a separate button.
+  if (mode === 'replace') return;
 
   const tweets = findAllTweets();
+  const placement = computePlacement();
+
   tweets.forEach(tweet => {
-    // Prevent double injection or clean up stale empty wrappers
-    const existingWrapper = tweet.querySelector('.twtbk-item-wrapper');
-    if (existingWrapper) {
-      if (existingWrapper.querySelector('.twtbk-save-btn')) return;
-      existingWrapper.remove();
+    // ── Idempotency: check WeakMap state + DOM health ──────────────────
+    const existingState = injectionStates.get(tweet);
+    if (existingState) {
+      const actionBarResult = findActionBar(tweet);
+      const actionBar = actionBarResult.element;
+      if (actionBar && validateWrapper(existingState.wrapper, actionBar, existingState.tweetId, mode, placement)) {
+        // Wrapper is healthy — nothing to do.
+        return;
+      }
+      // Stale or detached — remove the old wrapper before rebuilding.
+      existingState.wrapper.remove();
+      injectionStates.delete(tweet);
     }
 
-    // The action bar is typically a role="group" inside the tweet
+    // Fallback: clean up any orphaned DOM wrappers that lost their WeakMap entry.
+    const domWrapper = tweet.querySelector('.twtbk-item-wrapper') as HTMLElement | null;
+    if (domWrapper) {
+      domWrapper.remove();
+    }
+
+    // ── Locate a verified action bar ───────────────────────────────────
     const actionBarResult = findActionBar(tweet);
     if (!actionBarResult.found || !actionBarResult.element) return;
     const actionBar = actionBarResult.element;
@@ -92,9 +177,9 @@ export function injectSaveButtons() {
     // Only inject into a verified action bar with enough recognized native actions
     if (scoreActionGroup(actionBar) < MIN_ACTION_BAR_SCORE) return;
 
-    // Find a reference native action button to clone X's exact native DOM node structure & classes
-    const refBtn = findActionItem(actionBar, 'bookmark') 
-      || findActionItem(actionBar, 'like') 
+    // ── Clone X's native DOM structure ─────────────────────────────────
+    const refBtn = findActionItem(actionBar, 'bookmark')
+      || findActionItem(actionBar, 'like')
       || findActionItem(actionBar, 'reply');
 
     if (!refBtn) return;
@@ -108,6 +193,13 @@ export function injectSaveButtons() {
     // Clone refWrapper (shallow) to get X's exact item wrapper styling and flex attributes
     const itemWrapper = refWrapper.cloneNode(false) as HTMLElement;
     itemWrapper.classList.add('twtbk-item-wrapper');
+
+    // ── Idempotency markers (Hardening Roadmap #4) ─────────────────────
+    itemWrapper.dataset.twtbkInjected = '1';
+    itemWrapper.dataset.twtbkAdapterVersion = String(DATA_VERSION);
+    itemWrapper.dataset.twtbkTweetId = tweetId;
+    itemWrapper.dataset.twtbkMode = mode;
+    itemWrapper.dataset.twtbkPlacement = placement;
 
     // Enforce equal flex distribution and alignment across all action items
     itemWrapper.style.display = 'flex';
@@ -137,10 +229,12 @@ export function injectSaveButtons() {
       svgEl.style.color = '#71767b';
       svgEl.style.transition = 'color 0.2s, fill 0.2s';
 
-      if (settingSaveMode === 'native-override') {
+      if (mode === 'arrow') {
+        // Arrow mode: small dropdown-affordance chevron alongside the native bookmark
         svgEl.style.fill = 'currentColor';
         svgEl.innerHTML = `<path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>`;
       } else {
+        // injected / augment: save bookmark icon
         svgEl.style.fill = 'none';
         svgEl.style.stroke = 'currentColor';
         svgEl.style.strokeWidth = '2';
@@ -162,6 +256,8 @@ export function injectSaveButtons() {
       }
     });
 
+    // ── Mode-specific click handler ────────────────────────────────────
+    // Injected / arrow / augment: the XMarks button always calls saveTweet.
     btnContainer.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -188,7 +284,7 @@ export function injectSaveButtons() {
 
     itemWrapper.appendChild(btnContainer);
 
-    // Position itemWrapper inside actionBar as a direct peer child
+    // ── Placement ─────────────────────────────────────────────────────
     const insertWrapperAfterTestId = (testId: string) => {
       const target = findActionItem(actionBar, testId);
       if (target) {
@@ -203,7 +299,8 @@ export function injectSaveButtons() {
       }
     };
 
-    if (settingSaveMode === 'native-override') {
+    if (mode === 'arrow') {
+      // Arrow mode: inject after the native bookmark so the chevron sits next to it.
       const bookmarkBtn = findActionItem(actionBar, 'bookmark') || findActionItem(actionBar, 'share');
       if (bookmarkBtn) {
         const siblingWrapper = getDirectChildWrapper(actionBar, bookmarkBtn);
@@ -246,6 +343,16 @@ export function injectSaveButtons() {
       // rightmost — after share
       insertWrapperAfterTestId('share');
     }
+
+    // ── Track state for future health checks ──────────────────────────
+    injectionStates.set(tweet, {
+      wrapper: itemWrapper,
+      tweetId,
+      adapterVersion: DATA_VERSION,
+      mode,
+      placement,
+      builtAt: Date.now(),
+    });
   });
 }
 
