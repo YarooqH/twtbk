@@ -1,0 +1,100 @@
+import React from 'react';
+
+interface ModalProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type?: 'confirm' | 'alert';
+  confirmText?: string;
+  cancelText?: string;
+  isDanger?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  title,
+  message,
+  type = 'confirm',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  isDanger = false,
+  onConfirm,
+  onCancel,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0, 0, 0, 0.6)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        animation: 'twtbk-fade-in 0.15s ease-out'
+      }}
+      onClick={onCancel}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '400px',
+          background: 'var(--bg)',
+          color: 'var(--text)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-lg)',
+          padding: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          fontFamily: 'inherit',
+          animation: 'twtbk-scale-up 0.15s ease-out',
+          margin: '16px'
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>
+          {title}
+        </h3>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.5', whiteSpace: 'pre-line' }}>
+          {message}
+        </p>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+          {type === 'confirm' && (
+            <button
+              onClick={onCancel}
+              className="btn btn-ghost"
+              style={{ padding: '8px 16px', fontSize: '14px', borderRadius: 'var(--radius-full)' }}
+            >
+              {cancelText}
+            </button>
+          )}
+          <button
+            onClick={onConfirm}
+            className="btn"
+            style={{
+              padding: '8px 20px',
+              fontSize: '14px',
+              fontWeight: 700,
+              borderRadius: 'var(--radius-full)',
+              background: isDanger ? 'var(--danger)' : 'var(--accent)',
+              color: '#ffffff',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            {type === 'alert' ? (confirmText === 'Confirm' ? 'OK' : confirmText) : confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

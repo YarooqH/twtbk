@@ -1,0 +1,471 @@
+import React from 'react';
+import { db, Bookmark } from '../../db';
+import { getInitials, getCategoryColor, formatDate, formatRelativeTime } from '../helpers';
+import { LinkIcon, TrashIcon } from '../icons';
+
+interface BookmarkCardProps {
+  bookmark: Bookmark;
+  categories: any[] | undefined;
+  getCategoryName: (id: string) => string;
+  editingNoteId: string | null;
+  setEditingNoteId: (id: string | null) => void;
+  tempNote: string;
+  setTempNote: (val: string) => void;
+  activePickerBookmarkId: string | null;
+  setActivePickerBookmarkId: (id: string | null) => void;
+  handleDelete: (id: string, e: React.MouseEvent) => void;
+}
+
+function repairTweetText(raw: string): string {
+  if (!raw) return '';
+  let text = raw;
+  // 1. Join http:// or https:// separated from domain by newlines: "http://\ngithub.com" -> "http://github.com"
+  text = text.replace(/(https?:\/\/)\s*\n+\s*/gi, '$1');
+
+  // 2. Join URL paths split across newlines: "github.com/elayadesign/re\ndesign-skill"
+  text = text.replace(/((?:https?:\/\/|www\.|[a-z0-9-]+\.[a-z]{2,})\S*?)\n+(\S+)/gi, (match, p1, p2) => {
+    if (/^[a-zA-Z0-9_\-\.\/\?%\=\#]+$/.test(p2)) {
+      return p1 + p2;
+    }
+    return match;
+  });
+
+  // 3. Clean up accidental single newlines before/after mentions, hashtags, and apostrophes
+  text = text
+    .replace(/([^\n])\n+(@[A-Za-z0-9_]+|#[A-Za-z0-9_]+)/gi, '$1 $2')
+    .replace(/(@[A-Za-z0-9_]+|#[A-Za-z0-9_]+)\n+([^\n])/gi, '$1 $2')
+    .replace(/([^\n])\n+(['’]s|['’]re|['’]ve|['’]t|['’]m|['’]d|['’]ll)/gi, '$1$2');
+
+  return text;
+}
+
+function isUrlToken(str: string): boolean {
+  if (str.startsWith('http://') || str.startsWith('https://') || str.startsWith('www.')) return true;
+  return /^(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|co|ai|dev|app|me|edu|gov|gg|tv|xyz|design|tech|link|site|store)(?:\/[^\s]*)?$/i.test(str);
+}
+
+function renderFormattedTweetText(rawText: string | undefined) {
+  if (!rawText) return null;
+
+  const cleanedText = repairTweetText(rawText);
+  const lines = cleanedText.split('\n');
+
+  return lines.map((line, lineIdx) => {
+    const regex = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_]+|https?:\/\/[^\s]+|www\.[^\s]+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|co|ai|dev|app|me|edu|gov|gg|tv|xyz|design|tech|link|site|store)(?:\/[^\s]*)?)/gi;
+    const parts = line.split(regex);
+
+    return (
+      <React.Fragment key={lineIdx}>
+        {lineIdx > 0 && <br />}
+        {parts.map((part, partIdx) => {
+          if (!part) return null;
+          if (part.startsWith('@')) {
+            const handle = part.slice(1);
+            return (
+              <a
+                key={partIdx}
+                href={`https://x.com/${handle}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{ color: 'var(--accent)', textDecoration: 'none' }}
+                className="bm-tweet-link"
+              >
+                {part}
+              </a>
+            );
+          } else if (part.startsWith('#')) {
+            const tag = part.slice(1);
+            return (
+              <a
+                key={partIdx}
+                href={`https://x.com/hashtag/${tag}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{ color: 'var(--accent)', textDecoration: 'none' }}
+                className="bm-tweet-link"
+              >
+                {part}
+              </a>
+            );
+          } else if (isUrlToken(part)) {
+            const href = part.startsWith('http://') || part.startsWith('https://') ? part : `https://${part}`;
+            let displayUrl = part.replace(/^https?:\/\//, '').replace(/^www\./, '');
+            if (displayUrl.length > 30) {
+              displayUrl = displayUrl.slice(0, 27) + '...';
+            }
+            return (
+              <a
+                key={partIdx}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{ color: 'var(--accent)', textDecoration: 'none' }}
+                className="bm-tweet-link"
+              >
+                {displayUrl}
+              </a>
+            );
+          }
+          return <span key={partIdx}>{part}</span>;
+        })}
+      </React.Fragment>
+    );
+  });
+}
+
+export const BookmarkCard: React.FC<BookmarkCardProps> = ({
+  bookmark, categories, getCategoryName,
+  editingNoteId, setEditingNoteId, tempNote, setTempNote,
+  activePickerBookmarkId, setActivePickerBookmarkId,
+  handleDelete,
+}) => {
+  return (
+    <div key={bookmark.id} className="bookmark-card" onClick={() => window.open(bookmark.tweetUrl, '_blank')}>
+      <div className="bm-author-row">
+        <div className="bm-author-info">
+          <div className="bm-avatar" style={{ overflow: 'hidden' }}>
+            {bookmark.authorAvatarUrl ? (
+              <img 
+                src={bookmark.authorAvatarUrl} 
+                alt={bookmark.authorName} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+            ) : (
+              getInitials(bookmark.authorName || bookmark.authorHandle)
+            )}
+          </div>
+          <div>
+            <div className="bm-author-name">{bookmark.authorName || bookmark.authorHandle}</div>
+            <div className="bm-handle">@{bookmark.authorHandle}</div>
+          </div>
+        </div>
+        <div className="bm-actions" style={{ position: 'relative' }}>
+         
+          <a
+            href={bookmark.tweetUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="bm-action-btn"
+            onClick={e => e.stopPropagation()}
+            title="View on X"
+          >
+            <LinkIcon />
+          </a>
+          <button
+            className="bm-action-btn danger"
+            onClick={e => handleDelete(bookmark.id, e)}
+            title="Delete"
+          >
+            <TrashIcon />
+          </button>
+        </div>
+      </div>
+
+      <p className="bm-text">{bookmark.text ? renderFormattedTweetText(bookmark.text) : <em style={{ color: 'var(--text-muted)' }}>(No text)</em>}</p>
+
+      {/* Quoted Tweet Block */}
+      {bookmark.quotedTweet && (
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            if (bookmark.quotedTweet?.tweetUrl) {
+              window.open(bookmark.quotedTweet.tweetUrl, '_blank');
+            }
+          }}
+          style={{
+            marginTop: '10px',
+            marginBottom: '10px',
+            padding: '10px 12px',
+            borderRadius: '12px',
+            border: '1px solid var(--border)',
+            background: 'rgba(255, 255, 255, 0.03)',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+            {bookmark.quotedTweet.authorAvatarUrl && (
+              <img 
+                src={bookmark.quotedTweet.authorAvatarUrl} 
+                alt={bookmark.quotedTweet.authorName || bookmark.quotedTweet.authorHandle} 
+                style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} 
+              />
+            )}
+            <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text)' }}>
+              {bookmark.quotedTweet.authorName || bookmark.quotedTweet.authorHandle}
+            </span>
+            {bookmark.quotedTweet.authorHandle && (
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                @{bookmark.quotedTweet.authorHandle}
+              </span>
+            )}
+          </div>
+          {bookmark.quotedTweet.text && (
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-subtle)', lineHeight: '1.4' }}>
+              {renderFormattedTweetText(bookmark.quotedTweet.text)}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Articles / Card Links */}
+      {bookmark.articles && bookmark.articles.length > 0 && bookmark.articles.map((art, idx) => (
+        <div 
+          key={idx}
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(art.url, '_blank');
+          }}
+          style={{
+            marginTop: '10px',
+            marginBottom: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '10px 12px',
+            borderRadius: '12px',
+            border: '1px solid var(--border)',
+            background: 'rgba(255, 255, 255, 0.02)',
+            cursor: 'pointer'
+          }}
+        >
+          {art.thumbnailUrl && (
+            <img 
+              src={art.thumbnailUrl} 
+              alt={art.title || art.domain} 
+              style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} 
+            />
+          )}
+          <div style={{ overflow: 'hidden', flex: 1 }}>
+            {art.domain && (
+              <div style={{ fontSize: '11px', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                {art.domain}
+              </div>
+            )}
+            {art.title && (
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {art.title}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+
+      {/* Media Grid */}
+      {bookmark.media && bookmark.media.length > 0 && (
+        <div 
+          onClick={e => e.stopPropagation()}
+          style={{
+            marginTop: '10px',
+            marginBottom: '10px',
+            display: 'grid',
+            gridTemplateColumns: bookmark.media.length > 1 ? 'repeat(2, 1fr)' : '1fr',
+            gap: '8px',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            border: '1px solid var(--border)'
+          }}
+        >
+          {bookmark.media.slice(0, 4).map((item, idx) => (
+            <div 
+              key={idx} 
+              style={{ 
+                position: 'relative', 
+                paddingBottom: bookmark.media.length === 1 ? '56.25%' : '75%',
+                height: 0, 
+                overflow: 'hidden',
+                background: 'var(--bg-secondary)',
+                cursor: 'pointer'
+              }}
+              onClick={() => window.open(item.url, '_blank')}
+            >
+              <img 
+                src={item.previewUrl || item.url} 
+                alt="media preview" 
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+              {item.type === 'video' && (
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(0,0,0,0.15)'
+                }}>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', color: '#fff'
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Note section */}
+      <div 
+        style={{ 
+          marginTop: '8px', 
+          marginBottom: '12px',
+          borderLeft: '2px solid var(--accent)', 
+          paddingLeft: '10px', 
+          fontSize: '13px', 
+          color: 'var(--text-muted)' 
+        }}
+      >
+        {editingNoteId === bookmark.id ? (
+          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <textarea
+              value={tempNote}
+              onChange={e => setTempNote(e.target.value)}
+              placeholder="Add a note to this bookmark..."
+              style={{
+                width: '100%',
+                background: 'var(--bg-secondary)',
+                color: 'var(--text)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                padding: '8px 10px',
+                fontSize: '13px',
+                fontFamily: 'inherit',
+                resize: 'none',
+                height: '50px',
+                outline: 'none'
+              }}
+            />
+            <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setEditingNoteId(null)}
+                className="btn"
+                style={{ 
+                  padding: '4px 10px', 
+                  fontSize: '11px', 
+                  background: 'transparent',
+                  color: 'var(--text)',
+                  border: '1px solid var(--border-strong)'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await db.bookmarks.update(bookmark.id, { note: tempNote });
+                  setEditingNoteId(null);
+                }}
+                className="btn btn-primary"
+                style={{ padding: '4px 12px', fontSize: '11px' }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingNoteId(bookmark.id);
+              setTempNote(bookmark.note || '');
+            }}
+            style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            title="Click to edit note"
+          >
+            <span>
+              {bookmark.note ? (
+                <><strong>Note:</strong> {bookmark.note}</>
+              ) : (
+                <em style={{ opacity: 0.6 }}>+ Add note...</em>
+              )}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="bm-footer">
+        <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+          <button
+            onClick={() => {
+              setActivePickerBookmarkId(activePickerBookmarkId === bookmark.id ? null : bookmark.id);
+            }}
+            style={{
+              background: bookmark.categoryIds[0] ? `${getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color)}15` : 'var(--bg-secondary)',
+              color: bookmark.categoryIds[0] ? getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color) : 'var(--text-muted)',
+              border: '1px solid ' + (bookmark.categoryIds[0] ? `${getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color)}40` : 'var(--border)'),
+              borderRadius: 'var(--radius-full)',
+              padding: '4px 12px',
+              fontSize: '12.5px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              outline: 'none',
+              fontFamily: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'background 0.15s'
+            }}
+          >
+            {bookmark.categoryIds[0] && (
+              <span 
+                style={{ 
+                  width: '8px', 
+                  height: '8px', 
+                  borderRadius: '50%', 
+                  background: getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color) 
+                }} 
+              />
+            )}
+            {bookmark.categoryIds[0] ? getCategoryName(bookmark.categoryIds[0]) : 'No Category'}
+            <span style={{ fontSize: '9px', opacity: 0.6 }}>▼</span>
+          </button>
+
+          {activePickerBookmarkId === bookmark.id && (
+            <div className="bm-cat-dropdown-menu">
+              <button
+                className="bm-cat-dropdown-item"
+                onClick={async () => {
+                  await db.bookmarks.update(bookmark.id, { categoryIds: [] });
+                  setActivePickerBookmarkId(null);
+                }}
+              >
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#71767b' }} />
+                No Category
+              </button>
+              {categories?.map((cat: any) => (
+                <button
+                  key={cat.id}
+                  className="bm-cat-dropdown-item"
+                  onClick={async () => {
+                    await db.bookmarks.update(bookmark.id, { categoryIds: [cat.id] });
+                    setActivePickerBookmarkId(null);
+                  }}
+                  style={{
+                    fontWeight: bookmark.categoryIds.includes(cat.id) ? 700 : 400
+                  }}
+                >
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: getCategoryColor(cat.id, cat.color) }} />
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <span 
+          className="bm-date" 
+          title={bookmark.createdAt ? `Posted: ${formatDate(bookmark.createdAt)} | Saved: ${formatDate(bookmark.savedAt)}` : `Saved: ${formatDate(bookmark.savedAt)}`}
+        >
+          {bookmark.createdAt 
+            ? `posted ${formatDate(bookmark.createdAt)} · saved ${formatRelativeTime(bookmark.savedAt)}` 
+            : `saved ${formatRelativeTime(bookmark.savedAt)}`}
+        </span>
+        <a href={bookmark.tweetUrl} target="_blank" rel="noreferrer" className="bm-link" onClick={e => e.stopPropagation()}>
+          View tweet ↗
+        </a>
+      </div>
+    </div>
+  );
+};

@@ -41,5 +41,16 @@
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; img-src * data: blob:;"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "wasm/*"
+      ],
+      "matches": [
+        "*://*.twitter.com/*",
+        "*://*.x.com/*"
+      ]
+    }
+  ]
 }

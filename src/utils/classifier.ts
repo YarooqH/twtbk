@@ -1,7 +1,15 @@
 import { pipeline, env } from '@huggingface/transformers';
 
-// Set environment config to fetch from CDN
+// Set environment config for Chrome Extension MV3
 env.allowLocalModels = false;
+
+// Point ONNX runtime WASM backend to extension's local WASM assets instead of jsDelivr CDN
+if (env.backends?.onnx?.wasm) {
+  if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
+    (env.backends.onnx.wasm as any).wasmPaths = chrome.runtime.getURL('wasm/');
+  }
+  (env.backends.onnx.wasm as any).numThreads = 1;
+}
 
 let extractor: any = null;
 
