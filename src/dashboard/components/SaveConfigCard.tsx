@@ -75,6 +75,8 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
         <InteractiveBar saveMode={saveMode} injectedPosition={injectedPosition} setInjectedPosition={setInjectedPosition} nativeOverrideAction={nativeOverrideAction} accentColor={accentColor} />
       </div>
 
+      {/* BUTTON ALIGNMENT control safely bypassed to preserve X's native alignment; easy to plug back in if needed */}
+      {/*
       {saveMode === 'injected' && (
         <div className="toggle-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', marginBottom: '4px' }}>
           <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>BUTTON ALIGNMENT</span>
@@ -107,6 +109,7 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
           </div>
         </div>
       )}
+      */}
 
       {saveMode === 'native-override' && (
         <div className="toggle-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', marginBottom: '4px' }}>

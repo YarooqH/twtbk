@@ -90,6 +90,7 @@ function validateWrapper(
 export function markButtonAsSaved(btnContainer: HTMLElement) {
   btnContainer.dataset.saved = 'true';
   btnContainer.setAttribute('title', 'Saved in XMarks');
+  btnContainer.setAttribute('aria-label', 'Saved to XMarks');
 
   const svg = btnContainer.querySelector('svg');
   if (!svg) return;
@@ -137,6 +138,64 @@ export function findActionItem(actionBar: Element, testId: string): Element | nu
   return actionBar.querySelector(`[data-testid="${testId}"]`);
 }
 
+// ---------------------------------------------------------------------------
+// Placement resolution
+// ---------------------------------------------------------------------------
+//
+// X's action bar is not one uniform flex row: reply/retweet/like/views grow
+// evenly to fill space, while bookmark/share sit in their own fixed-width,
+// right-aligned pair. The anchor we resolve here is later used BOTH to clone
+// the correct neighbor's wrapper (so the injected cell inherits the right
+// flex/alignment rules for wherever it lands) and to perform the actual DOM
+// insertion — keeping the two in agreement instead of guessing separately.
+
+export type PlacementAnchor =
+  | { kind: 'edge' }
+  | { kind: 'wrapper'; neighbor: Element; position: 'before' | 'after' };
+
+/** Resolve where the save button should sit for the current settings. */
+export function resolvePlacementAnchor(actionBar: Element, mode: InjectMode): PlacementAnchor | null {
+  // Insert immediately after `testId`'s native item; if that item is missing
+  // on this tweet, sit just before Share, otherwise append at the very end.
+  const insertAfter = (testId: string): PlacementAnchor | null => {
+    const target = findActionItem(actionBar, testId);
+    if (target) return { kind: 'wrapper', neighbor: target, position: 'after' };
+    if (testId !== 'share') {
+      const share = findActionItem(actionBar, 'share');
+      if (share) return { kind: 'wrapper', neighbor: share, position: 'before' };
+    }
+    return actionBar.lastElementChild
+      ? { kind: 'wrapper', neighbor: actionBar.lastElementChild, position: 'after' }
+      : null;
+  };
+
+  if (mode === 'arrow') return insertAfter('bookmark');
+
+  switch (settingInjectedPosition) {
+    case 'leftmost':
+      return { kind: 'edge' };
+    case 'after-reply':
+      return insertAfter('reply');
+    case 'after-retweet':
+      return insertAfter('retweet');
+    case 'after-like':
+      return insertAfter('like');
+    case 'after-views': {
+      const views = findActionItem(actionBar, 'views');
+      if (views) return { kind: 'wrapper', neighbor: views, position: 'after' };
+      // Views isn't rendered for this viewer/tweet — sit just before Bookmark, then Share.
+      const bookmark = findActionItem(actionBar, 'bookmark');
+      if (bookmark) return { kind: 'wrapper', neighbor: bookmark, position: 'before' };
+      const share = findActionItem(actionBar, 'share');
+      return share ? { kind: 'wrapper', neighbor: share, position: 'before' } : null;
+    }
+    case 'next-to-bookmark':
+      return insertAfter('bookmark');
+    default: // rightmost
+      return insertAfter('share');
+  }
+}
+
 export function injectSaveButtons() {
   // Never render a default-mode button before chrome.storage has supplied the user's mode.
   if (!settingsLoaded) return;
@@ -177,21 +236,34 @@ export function injectSaveButtons() {
     // Only inject into a verified action bar with enough recognized native actions
     if (scoreActionGroup(actionBar) < MIN_ACTION_BAR_SCORE) return;
 
-    // ── Clone X's native DOM structure ─────────────────────────────────
+    // ── Resolve where the button goes, and what to clone it from ───────
+    // The wrapper we clone MUST be the one actually neighboring the final
+    // insertion point — X mixes an evenly-grown group (reply/retweet/like/
+    // views) with a fixed-width, right-aligned pair (bookmark/share), so
+    // cloning the wrong neighbor's classes (or forcing a flex value that
+    // doesn't match) misaligns or over-widens the injected cell.
+    const anchor = resolvePlacementAnchor(actionBar, mode);
+    if (!anchor) return;
+
+    const neighborWrapper = (
+      anchor.kind === 'edge' ? actionBar.firstElementChild : getDirectChildWrapper(actionBar, anchor.neighbor)
+    ) as HTMLElement | null;
+    if (!neighborWrapper) return;
+
+    // refBtn is only used to clone the button's own icon/hover-circle markup —
+    // unrelated to the flex/positioning inherited from neighborWrapper above.
     const refBtn = findActionItem(actionBar, 'bookmark')
       || findActionItem(actionBar, 'like')
       || findActionItem(actionBar, 'reply');
 
     if (!refBtn) return;
 
-    const refWrapper = getDirectChildWrapper(actionBar, refBtn);
-
     // Extract tweet ID for saved check
     const tweetIdResult = getTweetId(tweet);
     const tweetId = tweetIdResult.element ?? '';
 
-    // Clone refWrapper (shallow) to get X's exact item wrapper styling and flex attributes
-    const itemWrapper = refWrapper.cloneNode(false) as HTMLElement;
+    // Clone neighborWrapper (shallow) to inherit its exact item wrapper styling and flex attributes
+    const itemWrapper = neighborWrapper.cloneNode(false) as HTMLElement;
     itemWrapper.classList.add('twtbk-item-wrapper');
 
     // ── Idempotency markers (Hardening Roadmap #4) ─────────────────────
@@ -201,26 +273,53 @@ export function injectSaveButtons() {
     itemWrapper.dataset.twtbkMode = mode;
     itemWrapper.dataset.twtbkPlacement = placement;
 
-    // Enforce equal flex distribution and alignment across all action items
+    // Preserve X's native computed alignment/flex from the cloned neighbor —
+    // do NOT force a flex value here; it must match whichever group (evenly
+    // grown vs fixed-width) the neighbor actually belongs to.
     itemWrapper.style.display = 'flex';
     itemWrapper.style.alignItems = 'center';
-    itemWrapper.style.flex = '1 1 0%';
-    itemWrapper.style.justifyContent = settingButtonAlignment === 'left' ? 'flex-start'
-      : settingButtonAlignment === 'right' ? 'flex-end'
-      : 'center';
 
     // Clone refBtn (deep) to inherit X's native hover circle, alignment, padding, and transitions
     const btnContainer = refBtn.cloneNode(true) as HTMLElement;
     btnContainer.classList.add('twtbk-save-btn');
+
+    // Strip data-testid and aria-label from btnContainer and ALL descendants to prevent selector collisions
     btnContainer.removeAttribute('data-testid');
+    btnContainer.removeAttribute('aria-pressed');
+    btnContainer.querySelectorAll('[data-testid]').forEach(el => el.removeAttribute('data-testid'));
+    btnContainer.querySelectorAll('[aria-label]').forEach(el => el.removeAttribute('aria-label'));
+
+    btnContainer.setAttribute('aria-label', 'Save to XMarks');
+    btnContainer.setAttribute('aria-haspopup', 'dialog');
     btnContainer.setAttribute('title', 'Save to XMarks');
 
-    // Strip any numeric count labels from cloned button
-    btnContainer.querySelectorAll('span').forEach(span => {
-      if (span.textContent && /^\d+/.test(span.textContent.trim())) {
-        span.remove();
+    // Deeply strip any count labels, text nodes, or count wrapper elements from cloned button
+    const initialSvg = btnContainer.querySelector('svg');
+    if (initialSvg) {
+      // Remove all siblings of the icon container inside its parent wrapper
+      const iconCircle = initialSvg.closest('div') || initialSvg.parentElement;
+      if (iconCircle && iconCircle.parentElement) {
+        Array.from(iconCircle.parentElement.children).forEach(sibling => {
+          if (sibling !== iconCircle && !sibling.contains(initialSvg)) {
+            sibling.remove();
+          }
+        });
+      }
+    }
+    // Remove any remaining text-bearing spans or containers inside btnContainer
+    btnContainer.querySelectorAll('span, div[dir="auto"], div[data-testid*="count"]').forEach(el => {
+      if (!el.querySelector('svg')) {
+        el.remove();
       }
     });
+
+    // When placed among count-bearing items (reply, retweet, like, views),
+    // the preceding item's count label extends rightward into its flex column.
+    // Adding an 8px left margin centers our icon in the visual gap between
+    // the preceding number label and the following action icon.
+    if (['leftmost', 'after-reply', 'after-retweet', 'after-like', 'after-views'].includes(placement)) {
+      btnContainer.style.marginLeft = '8px';
+    }
 
     // Replace inner SVG with XMarks icon
     const svgEl = btnContainer.querySelector('svg');
@@ -285,63 +384,16 @@ export function injectSaveButtons() {
     itemWrapper.appendChild(btnContainer);
 
     // ── Placement ─────────────────────────────────────────────────────
-    const insertWrapperAfterTestId = (testId: string) => {
-      const target = findActionItem(actionBar, testId);
-      if (target) {
-        const siblingWrapper = getDirectChildWrapper(actionBar, target);
-        if (siblingWrapper.nextElementSibling) {
-          actionBar.insertBefore(itemWrapper, siblingWrapper.nextElementSibling);
-        } else {
-          actionBar.appendChild(itemWrapper);
-        }
-      } else {
-        actionBar.appendChild(itemWrapper);
-      }
-    };
-
-    if (mode === 'arrow') {
-      // Arrow mode: inject after the native bookmark so the chevron sits next to it.
-      const bookmarkBtn = findActionItem(actionBar, 'bookmark') || findActionItem(actionBar, 'share');
-      if (bookmarkBtn) {
-        const siblingWrapper = getDirectChildWrapper(actionBar, bookmarkBtn);
-        const nextEl = siblingWrapper.nextElementSibling;
-        if (nextEl) {
-          actionBar.insertBefore(itemWrapper, nextEl);
-        } else {
-          actionBar.appendChild(itemWrapper);
-        }
-      }
-    } else if (settingInjectedPosition === 'leftmost') {
+    // Insert relative to the SAME neighborWrapper we cloned from above, so
+    // styling and position always agree.
+    if (anchor.kind === 'edge') {
       actionBar.insertBefore(itemWrapper, actionBar.firstElementChild);
-    } else if (settingInjectedPosition === 'after-reply') {
-      insertWrapperAfterTestId('reply');
-    } else if (settingInjectedPosition === 'after-retweet') {
-      insertWrapperAfterTestId('retweet');
-    } else if (settingInjectedPosition === 'after-like') {
-      insertWrapperAfterTestId('like');
-    } else if (settingInjectedPosition === 'after-views') {
-      insertWrapperAfterTestId('views');
-    } else if (settingInjectedPosition === 'next-to-bookmark') {
-      const bookmarkBtn = findActionItem(actionBar, 'bookmark');
-      if (bookmarkBtn) {
-        const bookmarkWrapper = getDirectChildWrapper(actionBar, bookmarkBtn);
-        if (bookmarkWrapper.nextElementSibling) {
-          actionBar.insertBefore(itemWrapper, bookmarkWrapper.nextElementSibling);
-        } else {
-          actionBar.appendChild(itemWrapper);
-        }
-      } else {
-        const shareBtn = findActionItem(actionBar, 'share');
-        if (shareBtn) {
-          const shareWrapper = getDirectChildWrapper(actionBar, shareBtn);
-          actionBar.insertBefore(itemWrapper, shareWrapper);
-        } else {
-          actionBar.appendChild(itemWrapper);
-        }
-      }
+    } else if (anchor.position === 'before') {
+      actionBar.insertBefore(itemWrapper, neighborWrapper);
+    } else if (neighborWrapper.nextElementSibling) {
+      actionBar.insertBefore(itemWrapper, neighborWrapper.nextElementSibling);
     } else {
-      // rightmost — after share
-      insertWrapperAfterTestId('share');
+      actionBar.appendChild(itemWrapper);
     }
 
     // ── Track state for future health checks ──────────────────────────

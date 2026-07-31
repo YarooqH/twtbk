@@ -55,7 +55,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         transition: 'grid-template-rows 0.25s ease-out, opacity 0.25s ease-out',
         opacity: settingsExpanded ? 1 : 0,
         overflow: 'hidden',
-        width: '100%'
+        width: '100%',
+        marginTop: 'auto'
       }}>
         <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '12px' }}>
           {/* Card 1: Configuration */}

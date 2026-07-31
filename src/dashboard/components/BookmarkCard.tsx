@@ -171,41 +171,57 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
         <div 
           onClick={(e) => {
             e.stopPropagation();
-            if (bookmark.quotedTweet?.tweetUrl) {
-              window.open(bookmark.quotedTweet.tweetUrl, '_blank');
+            let targetUrl = bookmark.quotedTweet?.tweetUrl 
+              || (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id 
+                  ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}` 
+                  : undefined);
+            if (targetUrl) {
+              targetUrl = targetUrl.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
+              window.open(targetUrl, '_blank');
             }
           }}
           style={{
-            marginTop: '10px',
-            marginBottom: '10px',
-            padding: '10px 12px',
-            borderRadius: '12px',
+            marginTop: '12px',
+            marginBottom: '12px',
+            padding: '12px',
+            borderRadius: '16px',
             border: '1px solid var(--border)',
-            background: 'rgba(255, 255, 255, 0.03)',
-            cursor: 'pointer'
+            background: 'var(--bg-secondary)',
+            cursor: 'pointer',
+            transition: 'background 0.15s, border-color 0.15s',
+            boxSizing: 'border-box'
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-secondary)'; }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
             {bookmark.quotedTweet.authorAvatarUrl && (
               <img 
                 src={bookmark.quotedTweet.authorAvatarUrl} 
                 alt={bookmark.quotedTweet.authorName || bookmark.quotedTweet.authorHandle} 
-                style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} 
+                style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} 
               />
             )}
-            <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text)' }}>
+            <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)' }}>
               {bookmark.quotedTweet.authorName || bookmark.quotedTweet.authorHandle}
             </span>
             {bookmark.quotedTweet.authorHandle && (
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
                 @{bookmark.quotedTweet.authorHandle}
               </span>
             )}
           </div>
           {bookmark.quotedTweet.text && (
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-subtle)', lineHeight: '1.4' }}>
+            <p style={{ margin: 0, fontSize: '14px', color: 'var(--text)', lineHeight: '1.45', whiteSpace: 'pre-line', wordBreak: 'break-word' }}>
               {renderFormattedTweetText(bookmark.quotedTweet.text)}
             </p>
+          )}
+          {bookmark.quotedTweet.media && bookmark.quotedTweet.media.length > 0 && (
+            <div style={{ marginTop: '8px', borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: bookmark.quotedTweet.media.length === 1 ? '1fr' : '1fr 1fr', gap: '2px' }}>
+              {bookmark.quotedTweet.media.map((m, idx) => (
+                <img key={idx} src={m.url} alt="" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
+              ))}
+            </div>
           )}
         </div>
       )}

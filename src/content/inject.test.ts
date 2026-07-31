@@ -219,6 +219,13 @@ describe('X Action Bar Hard Refresh & Re-Test Suite Across All Placements', () =
       expect(res.injectedIdx).toBeLessThan(res.bookmarkIdx);
     });
 
+    it('after-views without a Views action stays before Bookmark instead of moving after Share', () => {
+      const res = simulateHardRefreshAndTest('after-views', false);
+      expect(res.injectedIdx).toBe(3);
+      expect(res.bookmarkIdx).toBe(4);
+      expect(res.shareIdx).toBe(5);
+    });
+
     it('rightmost: After hard refresh, button is strictly at end (after Share)', () => {
       const res = simulateHardRefreshAndTest('rightmost', true);
       expect(res.shareIdx).toBe(5);
@@ -363,6 +370,22 @@ describe('X Action Bar Hard Refresh & Re-Test Suite Across All Placements', () =
       // Still exactly one wrapper
       expect(actionBar.querySelectorAll('.twtbk-item-wrapper').length).toBe(1);
     });
+  });
+
+  it('gives the injected control its own accessible save semantics', () => {
+    setSettingSaveMode('injected');
+    setSettingInjectedPosition('next-to-bookmark');
+    const { tweetEl, actionBar } = createMockTweet({ includeViews: true });
+    const bookmark = actionBar.querySelector('[data-testid="bookmark"]')!;
+    bookmark.setAttribute('aria-pressed', 'false');
+    document.body.appendChild(tweetEl);
+
+    injectSaveButtons();
+
+    const button = actionBar.querySelector('.twtbk-save-btn') as HTMLElement;
+    expect(button.getAttribute('aria-label')).toBe('Save to XMarks');
+    expect(button.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(button.hasAttribute('aria-pressed')).toBe(false);
   });
 
   describe('6. resolveInjectMode (Hardening Roadmap #6)', () => {
@@ -648,4 +671,3 @@ describe('11. Saved-state fixture recognition', () => {
   });
 });
 });
-
