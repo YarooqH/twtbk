@@ -93,34 +93,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       </div>
 
       {/* Collapsible toggle bar at the bottom right */}
-      <div
-        className="sidebar-section-label"
+      <button
+        type="button"
+        className={`sidebar-toggle-bar ${settingsExpanded ? 'is-expanded' : 'is-collapsed'}`}
+        aria-expanded={settingsExpanded}
         onClick={() => setSettingsExpanded(!settingsExpanded)}
-        style={{
-          minHeight: '38px',
-          padding: '8px 12px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderRadius: 'var(--radius-md)',
-          background: settingsExpanded ? 'var(--bg-secondary)' : 'transparent',
-          transition: 'background 0.15s',
-          userSelect: 'none',
-          margin: '0',
-          width: '100%',
-          boxSizing: 'border-box'
-        }}
-        onMouseEnter={e => {
-          if (!settingsExpanded) e.currentTarget.style.background = 'var(--bg-hover)';
-        }}
-        onMouseLeave={e => {
-          if (!settingsExpanded) e.currentTarget.style.background = 'transparent';
-        }}
       >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <SettingsIcon /> <span style={{ marginLeft: 6 }}>Settings</span>
-        </div>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <SettingsIcon />
+          <span className="settings-card-title">Settings</span>
+        </span>
         <svg
           width="12"
           height="12"
@@ -136,7 +118,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         >
           <path d="M6 15l6-6 6 6"/>
         </svg>
-      </div>
+      </button>
     </aside>
   </>
 );
