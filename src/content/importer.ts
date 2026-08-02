@@ -1,3 +1,4 @@
+import { MSG } from '../messages';
 import { extractTweetData } from './extract';
 import { showToast } from './toast';
 
@@ -327,7 +328,7 @@ const runImportLoop = async () => {
     return;
   }
 
-  chrome.runtime.sendMessage({ type: 'IMPORT_BATCH', payload: batch }, (res: any) => {
+  chrome.runtime.sendMessage({ type: MSG.IMPORT_BATCH, payload: batch }, (res: any) => {
     if (res && res.success === false) {
       isImporting = false;
       showToast("Import Error: " + res.error);

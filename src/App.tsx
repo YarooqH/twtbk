@@ -61,7 +61,7 @@ function App() {
       {/* Header */}
       <div className="popup-header">
         <div className="popup-logo">
-          <img src="/XMarks-logos/Xmarks-logo-white-round.svg" alt="XMarks Logo" width={14} height={14} />
+          <img src="/logo.svg" alt="XMarks Logo" width={14} height={14} />
         </div>
         <h1 className="popup-title">XMarks</h1>
         <span className="popup-count">

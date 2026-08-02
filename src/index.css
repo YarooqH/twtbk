@@ -456,6 +456,17 @@ body {
   gap: 4px;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .bm-actions {
+    opacity: 1;
+  }
+}
+
+.bookmark-card:focus-within .bm-actions,
+.bookmark-card:hover .bm-selection-checkbox {
+  opacity: 1 !important;
+}
+
 .bm-action-btn {
   width: 30px;
   height: 30px;
@@ -797,28 +808,36 @@ body {
 
 /* ── SETTINGS SIDEBAR (RIGHT COLUMN) ────────────────── */
 .settings-sidebar {
-  width: 320px;
+  width: 340px;
   flex-shrink: 0;
   border-left: 1px solid var(--border);
-  padding: 24px 16px;
+  padding: 20px 14px;
   position: sticky;
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
+.settings-sidebar * {
+  box-sizing: border-box;
 }
 
 .settings-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .settings-card-title {
@@ -883,6 +902,17 @@ body {
 @keyframes twtbk-toast-in {
   from { opacity: 0; transform: translate(-50%, 16px); }
   to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes twtbk-slot-pop {
+  0% { transform: scale(0.5); opacity: 0.4; }
+  55% { transform: scale(1.22); opacity: 1; }
+  75% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+.twtbk-slot-pop {
+  animation: twtbk-slot-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 

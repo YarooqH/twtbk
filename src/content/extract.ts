@@ -93,22 +93,15 @@ export function extractTweetData(tweetElement: Element) {
     // Extract media items (images, videos, gifs)
     const media: { type: "image" | "video" | "gif"; url: string; previewUrl?: string }[] = [];
     
-    // Scrape tweet photos
-    const photoEls = tweetElement.querySelectorAll('[data-testid="tweetPhoto"] img');
-    photoEls.forEach(el => {
-      const img = el as HTMLImageElement;
-      const src = img.src || img.getAttribute('src');
-      if (src && !media.some(m => m.url === src)) {
-        media.push({
-          type: 'image',
-          url: src
-        });
-      }
-    });
+    // Find quoteContainer & card elements to exclude their media from main tweet media
+    const mainQuoteEl = tweetElement.querySelector('div[role="link"] div[aria-labelledby], [data-testid="quoteTweet"], div[class*="css-175oi2r"][role="link"]');
+    const mainCardEl = tweetElement.querySelector('[data-testid="card.wrapper"], [data-testid="article-card"]');
 
-    // Scrape tweet videos/GIFs
+    // Scrape tweet videos/GIFs FIRST
     const videoEls = tweetElement.querySelectorAll('video');
     videoEls.forEach(el => {
+      if (mainQuoteEl?.contains(el) || mainCardEl?.contains(el)) return;
+
       const v = el as HTMLVideoElement;
       const poster = v.getAttribute('poster') || v.poster || '';
       const src = v.src || v.querySelector('source')?.src || '';
@@ -125,6 +118,28 @@ export function extractTweetData(tweetElement: Element) {
       }
     });
 
+    // Scrape tweet photos (excluding photos inside quoteContainer or card, and excluding video thumbnails/posters)
+    const photoEls = tweetElement.querySelectorAll('[data-testid="tweetPhoto"] img');
+    photoEls.forEach(el => {
+      if (mainQuoteEl?.contains(el) || mainCardEl?.contains(el)) return;
+      if (el.closest('[data-testid="videoPlayer"], [data-testid="videoComponent"]')) return;
+
+      const img = el as HTMLImageElement;
+      const src = img.src || img.getAttribute('src');
+      if (!src) return;
+
+      // Skip if this image URL matches a video poster/preview or is a video thumbnail
+      const isVideoPoster = media.some(m => m.type === 'video' && (m.url === src || m.previewUrl === src || (m.previewUrl && src.includes(m.previewUrl))));
+      const isVideoThumb = src.includes('ext_tw_video_thumb') || src.includes('amplify_video_thumb');
+
+      if (!isVideoPoster && !isVideoThumb && !media.some(m => m.url === src)) {
+        media.push({
+          type: 'image',
+          url: src
+        });
+      }
+    });
+
     // Extract Quoted Tweet (if present)
     let quotedTweet: {
       id?: string;
@@ -133,6 +148,7 @@ export function extractTweetData(tweetElement: Element) {
       authorAvatarUrl?: string;
       text?: string;
       tweetUrl?: string;
+      media?: { type: "image" | "video" | "gif"; url: string; previewUrl?: string }[];
     } | undefined = undefined;
 
     const quoteContainer = tweetElement.querySelector('div[role="link"] div[aria-labelledby], [data-testid="quoteTweet"], div[class*="css-175oi2r"][role="link"]');
@@ -150,31 +166,79 @@ export function extractTweetData(tweetElement: Element) {
         qName = (qNameEl as HTMLElement).innerText.split('\n')[0] || '';
       }
 
-      const qTextEl = quoteContainer.querySelector('[data-testid="tweetText"]');
-      const qText = qTextEl ? (qTextEl as HTMLElement).innerText : '';
+      const qTextEls = quoteContainer.querySelectorAll('[data-testid="tweetText"]');
+      let qText = '';
+      if (qTextEls.length > 0) {
+        qText = Array.from(qTextEls)
+          .map(el => (el as HTMLElement).innerText?.trim())
+          .filter(Boolean)
+          .join('\n');
+      }
+      if (!qText) {
+        const textParts: string[] = [];
+        quoteContainer.querySelectorAll('div[dir="auto"], span[dir="auto"]').forEach(el => {
+          const txt = (el as HTMLElement).innerText?.trim();
+          if (txt && !txt.startsWith('@') && txt !== qName && !textParts.includes(txt)) {
+            textParts.push(txt);
+          }
+        });
+        qText = textParts.join('\n');
+      }
 
-      const qTimeLink = quoteContainer.querySelector('a[href*="/status/"]');
+      // Extract Quoted Tweet status URL & ID
+      let qHref = '';
+      if (quoteContainer.tagName === 'A' && quoteContainer.getAttribute('href')?.includes('/status/')) {
+        qHref = quoteContainer.getAttribute('href') || '';
+      }
+      if (!qHref || !qHref.includes('/status/')) {
+        const statusLink = quoteContainer.querySelector('a[href*="/status/"]') || quoteContainer.closest('a[href*="/status/"]');
+        if (statusLink) {
+          qHref = statusLink.getAttribute('href') || (statusLink as HTMLAnchorElement).href || '';
+        }
+      }
+      if (!qHref || !qHref.includes('/status/')) {
+        // Look for any status link inside tweetElement that does NOT match the main tweet ID
+        const secondaryStatusLink = tweetElement.querySelector(`a[href*="/status/"]:not([href*="${id}"])`);
+        if (secondaryStatusLink) {
+          qHref = secondaryStatusLink.getAttribute('href') || (secondaryStatusLink as HTMLAnchorElement).href || '';
+        }
+      }
+
       let qUrl = '';
       let qId = '';
-      if (qTimeLink) {
-        const qHref = qTimeLink.getAttribute('href') || '';
-        qUrl = qHref.startsWith('http') ? qHref : 'https://x.com' + qHref;
-        const qMatch = qHref.match(/\/status\/(\d+)/);
+      if (qHref) {
+        const fullHref = qHref.startsWith('http') ? qHref : 'https://x.com' + qHref;
+        const qMatch = fullHref.match(/\/status\/(\d+)/);
         if (qMatch) qId = qMatch[1];
+
+        // Clean URL to strip /photo/N or /video/N lightbox paths
+        qUrl = fullHref.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
+      }
+      if (qHandle && qId) {
+        qUrl = `https://x.com/${qHandle}/status/${qId}`;
       }
 
       const qAvatarImg = quoteContainer.querySelector('img[src*="profile_images"]') as HTMLImageElement | null;
       let qAvatar = qAvatarImg?.src || qAvatarImg?.getAttribute('src') || '';
       if (qAvatar) qAvatar = qAvatar.replace(/_normal\.(jpg|jpeg|png|webp)/i, '_bigger.$1');
 
-      if (qHandle || qText || qUrl) {
+      const qMediaItems: { type: "image" | "video" | "gif"; url: string; previewUrl?: string }[] = [];
+      quoteContainer.querySelectorAll('img[src*="pbs.twimg.com/media"]').forEach(img => {
+        const src = (img as HTMLImageElement).src || img.getAttribute('src');
+        if (src && !qMediaItems.some(m => m.url === src)) {
+          qMediaItems.push({ type: 'image', url: src });
+        }
+      });
+
+      if (qHandle || qText || qUrl || qMediaItems.length > 0) {
         quotedTweet = {
           id: qId || undefined,
           authorHandle: qHandle,
           authorName: qName || undefined,
           authorAvatarUrl: qAvatar || undefined,
           text: qText || undefined,
-          tweetUrl: qUrl || undefined
+          tweetUrl: qUrl || undefined,
+          media: qMediaItems.length > 0 ? qMediaItems : undefined
         };
       }
     }

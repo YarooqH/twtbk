@@ -25,6 +25,8 @@ interface BookmarkListProps {
   setActivePickerBookmarkId: (id: string | null) => void;
   mobileSettingsOpen?: boolean;
   setMobileSettingsOpen?: (val: boolean) => void;
+  selectedBookmarkIds?: Set<string>;
+  toggleBookmarkSelection?: (id: string) => void;
 }
 
 export const BookmarkList: React.FC<BookmarkListProps> = ({
@@ -37,6 +39,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   editingNoteId, setEditingNoteId, tempNote, setTempNote,
   activePickerBookmarkId, setActivePickerBookmarkId,
   mobileSettingsOpen, setMobileSettingsOpen,
+  selectedBookmarkIds = new Set(), toggleBookmarkSelection,
 }) => {
   return (
     <main className="content">
@@ -104,6 +107,8 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
               activePickerBookmarkId={activePickerBookmarkId}
               setActivePickerBookmarkId={setActivePickerBookmarkId}
               handleDelete={handleDelete}
+              isSelected={selectedBookmarkIds.has(bookmark.id)}
+              onToggleSelection={() => toggleBookmarkSelection?.(bookmark.id)}
             />
           ))
         )}

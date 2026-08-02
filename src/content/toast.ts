@@ -1,3 +1,5 @@
+import { MSG } from '../messages';
+
 export function showToast(message: string) {
   const existing = document.getElementById('twtbk-toast');
   if (existing) existing.remove();
@@ -34,7 +36,7 @@ export function showToast(message: string) {
   `;
 
   toast.querySelector('button')?.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ type: 'OPEN_DASHBOARD' });
+    chrome.runtime.sendMessage({ type: MSG.OPEN_DASHBOARD });
     toast.remove();
   });
 

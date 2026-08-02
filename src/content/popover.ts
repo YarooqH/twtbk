@@ -1,3 +1,4 @@
+import { MSG } from '../messages';
 import { showToast } from './toast';
 import { currentAccentColor } from './settings';
 import { markButtonAsSaved } from './inject';
@@ -24,7 +25,7 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
     container.style.left = left + 'px';
   };
 
-  chrome.runtime.sendMessage({ type: 'GET_CATEGORIES' }, (categories: any[]) => {
+  chrome.runtime.sendMessage({ type: MSG.GET_CATEGORIES }, (categories: any[]) => {
     const safeCats = categories || [];
     const categoryColors = ['#1d9bf0', '#9333ea', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
     const getCategoryColor = (id: string, color?: string) => color || categoryColors[id.charCodeAt(id.length - 1) % categoryColors.length];
@@ -68,7 +69,7 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
       e.stopPropagation();
       const name = newCatInput.value.trim();
       if (!name) return;
-      chrome.runtime.sendMessage({ type: 'CREATE_CATEGORY', payload: { name } }, (res) => {
+      chrome.runtime.sendMessage({ type: MSG.CREATE_CATEGORY, payload: { name } }, (res) => {
         if (res && res.success) {
           const item = document.createElement('div');
           item.className = 'twtbk-cat-item';
@@ -95,7 +96,7 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
       const note = noteInput ? noteInput.value : '';
       data.note = note;
       data.categoryIds = catId ? [catId] : [];
-      chrome.runtime.sendMessage({ type: 'SAVE_TWEET', payload: data }, (response) => {
+      chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (response) => {
         if (!response?.success) {
           alert('Failed to save: ' + response?.error);
         } else {
