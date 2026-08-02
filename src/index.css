@@ -486,8 +486,7 @@ body {
 }
 
 .bm-selection-checkbox:focus-within {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: none;
 }
 
 .bm-selection-checkbox input {
@@ -591,7 +590,6 @@ body {
   text-decoration: underline;
 }
 
-/* ── BULK SELECTION TOOLBAR ───────────────────────── */
 .multi-select-bar {
   position: fixed;
   left: 50%;
@@ -602,14 +600,14 @@ body {
   align-items: center;
   gap: 10px;
   max-width: calc(100vw - 32px);
-  padding: 10px 12px 10px 16px;
-  color: var(--text);
-  background: var(--bg-overlay);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  padding: 10px 14px 10px 18px;
+  color: #f8fafc;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   animation: bulk-bar-in 0.2s ease-out;
 }
 
@@ -629,10 +627,11 @@ body {
   white-space: nowrap;
   font-size: 13px;
   font-weight: 600;
+  color: #f8fafc;
 }
 
 .multi-select-hidden-count {
-  color: var(--text-muted);
+  color: #94a3b8;
   font-size: 12px;
   font-weight: 500;
 }
@@ -643,17 +642,19 @@ body {
   justify-content: center;
   min-width: 24px;
   height: 24px;
-  padding: 0 6px;
-  border-radius: 8px;
-  color: var(--accent);
-  background: var(--accent-light);
+  padding: 0 8px;
+  border-radius: 9999px;
+  color: #ffffff;
+  background: #3b82f6;
+  font-weight: 700;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
 .multi-select-divider {
   width: 1px;
   height: 24px;
-  background: var(--border);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .bulk-toolbar-btn {
@@ -662,9 +663,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -676,32 +677,35 @@ body {
 .bulk-toolbar-btn:active { transform: translateY(1px); }
 .bulk-toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .bulk-toolbar-btn-secondary {
-  color: var(--text);
-  background: var(--bg-secondary);
-  border-color: var(--border);
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 .bulk-toolbar-btn-secondary:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 .bulk-toolbar-btn-danger {
-  color: var(--danger);
-  background: var(--danger-light);
-  border-color: transparent;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
 }
-.bulk-toolbar-btn-danger:hover { border-color: var(--danger); }
+.bulk-toolbar-btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.35);
+  border-color: #ef4444;
+}
 .bulk-toolbar-close {
   width: 36px;
   height: 36px;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: 50%;
   background: transparent;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
 }
-.bulk-toolbar-close:hover { background: var(--bg-secondary); color: var(--text); }
+.bulk-toolbar-close:hover { background: rgba(255, 255, 255, 0.15); color: #ffffff; }
 .bulk-toolbar-close:disabled { opacity: 0.45; cursor: wait; }
 
 @media (max-width: 640px) {

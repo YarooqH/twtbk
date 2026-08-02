@@ -41,7 +41,7 @@ export const Dashboard: React.FC = () => {
 
   // Mobile Settings Drawer State (W3)
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
-  const [settingsExpanded, setSettingsExpanded] = useState(true);
+  const [settingsExpanded, setSettingsExpanded] = useState(false);
 
   // Accent color customization
   const [accentColor, setAccentColor] = useAccentColor();

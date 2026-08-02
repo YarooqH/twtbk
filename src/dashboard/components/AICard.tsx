@@ -14,7 +14,7 @@ export const AICard: React.FC<AICardProps> = ({
   autoCategorize, toggleAutoCategorize, isModelLoaded, modelProgress,
   isClassifying, classifyProgress, runAutoCategorizeJobs,
 }) => {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (modelProgress !== null || isClassifying) setExpanded(true);
