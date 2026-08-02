@@ -134,9 +134,20 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
         if ((e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) return;
         window.open(bookmark.tweetUrl, '_blank');
       }}
+      onMouseDown={(e) => {
+        if (e.button === 1 && !(e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) {
+          e.preventDefault();
+        }
+      }}
+      onAuxClick={(e) => {
+        if (e.button === 1 && !(e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) {
+          e.preventDefault();
+          window.open(bookmark.tweetUrl, '_blank');
+        }
+      }}
       style={{
         position: 'relative',
-        cursor: 'default',
+        cursor: 'pointer',
         boxShadow: isSelected ? '0 0 0 2px var(--accent)' : undefined,
         background: isSelected ? 'var(--bg-hover)' : undefined
       }}

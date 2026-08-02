@@ -49,16 +49,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <div className="settings-backdrop" onClick={() => setMobileSettingsOpen(false)} />
       )}
       <aside className={`settings-sidebar ${mobileSettingsOpen ? 'open' : ''}`}>
-      <div style={{
-        display: 'grid',
-        gridTemplateRows: settingsExpanded ? '1fr' : '0fr',
-        transition: 'grid-template-rows 0.25s ease-out, opacity 0.25s ease-out',
-        opacity: settingsExpanded ? 1 : 0,
-        overflow: 'hidden',
-        width: '100%',
-        marginTop: 'auto'
-      }}>
-        <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '12px' }}>
+      <div className={`settings-content ${settingsExpanded ? 'is-expanded' : 'is-collapsed'}`}>
+        <div className="settings-content-inner">
           {/* Card 1: Configuration */}
           <SaveConfigCard
             saveMode={saveMode} setSaveMode={setSaveMode}

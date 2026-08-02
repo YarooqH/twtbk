@@ -1022,6 +1022,31 @@ body {
   box-sizing: border-box;
 }
 
+.settings-content {
+  width: 100%;
+  margin-top: auto;
+  max-height: 1400px;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 0.3s ease, opacity 0.2s ease, transform 0.3s ease;
+  will-change: max-height, opacity, transform;
+}
+
+.settings-content.is-collapsed {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.settings-content-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 12px;
+}
+
 .settings-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -1053,7 +1078,7 @@ body {
     background: var(--bg);
     box-shadow: var(--shadow-lg);
     transform: translateX(100%);
-    transition: transform 0.25s ease;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     max-width: 340px;
     width: 85vw;
@@ -1065,6 +1090,7 @@ body {
   .settings-backdrop {
     position: fixed;
     inset: 0;
+    animation: settings-backdrop-in 0.25s ease-out;
     background: rgba(0, 0, 0, 0.5);
     z-index: 999;
     backdrop-filter: blur(3px);
@@ -1089,6 +1115,11 @@ body {
   to { opacity: 1; }
 }
 
+@keyframes settings-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes twtbk-scale-up {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
@@ -1097,6 +1128,16 @@ body {
 @keyframes twtbk-toast-in {
   from { opacity: 0; transform: translate(-50%, 16px); }
   to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-content,
+  .settings-sidebar {
+    transition: none;
+  }
+  .settings-backdrop {
+    animation: none;
+  }
 }
 
 @keyframes twtbk-slot-pop {
