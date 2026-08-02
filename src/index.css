@@ -271,8 +271,7 @@ body {
   flex: 1;
   max-width: 600px;
   border-right: 1px solid var(--border);
-  height: 100vh;
-  overflow-y: auto;
+  min-height: 100vh;
 }
 
 .content-header {
