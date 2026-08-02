@@ -601,20 +601,14 @@ body {
   gap: 10px;
   max-width: calc(100vw - 32px);
   padding: 10px 14px 10px 18px;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
+  color: #fff;
+  background: rgba(10, 10, 15, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
-  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   animation: bulk-bar-in 0.2s ease-out;
-}
-
-@media (prefers-color-scheme: dark) {
-  .multi-select-bar {
-    background: rgba(15, 20, 25, 0.25);
-  }
 }
 
 @keyframes bulk-bar-in {
@@ -683,22 +677,22 @@ body {
 .bulk-toolbar-btn:active { transform: translateY(1px); }
 .bulk-toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .bulk-toolbar-btn-secondary {
-  color: var(--text);
-  background: var(--bg-secondary);
-  border-color: var(--border);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 .bulk-toolbar-btn-secondary:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 .bulk-toolbar-btn-danger {
-  color: var(--danger);
-  background: var(--danger-light);
+  color: #ff6b7a;
+  background: rgba(244, 33, 46, 0.25);
   border-color: transparent;
 }
 .bulk-toolbar-btn-danger:hover:not(:disabled) {
-  background: rgba(244, 33, 46, 0.2);
-  border-color: var(--danger);
+  background: rgba(244, 33, 46, 0.38);
+  border-color: rgba(244, 33, 46, 0.5);
 }
 .bulk-toolbar-close {
   width: 36px;
@@ -706,12 +700,12 @@ body {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.55);
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
 }
-.bulk-toolbar-close:hover { background: var(--bg-hover); color: var(--text); }
+.bulk-toolbar-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
 .bulk-toolbar-close:disabled { opacity: 0.45; cursor: wait; }
 
 @media (max-width: 640px) {
