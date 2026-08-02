@@ -93,21 +93,23 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       </div>
 
       {/* Collapsible toggle bar at the bottom right */}
-      <div 
-        className="sidebar-section-label" 
+      <div
+        className="sidebar-section-label"
         onClick={() => setSettingsExpanded(!settingsExpanded)}
-        style={{ 
-          padding: '8px 12px', 
-          cursor: 'pointer', 
-          display: 'flex', 
-          alignItems: 'center', 
+        style={{
+          minHeight: '38px',
+          padding: '8px 12px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
           borderRadius: 'var(--radius-md)',
           background: settingsExpanded ? 'var(--bg-secondary)' : 'transparent',
           transition: 'background 0.15s',
           userSelect: 'none',
           margin: '0',
-          width: '100%'
+          width: '100%',
+          boxSizing: 'border-box'
         }}
         onMouseEnter={e => {
           if (!settingsExpanded) e.currentTarget.style.background = 'var(--bg-hover)';
@@ -119,15 +121,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <SettingsIcon /> <span style={{ marginLeft: 6 }}>Settings</span>
         </div>
-        <svg 
-          width="12" 
-          height="12" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2.5" 
-          style={{ 
-            transform: settingsExpanded ? 'rotate(180deg)' : 'none', 
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          style={{
+            transform: settingsExpanded ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.2s',
             color: 'var(--text-muted)'
           }}
