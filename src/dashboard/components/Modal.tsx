@@ -10,6 +10,7 @@ interface ModalProps {
   isDanger?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  isBusy?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -22,6 +23,7 @@ export const Modal: React.FC<ModalProps> = ({
   isDanger = false,
   onConfirm,
   onCancel,
+  isBusy = false,
 }) => {
   if (!isOpen) return null;
 
@@ -71,6 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
           {type === 'confirm' && (
             <button
               onClick={onCancel}
+              disabled={isBusy}
               className="btn btn-ghost"
               style={{ padding: '8px 16px', fontSize: '14px', borderRadius: 'var(--radius-full)' }}
             >
@@ -79,6 +82,7 @@ export const Modal: React.FC<ModalProps> = ({
           )}
           <button
             onClick={onConfirm}
+            disabled={isBusy}
             className="btn"
             style={{
               padding: '8px 20px',
@@ -88,10 +92,11 @@ export const Modal: React.FC<ModalProps> = ({
               background: isDanger ? 'var(--danger)' : 'var(--accent)',
               color: '#ffffff',
               border: 'none',
-              cursor: 'pointer'
+              cursor: isBusy ? 'wait' : 'pointer',
+              opacity: isBusy ? 0.7 : 1
             }}
           >
-            {type === 'alert' ? (confirmText === 'Confirm' ? 'OK' : confirmText) : confirmText}
+            {isBusy ? 'Working…' : (type === 'alert' ? (confirmText === 'Confirm' ? 'OK' : confirmText) : confirmText)}
           </button>
         </div>
       </div>

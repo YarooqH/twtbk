@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { db } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useOutsideClick } from './hooks/useOutsideClick';
@@ -22,6 +22,7 @@ export const Dashboard: React.FC = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<'categorize' | 'export' | 'delete' | null>(null);
   
   // In-App Toast & Modal Notifications (W4)
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -90,6 +91,16 @@ export const Dashboard: React.FC = () => {
   // Category rename
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editingCatName, setEditingCatName] = useState('');
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !modalConfig && selectedBookmarkIds.size > 0) {
+        setSelectedBookmarkIds(new Set());
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [modalConfig, selectedBookmarkIds]);
 
   useKeyboardShortcuts((action) => {
     if (action === 'search') {
@@ -189,6 +200,12 @@ export const Dashboard: React.FC = () => {
     return result;
   }, [bookmarks, searchQuery, selectedCategoryId, sortOrder]);
 
+  const visibleBookmarkIds = useMemo(() => new Set(filteredBookmarks.map(bookmark => bookmark.id)), [filteredBookmarks]);
+  const hiddenSelectedCount = useMemo(
+    () => Array.from(selectedBookmarkIds).filter(id => !visibleBookmarkIds.has(id)).length,
+    [selectedBookmarkIds, visibleBookmarkIds]
+  );
+
   const handleExport = async () => {
     const allData = await db.bookmarks.toArray();
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
@@ -197,6 +214,78 @@ export const Dashboard: React.FC = () => {
     a.href = url; a.download = 'twitter_bookmarks_export.json'; a.click();
     URL.revokeObjectURL(url);
     setToastMessage('Exported bookmarks file successfully!');
+  };
+
+  const handleExportSelected = async () => {
+    setBulkAction('export');
+    try {
+      const ids = Array.from(selectedBookmarkIds);
+      const selected = await db.bookmarks.bulkGet(ids);
+      const exportData = selected.filter((bookmark): bookmark is NonNullable<typeof bookmark> => Boolean(bookmark));
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `twitter_bookmarks_${exportData.length}_selected.json`; a.click();
+      URL.revokeObjectURL(url);
+      setToastMessage(`Exported ${exportData.length} selected bookmark${exportData.length === 1 ? '' : 's'}`);
+    } catch {
+      setToastMessage('Could not export the selected bookmarks');
+    } finally {
+      setBulkAction(null);
+    }
+  };
+
+  const handleBulkCategorize = async (categoryId: string | null) => {
+    setBulkAction('categorize');
+    const ids = Array.from(selectedBookmarkIds);
+    try {
+      await db.transaction('rw', db.bookmarks, async () => {
+        await Promise.all(ids.map(id => db.bookmarks.update(id, { categoryIds: categoryId ? [categoryId] : [] })));
+      });
+      setSelectedBookmarkIds(new Set());
+      setToastMessage(`Updated ${ids.length} bookmark${ids.length === 1 ? '' : 's'}`);
+    } catch {
+      setToastMessage('Could not categorize the selected bookmarks');
+    } finally {
+      setBulkAction(null);
+    }
+  };
+
+  const requestBulkDelete = () => {
+    if (bulkAction) return;
+    const ids = Array.from(selectedBookmarkIds);
+    setModalConfig({
+      isOpen: true,
+      title: `Delete ${ids.length} bookmark${ids.length === 1 ? '' : 's'}?`,
+      message: 'This will remove the selected bookmarks from your library. You can undo this action briefly after deleting.',
+      type: 'confirm',
+      confirmText: 'Delete bookmarks',
+      cancelText: 'Keep bookmarks',
+      isDanger: true,
+      onConfirm: async () => {
+        setBulkAction('delete');
+        try {
+          const removed = (await db.bookmarks.bulkGet(ids)).filter((bookmark): bookmark is NonNullable<typeof bookmark> => Boolean(bookmark));
+          await db.bookmarks.bulkDelete(ids);
+          setSelectedBookmarkIds(new Set());
+          setModalConfig(null);
+        setToastAction({
+          label: 'Undo',
+          onClick: async () => {
+            await db.bookmarks.bulkPut(removed);
+            setToastMessage(`${removed.length} bookmark${removed.length === 1 ? '' : 's'} restored`);
+            setToastAction(null);
+          }
+        });
+          setToastMessage(`Deleted ${removed.length} bookmark${removed.length === 1 ? '' : 's'}`);
+        } catch {
+          setModalConfig(null);
+          setToastMessage('Could not delete the selected bookmarks');
+        } finally {
+          setBulkAction(null);
+        }
+      }
+    });
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -350,15 +439,23 @@ export const Dashboard: React.FC = () => {
           confirmText={modalConfig.confirmText}
           cancelText={modalConfig.cancelText}
           isDanger={modalConfig.isDanger}
+          isBusy={bulkAction === 'delete'}
           onConfirm={modalConfig.onConfirm}
           onCancel={() => setModalConfig(null)}
         />
       )}
 
-      <MultiSelectActionBar 
+      <MultiSelectActionBar
         selectedIds={selectedBookmarkIds}
+        visibleIds={filteredBookmarks.map(bookmark => bookmark.id)}
         clearSelection={() => setSelectedBookmarkIds(new Set())}
+        selectAllVisible={() => setSelectedBookmarkIds(new Set(filteredBookmarks.map(bookmark => bookmark.id)))}
+        exportSelected={handleExportSelected}
+        requestDelete={requestBulkDelete}
         categories={categories || []}
+        onCategorize={handleBulkCategorize}
+        hiddenSelectedCount={hiddenSelectedCount}
+        isBusy={bulkAction !== null}
       />
       <KeyboardShortcutsHelp />
     </div>

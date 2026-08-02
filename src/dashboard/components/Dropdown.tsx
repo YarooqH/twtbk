@@ -17,10 +17,12 @@ interface DropdownProps {
   className?: string;
   triggerClassName?: string;
   triggerStyle?: React.CSSProperties;
+  disabled?: boolean;
+  dropUp?: boolean;
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({ 
-  trigger, items, align = 'right', className = '', triggerClassName = '', triggerStyle = {} 
+  trigger, items, align = 'right', className = '', triggerClassName = '', triggerStyle = {}, disabled = false, dropUp = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,6 +75,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <button 
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
+        disabled={disabled}
         className={triggerClassName}
         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', ...triggerStyle }}
         aria-haspopup="menu"
@@ -84,8 +87,15 @@ export const Dropdown: React.FC<DropdownProps> = ({
         <div 
           ref={menuRef}
           role="menu"
-          className="bm-cat-dropdown-menu" 
-          style={{ [align]: 0, top: '100%', marginTop: '4px', zIndex: 100 }}
+          className={`bm-cat-dropdown-menu ${dropUp ? 'drop-up' : ''}`}
+          style={{
+            left: align === 'left' ? 0 : 'auto',
+            right: align === 'right' ? 0 : 'auto',
+            ...(dropUp
+              ? { bottom: '100%', top: 'auto', marginBottom: '4px', marginTop: 0 }
+              : { top: '100%', bottom: 'auto', marginTop: '4px' }),
+            zIndex: 100
+          }}
         >
           {items.map((item) => {
             const ItemTag = item.href ? 'a' : 'button';
