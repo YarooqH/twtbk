@@ -54,8 +54,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             absolutely placed ABOVE the toggle button via bottom: 100% */}
         <div className="settings-panel-anchor">
 
-          {/* Content panel — absolutely above the button, animates max-height */}
-          <div className={`settings-content ${settingsExpanded ? 'is-expanded' : 'is-collapsed'}`}>
+          {/* Content panel — GPU accelerated translateY slide */}
+          <div className={`settings-content-wrapper ${settingsExpanded ? 'is-expanded' : 'is-collapsed'}`}>
             <div className="settings-content-inner">
 
               <SaveConfigCard

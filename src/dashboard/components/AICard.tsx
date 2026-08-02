@@ -33,8 +33,8 @@ export const AICard: React.FC<AICardProps> = ({
         : null;
 
   return (
-    <div className="ai-card-wrapper" style={{ width: '100%' }}>
-      <div className={`ai-card-body ${expanded ? 'is-expanded' : 'is-collapsed'}`}>
+    <div className="ai-card-wrapper" style={{ position: 'relative', width: '100%' }}>
+      <div className={`ai-card-body-wrapper ${expanded ? 'is-expanded' : 'is-collapsed'}`}>
         <div className="ai-card-body-inner">
           <div className="settings-card">
             <div className="toggle-row ai-toggle-row">

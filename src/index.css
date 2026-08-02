@@ -1078,66 +1078,44 @@ body {
   color: var(--text);
 }
 
-/* ── SETTINGS PANEL ANCHOR (positions content above button) ── */
-.settings-panel-anchor {
+/* ── GPU HARDWARE-ACCELERATED UPWARD SLIDING DRAWERS ── */
+.settings-panel-anchor,
+.ai-card-wrapper {
   position: relative;
   width: 100%;
 }
 
-/* Content panel sits directly above the toggle button */
-.settings-content {
+.settings-content-wrapper,
+.ai-card-body-wrapper {
   position: absolute;
-  bottom: 100%;          /* flush against the top of the toggle button */
+  bottom: 100%;
   left: 0;
   right: 0;
   overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.25s ease;
-  opacity: 0;
-}
-
-.settings-content.is-expanded {
-  max-height: 800px;     /* larger than any realistic content height */
-  opacity: 1;
-}
-
-.settings-content.is-collapsed {
-  max-height: 0;
-  opacity: 0;
   pointer-events: none;
 }
 
-.settings-content-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 0 0 12px;
+.settings-content-wrapper.is-expanded,
+.ai-card-body-wrapper.is-expanded {
+  pointer-events: auto;
 }
 
-/* ── AI CARD BODY (left sidebar, grid accordion is fine here) ── */
-.ai-card-body {
-  width: 100%;
-  display: grid;
-  grid-template-rows: 1fr;
-  opacity: 1;
-  overflow: hidden;
-  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
-}
-
-.ai-card-body.is-collapsed {
-  grid-template-rows: 0fr;
-  opacity: 0;
-  pointer-events: none;
-}
-
+.settings-content-inner,
 .ai-card-body-inner {
-  min-height: 0;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
+  will-change: transform, opacity;
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding-bottom: 12px;
-  overflow: hidden;
+}
+
+.settings-content-wrapper.is-expanded .settings-content-inner,
+.ai-card-body-wrapper.is-expanded .ai-card-body-inner {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .ai-toggle-row { margin-bottom: 0; }
