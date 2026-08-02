@@ -75,7 +75,18 @@ function App() {
       {recentBookmarks && recentBookmarks.length > 0 ? (
         <div>
           {recentBookmarks.map(bm => (
-            <div key={bm.id} className="popup-bm-item" onClick={() => window.open(bm.tweetUrl, '_blank')}>
+            <div 
+              key={bm.id} 
+              className="popup-bm-item" 
+              onClick={() => window.open(bm.tweetUrl, '_blank')}
+              onMouseDown={(e) => { if (e.button === 1) e.preventDefault(); }}
+              onAuxClick={(e) => {
+                if (e.button === 1) {
+                  e.preventDefault();
+                  window.open(bm.tweetUrl, '_blank');
+                }
+              }}
+            >
               <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 {/* Left Side: Author Profile + Text */}
                 <div style={{ flex: 1, minWidth: 0 }}>

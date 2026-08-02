@@ -205,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      <div style={{ marginTop: 'auto', paddingTop: '16px', flexShrink: 0, width: '100%' }}>
+      <div style={{ marginTop: 'auto', flexShrink: 0, width: '100%' }}>
         <AICard
           autoCategorize={autoCategorize}
           toggleAutoCategorize={toggleAutoCategorize}

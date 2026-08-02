@@ -134,40 +134,39 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
         if ((e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) return;
         window.open(bookmark.tweetUrl, '_blank');
       }}
+      onMouseDown={(e) => {
+        if (e.button === 1 && !(e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) {
+          e.preventDefault();
+        }
+      }}
+      onAuxClick={(e) => {
+        if (e.button === 1 && !(e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) {
+          e.preventDefault();
+          window.open(bookmark.tweetUrl, '_blank');
+        }
+      }}
       style={{
         position: 'relative',
-        cursor: 'default',
+        cursor: 'pointer',
         boxShadow: isSelected ? '0 0 0 2px var(--accent)' : undefined,
         background: isSelected ? 'var(--bg-hover)' : undefined
       }}
     >
       <div className="bm-author-row">
         <div className="bm-author-info">
-          {/* Selection Checkbox */}
-          <div 
-            className="bm-selection-checkbox"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: '4px',
-              opacity: isSelected ? 1 : 0,
-              transition: 'opacity 0.2s',
-              zIndex: 10,
-              width: '24px'
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleSelection?.();
-            }}
+          <label
+            className={`bm-selection-checkbox ${isSelected ? 'is-checked' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+            title={isSelected ? 'Deselect bookmark' : 'Select bookmark'}
           >
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={isSelected}
-              onChange={() => {}}
-              style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0 }}
+              onChange={() => onToggleSelection?.()}
+              aria-label={`${isSelected ? 'Deselect' : 'Select'} bookmark by ${bookmark.authorName || bookmark.authorHandle}`}
             />
-          </div>
+            <span className="bm-selection-checkmark" aria-hidden="true" />
+          </label>
           <div className="bm-avatar" style={{ overflow: 'hidden' }}>
             {bookmark.authorAvatarUrl ? (
               <img 
