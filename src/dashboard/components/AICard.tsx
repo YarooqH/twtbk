@@ -36,65 +36,67 @@ export const AICard: React.FC<AICardProps> = ({
     <div className="ai-card-wrapper" style={{ position: 'relative', width: '100%' }}>
       <div className={`ai-card-body-wrapper ${expanded ? 'is-expanded' : 'is-collapsed'}`}>
         <div className="ai-card-body-inner">
-          <div className="settings-card">
-            <div className="toggle-row ai-toggle-row">
-              <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px' }}>
-                AI Auto-Categorize <span className="ai-model-size">(45MB)</span>
-              </span>
-              <label className="toggle-switch" onClick={e => e.stopPropagation()}>
-                <input type="checkbox" checked={autoCategorize} onChange={toggleAutoCategorize} />
-                <span className="toggle-slider" />
-              </label>
+          <div className="accordion-slider">
+            <div className="settings-card">
+              <div className="toggle-row ai-toggle-row">
+                <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px' }}>
+                  AI Auto-Categorize <span className="ai-model-size">(45MB)</span>
+                </span>
+                <label className="toggle-switch" onClick={e => e.stopPropagation()}>
+                  <input type="checkbox" checked={autoCategorize} onChange={toggleAutoCategorize} />
+                  <span className="toggle-slider" />
+                </label>
+              </div>
+
+              {status && (
+                <div className={`ai-status ${modelProgress !== null || isClassifying ? 'is-active' : ''}`} aria-live="polite">
+                  <span>{status}</span>
+                </div>
+              )}
+
+              {modelProgress !== null && (
+                <div className="ai-progress-block">
+                  <div
+                    className="ai-progress-track"
+                    role="progressbar"
+                    aria-label="AI model download progress"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={modelProgress}
+                  >
+                    <div className="ai-progress-fill" style={{ width: `${modelProgress}%` }} />
+                  </div>
+                </div>
+              )}
+
+              {isClassifying && classifyProgress && (
+                <div className="ai-progress-block">
+                  <div
+                    className="ai-progress-track"
+                    role="progressbar"
+                    aria-label="Auto-categorization progress"
+                    aria-valuemin={0}
+                    aria-valuemax={classifyProgress.total}
+                    aria-valuenow={classifyProgress.current}
+                  >
+                    <div className="ai-progress-fill" style={{ width: `${classifyPercent}%` }} />
+                  </div>
+                </div>
+              )}
+
+              {autoCategorize && isModelLoaded && (
+                <button
+                  type="button"
+                  onClick={runAutoCategorizeJobs}
+                  disabled={isClassifying}
+                  className="btn btn-ghost ai-run-button"
+                >
+                  {isClassifying && classifyProgress
+                    ? `Categorizing ${classifyProgress.current}/${classifyProgress.total}`
+                    : 'Run auto-categorizer'}
+                </button>
+              )}
             </div>
-
-            {status && (
-              <div className={`ai-status ${modelProgress !== null || isClassifying ? 'is-active' : ''}`} aria-live="polite">
-                <span>{status}</span>
-              </div>
-            )}
-
-            {modelProgress !== null && (
-              <div className="ai-progress-block">
-                <div
-                  className="ai-progress-track"
-                  role="progressbar"
-                  aria-label="AI model download progress"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={modelProgress}
-                >
-                  <div className="ai-progress-fill" style={{ width: `${modelProgress}%` }} />
-                </div>
-              </div>
-            )}
-
-            {isClassifying && classifyProgress && (
-              <div className="ai-progress-block">
-                <div
-                  className="ai-progress-track"
-                  role="progressbar"
-                  aria-label="Auto-categorization progress"
-                  aria-valuemin={0}
-                  aria-valuemax={classifyProgress.total}
-                  aria-valuenow={classifyProgress.current}
-                >
-                  <div className="ai-progress-fill" style={{ width: `${classifyPercent}%` }} />
-                </div>
-              </div>
-            )}
-
-            {autoCategorize && isModelLoaded && (
-              <button
-                type="button"
-                onClick={runAutoCategorizeJobs}
-                disabled={isClassifying}
-                className="btn btn-ghost ai-run-button"
-              >
-                {isClassifying && classifyProgress
-                  ? `Categorizing ${classifyProgress.current}/${classifyProgress.total}`
-                  : 'Run auto-categorizer'}
-              </button>
-            )}
           </div>
         </div>
       </div>

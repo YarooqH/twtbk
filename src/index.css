@@ -602,13 +602,19 @@ body {
   max-width: calc(100vw - 32px);
   padding: 10px 14px 10px 18px;
   color: var(--text);
-  background: var(--bg-overlay);
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 9999px;
   box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(60px) saturate(220%);
-  -webkit-backdrop-filter: blur(60px) saturate(220%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   animation: bulk-bar-in 0.2s ease-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  .multi-select-bar {
+    background: rgba(15, 20, 25, 0.25);
+  }
 }
 
 @keyframes bulk-bar-in {
@@ -1091,33 +1097,36 @@ body {
 
 .settings-content-wrapper,
 .ai-card-body-wrapper {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  overflow: hidden;
-  pointer-events: none;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
 }
 
 .settings-content-wrapper.is-expanded,
 .ai-card-body-wrapper.is-expanded {
-  pointer-events: auto;
+  grid-template-rows: 1fr;
 }
 
 .settings-content-inner,
 .ai-card-body-inner {
-  transform: translateY(100%);
-  opacity: 0;
-  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
-  will-change: transform, opacity;
+  min-height: 0;
+  overflow: hidden;
+  /* Child will bottom-anchor inside this, unclipping as this grows */
+}
+
+.accordion-slider {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding-bottom: 12px;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
-.settings-content-wrapper.is-expanded .settings-content-inner,
-.ai-card-body-wrapper.is-expanded .ai-card-body-inner {
+.settings-content-wrapper.is-expanded .accordion-slider,
+.ai-card-body-wrapper.is-expanded .accordion-slider {
   transform: translateY(0);
   opacity: 1;
 }

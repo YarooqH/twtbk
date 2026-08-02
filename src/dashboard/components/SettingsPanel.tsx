@@ -57,43 +57,43 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           {/* Content panel — GPU accelerated translateY slide */}
           <div className={`settings-content-wrapper ${settingsExpanded ? 'is-expanded' : 'is-collapsed'}`}>
             <div className="settings-content-inner">
+              <div className="accordion-slider">
+                <SaveConfigCard
+                  saveMode={saveMode} setSaveMode={setSaveMode}
+                  injectedPosition={injectedPosition} setInjectedPosition={setInjectedPosition}
+                  nativeOverrideAction={nativeOverrideAction} setNativeOverrideAction={setNativeOverrideAction}
+                  buttonAlignment={buttonAlignment} setButtonAlignment={setButtonAlignment}
+                  alsoSaveNative={alsoSaveNative} setAlsoSaveNative={setAlsoSaveNative}
+                  accentColor={accentColor}
+                />
 
-              <SaveConfigCard
-                saveMode={saveMode} setSaveMode={setSaveMode}
-                injectedPosition={injectedPosition} setInjectedPosition={setInjectedPosition}
-                nativeOverrideAction={nativeOverrideAction} setNativeOverrideAction={setNativeOverrideAction}
-                buttonAlignment={buttonAlignment} setButtonAlignment={setButtonAlignment}
-                alsoSaveNative={alsoSaveNative} setAlsoSaveNative={setAlsoSaveNative}
-                accentColor={accentColor}
-              />
-
-              <div className="settings-card">
-                <div className="settings-card-title">Personalization</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>ACCENT COLOR</span>
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between' }}>
-                    {categoryColors.map(color => (
-                      <span
-                        key={color}
-                        onClick={() => {
-                          setAccentColor(color);
-                          chrome.storage?.sync?.set({ accentColor: color });
-                        }}
-                        style={{
-                          width: '22px',
-                          height: '22px',
-                          borderRadius: '50%',
-                          background: color,
-                          cursor: 'pointer',
-                          border: accentColor === color ? '2px solid var(--text)' : 'none',
-                          boxShadow: '0 0 4px rgba(0,0,0,0.1)'
-                        }}
-                      />
-                    ))}
+                <div className="settings-card">
+                  <div className="settings-card-title">Personalization</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>ACCENT COLOR</span>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between' }}>
+                      {categoryColors.map(color => (
+                        <span
+                          key={color}
+                          onClick={() => {
+                            setAccentColor(color);
+                            chrome.storage?.sync?.set({ accentColor: color });
+                          }}
+                          style={{
+                            width: '22px',
+                            height: '22px',
+                            borderRadius: '50%',
+                            background: color,
+                            cursor: 'pointer',
+                            border: accentColor === color ? '2px solid var(--text)' : 'none',
+                            boxShadow: '0 0 4px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
