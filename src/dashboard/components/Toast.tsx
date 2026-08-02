@@ -2,11 +2,12 @@ import React, { useEffect } from 'react';
 
 interface ToastProps {
   message: string | null;
+  action?: { label: string; onClick: () => void };
   onClose: () => void;
   duration?: number;
 }
 
-export const Toast: React.FC<ToastProps> = ({ message, onClose, duration = 3500 }) => {
+export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration = 3500 }) => {
   useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => {
@@ -40,6 +41,24 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose, duration = 3500 
       }}
     >
       <span>{message}</span>
+      {action && (
+        <button
+          onClick={(e) => { e.stopPropagation(); action.onClick(); onClose(); }}
+          style={{
+            background: 'rgba(255, 255, 255, 0.2)',
+            border: 'none',
+            color: '#ffffff',
+            cursor: 'pointer',
+            padding: '4px 10px',
+            borderRadius: '4px',
+            fontWeight: 700,
+            fontSize: '13px',
+            marginLeft: '8px'
+          }}
+        >
+          {action.label}
+        </button>
+      )}
       <button
         onClick={onClose}
         style={{

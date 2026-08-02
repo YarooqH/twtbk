@@ -10,6 +10,9 @@ import { BookmarkList } from './components/BookmarkList';
 import { SettingsPanel } from './components/SettingsPanel';
 import { Modal } from './components/Modal';
 import { Toast } from './components/Toast';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
+import { MultiSelectActionBar } from './components/MultiSelectActionBar';
 
 export type SortOption = 'newest' | 'oldest' | 'posted-newest' | 'posted-oldest' | 'author';
 
@@ -18,8 +21,11 @@ export const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   
+  const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<Set<string>>(new Set());
+  
   // In-App Toast & Modal Notifications (W4)
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastAction, setToastAction] = useState<{ label: string; onClick: () => void } | null>(null);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
@@ -85,6 +91,16 @@ export const Dashboard: React.FC = () => {
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editingCatName, setEditingCatName] = useState('');
 
+  useKeyboardShortcuts((action) => {
+    if (action === 'search') {
+      document.querySelector<HTMLInputElement>('.search-input')?.focus();
+    } else if (action === 'new_category') {
+      document.querySelector<HTMLInputElement>('.new-cat-input')?.focus();
+    } else if (action === 'go_all_bookmarks') {
+      setSelectedCategoryId(null);
+    }
+  });
+
   // Close category color picker when clicking anywhere outside
   useOutsideClick(!!activeColorPickerCatId, () => {
     setActiveColorPickerCatId(null);
@@ -135,11 +151,18 @@ export const Dashboard: React.FC = () => {
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(b =>
-        b.text?.toLowerCase().includes(q) ||
-        b.authorName?.toLowerCase().includes(q) ||
-        b.authorHandle.toLowerCase().includes(q)
-      );
+      const isTagSearch = q.startsWith('#');
+      const tagQuery = isTagSearch ? q.slice(1) : q;
+      
+      result = result.filter(b => {
+        if (isTagSearch) {
+          return b.tags?.some(tag => tag.toLowerCase().includes(tagQuery));
+        }
+        return b.text?.toLowerCase().includes(q) ||
+               b.authorName?.toLowerCase().includes(q) ||
+               b.authorHandle.toLowerCase().includes(q) ||
+               b.tags?.some(tag => tag.toLowerCase().includes(q));
+      });
     }
     
     result = [...result].sort((a, b) => {
@@ -205,20 +228,25 @@ export const Dashboard: React.FC = () => {
     reader.readAsText(file);
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setModalConfig({
-      isOpen: true,
-      title: 'Delete Bookmark?',
-      message: 'Are you sure you want to delete this bookmark from your library?',
-      confirmText: 'Delete',
-      isDanger: true,
-      onConfirm: async () => {
-        setModalConfig(null);
-        await db.bookmarks.delete(id);
-        setToastMessage('Bookmark deleted');
+    
+    // Find the bookmark before deleting it so we can restore it
+    const bookmarkToRestore = await db.bookmarks.get(id);
+    if (!bookmarkToRestore) return;
+
+    // Optimistic deletion
+    await db.bookmarks.delete(id);
+    
+    setToastAction({
+      label: 'Undo',
+      onClick: async () => {
+        await db.bookmarks.put(bookmarkToRestore);
+        setToastMessage('Bookmark restored');
+        setToastAction(null);
       }
     });
+    setToastMessage('Bookmark deleted');
   };
 
   const getCategoryName = (id: string) => categories?.find(c => c.id === id)?.name || id;
@@ -269,6 +297,13 @@ export const Dashboard: React.FC = () => {
         setActivePickerBookmarkId={setActivePickerBookmarkId}
         mobileSettingsOpen={mobileSettingsOpen}
         setMobileSettingsOpen={setMobileSettingsOpen}
+        selectedBookmarkIds={selectedBookmarkIds}
+        toggleBookmarkSelection={(id: string) => {
+          const next = new Set(selectedBookmarkIds);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          setSelectedBookmarkIds(next);
+        }}
       />
 
       <SettingsPanel
@@ -297,8 +332,13 @@ export const Dashboard: React.FC = () => {
         runAutoCategorizeJobs={runAutoCategorizeJobs}
       />
 
-      {/* In-App Toast Notification */}
-      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      {/* Toast Notification */}
+      <Toast 
+        message={toastMessage} 
+        action={toastAction || undefined}
+        onClose={() => { setToastMessage(null); setToastAction(null); }} 
+        duration={6000}
+      />
 
       {/* In-App Confirm/Alert Modal */}
       {modalConfig && (
@@ -314,6 +354,13 @@ export const Dashboard: React.FC = () => {
           onCancel={() => setModalConfig(null)}
         />
       )}
+
+      <MultiSelectActionBar 
+        selectedIds={selectedBookmarkIds}
+        clearSelection={() => setSelectedBookmarkIds(new Set())}
+        categories={categories || []}
+      />
+      <KeyboardShortcutsHelp />
     </div>
   );
 };

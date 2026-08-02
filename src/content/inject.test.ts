@@ -38,6 +38,10 @@ function createMockTweet(options: {
   const tweetEl = document.createElement('div');
   tweetEl.setAttribute('data-testid', 'tweet');
 
+  const statusLink = document.createElement('a');
+  statusLink.setAttribute('href', '/tester/status/99999');
+  tweetEl.appendChild(statusLink);
+
   const actionBar = document.createElement('div');
   actionBar.setAttribute('role', 'group');
   actionBar.className = 'css-175oi2r r-18u37iz r-1h0z52e r-13qz1uu'; // X native flex group classes
@@ -334,18 +338,13 @@ describe('X Action Bar Hard Refresh & Re-Test Suite Across All Placements', () =
       const { tweetEl, actionBar } = createMockTweet({ includeViews: true });
       document.body.appendChild(tweetEl);
 
-      // Add a /status/ link so tweet ID is detectable
-      const link = document.createElement('a');
-      link.setAttribute('href', '/tester/status/123456789');
-      tweetEl.insertBefore(link, actionBar);
-
       injectSaveButtons();
 
       const wrapper = actionBar.querySelector('.twtbk-item-wrapper') as HTMLElement;
       expect(wrapper).not.toBeNull();
       expect(wrapper.dataset.twtbkInjected).toBe('1');
       expect(wrapper.dataset.twtbkAdapterVersion).toBe(String(DATA_VERSION));
-      expect(wrapper.dataset.twtbkTweetId).toBe('123456789');
+      expect(wrapper.dataset.twtbkTweetId).toBe('99999');
       expect(wrapper.dataset.twtbkMode).toBe('injected');
       expect(wrapper.dataset.twtbkPlacement).toBe('next-to-bookmark');
     });

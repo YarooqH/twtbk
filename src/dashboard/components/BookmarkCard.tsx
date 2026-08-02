@@ -1,7 +1,8 @@
 import React from 'react';
 import { db, Bookmark } from '../../db';
 import { getInitials, getCategoryColor, formatDate, formatRelativeTime } from '../helpers';
-import { LinkIcon, TrashIcon } from '../icons';
+import { LinkIcon, TrashIcon, MoreHorizontalIcon } from '../icons';
+import { Dropdown } from './Dropdown';
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
@@ -14,6 +15,8 @@ interface BookmarkCardProps {
   activePickerBookmarkId: string | null;
   setActivePickerBookmarkId: (id: string | null) => void;
   handleDelete: (id: string, e: React.MouseEvent) => void;
+  isSelected?: boolean;
+  onToggleSelection?: () => void;
 }
 
 function repairTweetText(raw: string): string {
@@ -119,13 +122,52 @@ function renderFormattedTweetText(rawText: string | undefined) {
 export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   bookmark, categories, getCategoryName,
   editingNoteId, setEditingNoteId, tempNote, setTempNote,
-  activePickerBookmarkId, setActivePickerBookmarkId,
-  handleDelete,
+  activePickerBookmarkId, setActivePickerBookmarkId, handleDelete,
+  isSelected = false, onToggleSelection
 }) => {
+  const [isEditingTags, setIsEditingTags] = React.useState(false);
+  const [tempTagInput, setTempTagInput] = React.useState('');
   return (
-    <div key={bookmark.id} className="bookmark-card" onClick={() => window.open(bookmark.tweetUrl, '_blank')}>
+    <div 
+      className={`bookmark-card ${isSelected ? 'selected' : ''}`}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) return;
+        window.open(bookmark.tweetUrl, '_blank');
+      }}
+      style={{
+        position: 'relative',
+        cursor: 'default',
+        boxShadow: isSelected ? '0 0 0 2px var(--accent)' : undefined,
+        background: isSelected ? 'var(--bg-hover)' : undefined
+      }}
+    >
       <div className="bm-author-row">
         <div className="bm-author-info">
+          {/* Selection Checkbox */}
+          <div 
+            className="bm-selection-checkbox"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '4px',
+              opacity: isSelected ? 1 : 0,
+              transition: 'opacity 0.2s',
+              zIndex: 10,
+              width: '24px'
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelection?.();
+            }}
+          >
+            <input 
+              type="checkbox" 
+              checked={isSelected}
+              onChange={() => {}}
+              style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0 }}
+            />
+          </div>
           <div className="bm-avatar" style={{ overflow: 'hidden' }}>
             {bookmark.authorAvatarUrl ? (
               <img 
@@ -142,26 +184,28 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             <div className="bm-handle">@{bookmark.authorHandle}</div>
           </div>
         </div>
-        <div className="bm-actions" style={{ position: 'relative' }}>
-         
-          <a
-            href={bookmark.tweetUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="bm-action-btn"
-            onClick={e => e.stopPropagation()}
-            title="View on X"
-          >
-            <LinkIcon />
-          </a>
-          <button
-            className="bm-action-btn danger"
-            onClick={e => handleDelete(bookmark.id, e)}
-            title="Delete"
-          >
-            <TrashIcon />
-          </button>
-        </div>
+          <Dropdown
+            align="right"
+            trigger={<MoreHorizontalIcon />}
+            triggerClassName="bm-action-btn"
+            className="bm-actions"
+            items={[
+              {
+                id: 'view',
+                label: 'View on X',
+                icon: <LinkIcon />,
+                href: bookmark.tweetUrl,
+                target: '_blank',
+              },
+              {
+                id: 'delete',
+                label: 'Delete',
+                icon: <TrashIcon />,
+                onClick: (e?: any) => handleDelete(bookmark.id, e),
+                style: { color: 'var(--danger)' }
+              }
+            ]}
+          />
       </div>
 
       <p className="bm-text">{bookmark.text ? renderFormattedTweetText(bookmark.text) : <em style={{ color: 'var(--text-muted)' }}>(No text)</em>}</p>
@@ -402,13 +446,122 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
         )}
       </div>
 
-      <div className="bm-footer">
-        <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+      {/* Tags section */}
+      <div 
+        style={{ 
+          marginBottom: '12px',
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: '6px',
+          alignItems: 'center'
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {bookmark.tags?.map((tag, idx) => (
+          <span 
+            key={idx}
+            style={{
+              background: 'var(--bg-secondary)',
+              color: 'var(--text)',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              border: '1px solid var(--border)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            #{tag}
+            <button 
+              onClick={async (e) => {
+                e.stopPropagation();
+                const newTags = bookmark.tags.filter(t => t !== tag);
+                await db.bookmarks.update(bookmark.id, { tags: newTags });
+              }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, fontSize: '10px' }}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        {isEditingTags ? (
+          <input
+            type="text"
+            autoFocus
+            value={tempTagInput}
+            onChange={e => setTempTagInput(e.target.value)}
+            onKeyDown={async (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const trimmed = tempTagInput.trim().replace(/^#/, '');
+                if (trimmed) {
+                  const currentTags = bookmark.tags || [];
+                  if (!currentTags.includes(trimmed)) {
+                    await db.bookmarks.update(bookmark.id, { tags: [...currentTags, trimmed] });
+                  }
+                }
+                setTempTagInput('');
+                setIsEditingTags(false);
+              } else if (e.key === 'Escape') {
+                setIsEditingTags(false);
+              }
+            }}
+            onBlur={() => setIsEditingTags(false)}
+            placeholder="type and press enter"
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border)',
+              color: 'var(--text)',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              outline: 'none',
+              width: '120px'
+            }}
+          />
+        ) : (
           <button
-            onClick={() => {
-              setActivePickerBookmarkId(activePickerBookmarkId === bookmark.id ? null : bookmark.id);
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditingTags(true);
             }}
             style={{
+              background: 'none',
+              border: '1px dashed var(--border-strong)',
+              color: 'var(--text-muted)',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              cursor: 'pointer'
+            }}
+          >
+            + Tag
+          </button>
+        )}
+      </div>
+
+      <div className="bm-footer">
+        <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+          <Dropdown
+            align="left"
+            trigger={
+              <>
+                {bookmark.categoryIds[0] && (
+                  <span 
+                    style={{ 
+                      width: '8px', 
+                      height: '8px', 
+                      borderRadius: '50%', 
+                      background: getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color) 
+                    }} 
+                  />
+                )}
+                {bookmark.categoryIds[0] ? getCategoryName(bookmark.categoryIds[0]) : 'No Category'}
+                <span style={{ fontSize: '9px', opacity: 0.6 }}>▼</span>
+              </>
+            }
+            triggerStyle={{
               background: bookmark.categoryIds[0] ? `${getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color)}15` : 'var(--bg-secondary)',
               color: bookmark.categoryIds[0] ? getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color) : 'var(--text-muted)',
               border: '1px solid ' + (bookmark.categoryIds[0] ? `${getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color)}40` : 'var(--border)'),
@@ -424,51 +577,26 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
               gap: '6px',
               transition: 'background 0.15s'
             }}
-          >
-            {bookmark.categoryIds[0] && (
-              <span 
-                style={{ 
-                  width: '8px', 
-                  height: '8px', 
-                  borderRadius: '50%', 
-                  background: getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color) 
-                }} 
-              />
-            )}
-            {bookmark.categoryIds[0] ? getCategoryName(bookmark.categoryIds[0]) : 'No Category'}
-            <span style={{ fontSize: '9px', opacity: 0.6 }}>▼</span>
-          </button>
-
-          {activePickerBookmarkId === bookmark.id && (
-            <div className="bm-cat-dropdown-menu">
-              <button
-                className="bm-cat-dropdown-item"
-                onClick={async () => {
+            items={[
+              {
+                id: 'no-cat',
+                label: 'No Category',
+                icon: <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#71767b' }} />,
+                onClick: async () => {
                   await db.bookmarks.update(bookmark.id, { categoryIds: [] });
-                  setActivePickerBookmarkId(null);
-                }}
-              >
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#71767b' }} />
-                No Category
-              </button>
-              {categories?.map((cat: any) => (
-                <button
-                  key={cat.id}
-                  className="bm-cat-dropdown-item"
-                  onClick={async () => {
-                    await db.bookmarks.update(bookmark.id, { categoryIds: [cat.id] });
-                    setActivePickerBookmarkId(null);
-                  }}
-                  style={{
-                    fontWeight: bookmark.categoryIds.includes(cat.id) ? 700 : 400
-                  }}
-                >
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: getCategoryColor(cat.id, cat.color) }} />
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          )}
+                }
+              },
+              ...(categories || []).map(cat => ({
+                id: cat.id,
+                label: cat.name,
+                icon: <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: getCategoryColor(cat.id, cat.color) }} />,
+                onClick: async () => {
+                  await db.bookmarks.update(bookmark.id, { categoryIds: [cat.id] });
+                },
+                style: { fontWeight: bookmark.categoryIds.includes(cat.id) ? 700 : 400 }
+              }))
+            ]}
+          />
         </div>
         <span 
           className="bm-date" 

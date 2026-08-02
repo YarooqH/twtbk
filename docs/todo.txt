@@ -12,6 +12,6 @@ https://github.com/elayadesign/redesign-skill
 - the icon should look different when the tweet has already been bookmarks
 - the dashboard needs proper guidance still too many things are vague and might confuse users as to what does which do?
 - what is the exact difference between injected and native override mode and when should i use which? 
-These questions need to be answers
+These questions need to be answers (onboarding item)
 - what is the exact difference between normal save and quick save? and when should i use which?
 - should user be able to select from what icon they wanna see?

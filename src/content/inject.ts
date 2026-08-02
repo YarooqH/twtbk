@@ -62,11 +62,6 @@ function computePlacement(): string {
   return settingInjectedPosition;
 }
 
-/**
- * Validate an existing injected wrapper.
- * Returns true when the wrapper is still attached, has a matching
- * adapter version, tweet id, mode, and placement — i.e. it is healthy.
- */
 function validateWrapper(
   wrapper: HTMLElement,
   actionBar: Element,
@@ -80,6 +75,24 @@ function validateWrapper(
   // Optional runtime mode/placement check (dataset stores the build-time values).
   if (wrapper.dataset.twtbkMode !== mode) return false;
   if (wrapper.dataset.twtbkPlacement !== placement) return false;
+
+  // Verify DOM position hasn't drifted (e.g. if native Bookmark button loaded AFTER us)
+  const anchor = resolvePlacementAnchor(actionBar, mode);
+  if (!anchor) return false;
+
+  if (anchor.kind === 'edge') {
+    if (actionBar.firstElementChild !== wrapper) return false;
+  } else {
+    const neighborWrapper = getDirectChildWrapper(actionBar, anchor.neighbor);
+    if (!neighborWrapper) return false;
+    
+    if (anchor.position === 'before') {
+      if (wrapper.nextElementSibling !== neighborWrapper) return false;
+    } else {
+      if (wrapper.previousElementSibling !== neighborWrapper) return false;
+    }
+  }
+
   return true;
 }
 
@@ -134,7 +147,12 @@ export function findActionItem(actionBar: Element, testId: string): Element | nu
     const result = findAction(actionBar, actionType);
     return result.element ?? null;
   }
-  // Fallback for unrecognized testIds: direct data-testid lookup
+  // Fallback for unrecognized testIds: try to use xDomAdapter logic or just fail safely
+  // by integrating into the adapter structure instead of raw querySelector.
+  // We'll leave it as querySelector for completely unknown ones, but log a warning.
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(`[XMarks] Unrecognized testId '${testId}' passed to findActionItem.`);
+  }
   return actionBar.querySelector(`[data-testid="${testId}"]`);
 }
 
@@ -234,7 +252,13 @@ export function injectSaveButtons() {
     const actionBar = actionBarResult.element;
 
     // Only inject into a verified action bar with enough recognized native actions
-    if (scoreActionGroup(actionBar) < MIN_ACTION_BAR_SCORE) return;
+    const score = scoreActionGroup(actionBar);
+    if (score < MIN_ACTION_BAR_SCORE) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`[XMarks] Skipping action bar injection: score (${score}) is below MIN_ACTION_BAR_SCORE (${MIN_ACTION_BAR_SCORE}).`, actionBar);
+      }
+      return;
+    }
 
     // ── Resolve where the button goes, and what to clone it from ───────
     // The wrapper we clone MUST be the one actually neighboring the final
@@ -262,9 +286,37 @@ export function injectSaveButtons() {
     const tweetIdResult = getTweetId(tweet);
     const tweetId = tweetIdResult.element ?? '';
 
-    // Clone neighborWrapper (shallow) to inherit its exact item wrapper styling and flex attributes
-    const itemWrapper = neighborWrapper.cloneNode(false) as HTMLElement;
+    if (!tweetId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[XMarks] Skipping injection: unable to extract tweet ID for tweet element.', tweet);
+      }
+      return; // gracefully skip instead of failing validation every frame
+    }
+
+    // ── Build the button itself ─────────────────────────────────────────
+    // Clone refBtn (deep) to inherit X's native hover circle, alignment, padding, and transitions
+    const btnContainer = refBtn.cloneNode(true) as HTMLElement;
+    btnContainer.classList.add('twtbk-save-btn');
+
+    // Deep clone neighborWrapper to inherit its exact item wrapper styling, flex attributes, AND any intermediate inner divs
+    const itemWrapper = neighborWrapper.cloneNode(true) as HTMLElement;
     itemWrapper.classList.add('twtbk-item-wrapper');
+
+    // Find the original action button inside the cloned wrapper and swap it with our generated button
+    const nativeBtnInWrapper = itemWrapper.querySelector('button, a[role="link"], [role="button"]') || itemWrapper.firstElementChild;
+    if (nativeBtnInWrapper) {
+      nativeBtnInWrapper.replaceWith(btnContainer);
+    } else {
+      itemWrapper.appendChild(btnContainer);
+    }
+    
+    // Clean up intermediate wrappers
+    itemWrapper.querySelectorAll('[data-testid], [aria-label]').forEach(el => {
+      if (!el.classList.contains('twtbk-save-btn') && !btnContainer.contains(el)) {
+        el.removeAttribute('data-testid');
+        el.removeAttribute('aria-label');
+      }
+    });
 
     // ── Idempotency markers (Hardening Roadmap #4) ─────────────────────
     itemWrapper.dataset.twtbkInjected = '1';
@@ -276,12 +328,6 @@ export function injectSaveButtons() {
     // Preserve X's native computed alignment/flex from the cloned neighbor —
     // do NOT force a flex value here; it must match whichever group (evenly
     // grown vs fixed-width) the neighbor actually belongs to.
-    itemWrapper.style.display = 'flex';
-    itemWrapper.style.alignItems = 'center';
-
-    // Clone refBtn (deep) to inherit X's native hover circle, alignment, padding, and transitions
-    const btnContainer = refBtn.cloneNode(true) as HTMLElement;
-    btnContainer.classList.add('twtbk-save-btn');
 
     // Strip data-testid and aria-label from btnContainer and ALL descendants to prevent selector collisions
     btnContainer.removeAttribute('data-testid');
@@ -317,7 +363,7 @@ export function injectSaveButtons() {
     // the preceding item's count label extends rightward into its flex column.
     // Adding an 8px left margin centers our icon in the visual gap between
     // the preceding number label and the following action icon.
-    if (['leftmost', 'after-reply', 'after-retweet', 'after-like', 'after-views'].includes(placement)) {
+    if (['after-reply', 'after-retweet', 'after-like', 'after-views'].includes(placement)) {
       btnContainer.style.marginLeft = '8px';
     }
 
@@ -380,8 +426,6 @@ export function injectSaveButtons() {
         // Context invalidated safely ignored
       }
     }
-
-    itemWrapper.appendChild(btnContainer);
 
     // ── Placement ─────────────────────────────────────────────────────
     // Insert relative to the SAME neighborWrapper we cloned from above, so

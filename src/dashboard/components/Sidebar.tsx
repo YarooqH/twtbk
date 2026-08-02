@@ -44,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="sidebar">
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">
-          <img src="/XMarks-logos/Xmarks-logo-white-round.svg" alt="XMarks Logo" width={16} height={16} />
+          <img src="/logo.svg" alt="XMarks Logo" width={16} height={16} />
         </div>
         <div>
           <div className="sidebar-logo-text">XMarks</div>

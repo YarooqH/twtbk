@@ -456,6 +456,17 @@ body {
   gap: 4px;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .bm-actions {
+    opacity: 1;
+  }
+}
+
+.bookmark-card:focus-within .bm-actions,
+.bookmark-card:hover .bm-selection-checkbox {
+  opacity: 1 !important;
+}
+
 .bm-action-btn {
   width: 30px;
   height: 30px;

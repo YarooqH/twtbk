@@ -69,40 +69,40 @@
 - **Details**: Importer button failed to render when X changed sidebar DOM.
 - **Resolution**: Implemented fallback chain targeting primary left `<nav>` or `<header role="banner">`.
 
-### 1.9 `[Open]` Single Tweet Detail View Icon Appearance
+### 1.9 `[Fixed]` Single Tweet Detail View Icon Appearance
 - **Location**: `src/content/inject.ts`, `src/content/xDomAdapter.ts`
-- **Details**: `todo.txt`: Extension icon scaling/alignment looks distorted when viewing a single tweet detail page (`/status/123...`) compared to timeline feeds.
-- **Plan**: Adjust adapter styles and container detection specifically for detail action bars.
+- **Details**: `todo.txt`: Extension icon scaling/alignment looks distorted when viewing a single tweet detail page (`/status/123...`) compared to timeline feeds, specifically on the edges (leftmost/rightmost).
+- **Resolution**: Removed hardcoded flex/align-items overrides to allow perfect structural inheritance of X's native spacing.
 
-### 1.10 `[Open]` Articles & Card Attachments Not Saving Properly
-- **Location**: `src/content/inject.ts` (`extractTweetData`)
+### 1.10 `[Fixed]` Articles & Card Attachments Not Saving Properly
+- **Location**: `src/content/extract.ts` (`extractTweetData`)
 - **Details**: `todo.txt`: Tweets containing external articles or rich cards sometimes fail to preserve thumbnail or link metadata.
-- **Plan**: Enhance article card fallback extractor in `extractTweetData`.
+- **Resolution**: Implemented card extractor fallback for `[data-testid="card.wrapper"]` and detail layouts to safely preserve URL metadata and titles.
 
-### 1.11 `[Open]` Idempotency WeakMap Rebuilds on Complex Positions
+### 1.11 `[Fixed]` Idempotency WeakMap Rebuilds on Complex Positions
 - **Location**: `src/content/inject.ts` (lines 100-110)
 - **Details**: `computePlacement()` returns position string unchanged, causing `validateWrapper` checks to fail for non-standard positions and rebuilding wrappers unnecessarily.
-- **Plan**: Normalize canonical placement string in `computePlacement()`.
+- **Resolution**: Handled cleanly in `resolvePlacementAnchor` so fallbacks do not break `dataset` parity idempotency loop.
 
-### 1.12 `[Open]` Silent Tweet ID Extraction Failure
-- **Location**: `src/content/inject.ts` (line 191)
+### 1.12 `[Fixed]` Silent Tweet ID Extraction Failure
+- **Location**: `src/content/inject.ts`
 - **Details**: When `getTweetId` returns `null`, `tweetId` defaults to `''`, causing wrapper validation to fail every frame.
-- **Plan**: Gated logging and graceful handling for unrecognized tweet structures.
+- **Resolution**: Added explicit existence check for `tweetId` and early return loop abort with a dev-mode warning.
 
-### 1.13 `[Open]` Action Bar Score Threshold Fragility
+### 1.13 `[Fixed]` Action Bar Score Threshold Fragility
 - **Location**: `src/content/inject.ts` (`scoreActionGroup`)
 - **Details**: `scoreActionGroup` drops below threshold if X renames action `data-testid` attributes, silently halting all injection.
-- **Plan**: Log warnings when score drops below threshold in development mode to surface selector rot early.
+- **Resolution**: Added explicit dev-mode warnings when a tweet fails the `MIN_ACTION_BAR_SCORE` check.
 
-### 1.14 `[Open]` `findActionItem` Unrecognized TestId Fallback
-- **Location**: `src/content/inject.ts` (lines 131-139)
+### 1.14 `[Fixed]` `findActionItem` Unrecognized TestId Fallback
+- **Location**: `src/content/inject.ts`
 - **Details**: Unrecognized test IDs bypass `xDomAdapter` confidence scoring, masking adapter resolution failures.
-- **Plan**: Integrate test ID lookup into `xDomAdapter` normalization table.
+- **Resolution**: Guarded with warning flags for unrecognized test IDs to surface adapter gaps early.
 
-### 1.15 `[Open]` Duplicate Arrow Mode Insertion Logic
-- **Location**: `src/content/inject.ts` (lines 314-325 vs 343-360)
+### 1.15 `[Fixed]` Duplicate Arrow Mode Insertion Logic
+- **Location**: `src/content/inject.ts`
 - **Details**: Arrow mode placement duplicates `next-to-bookmark` insertion logic without share fallback.
-- **Plan**: Refactor placement insertion helper to unify fallback rules.
+- **Resolution**: Refactored insertion structure into unified `insertAfter` helper.
 
 ---
 
@@ -192,32 +192,32 @@
 - **Details**: `todo.txt`: Avoid native browser popups; use custom themed dialogs and toasts instead.
 - **Plan**: Replace `window.confirm` and `window.alert` with reusable `<Dialog>` and `<Toast>` components.
 
-### 3.11 `[Open]` Card Hover Actions & Mobile Affordances (`I1`)
+### 3.11 `[Fixed]` Card Hover Actions & Mobile Affordances (`I1`)
 - **Location**: `src/dashboard/components/BookmarkCard.tsx`
 - **Details**: Actions menu hidden behind hover (`opacity: 0`), inaccessible on touch devices.
 - **Plan**: Add persistent overflow menu button (`⋯`) visible on touch or keyboard focus.
 
-### 3.12 `[Open]` Keyboard Navigation & Shortcuts (`I2`)
+### 3.12 `[Fixed]` Keyboard Navigation & Shortcuts (`I2`)
 - **Location**: `src/dashboard/Dashboard.tsx`
 - **Details**: Lack of keyboard shortcuts for search (`/`), category navigation (`g a`), or note editing (`e`).
 - **Plan**: Create `useKeyboardShortcuts` hook and cheat-sheet overlay.
 
-### 3.13 `[Open]` Accessible Custom Dropdowns (`I3`)
+### 3.13 `[Fixed]` Accessible Custom Dropdowns (`I3`)
 - **Location**: `BookmarkCard.tsx`, `Sidebar.tsx`
 - **Details**: Custom dropdowns use plain `<div>` clicks without keyboard or ARIA support.
 - **Plan**: Implement ARIA menu patterns (`role="menu"`, `aria-expanded`, arrow key navigation).
 
-### 3.14 `[Open]` Bulk Selection & Multi-Row Actions (`I4`)
+### 3.14 `[Fixed]` Bulk Selection & Multi-Row Actions (`I4`)
 - **Location**: `src/dashboard/components/BookmarkList.tsx`
 - **Details**: Unable to select multiple bookmarks to delete, tag, or export.
 - **Plan**: Add selection checkboxes and sticky multi-select action bar.
 
-### 3.15 `[Open]` Tags Support in UI (`I5`)
+### 3.15 `[Fixed]` Tags Support in UI (`I5`)
 - **Location**: `src/db/index.ts`, `src/dashboard/components/BookmarkCard.tsx`
 - **Details**: `Bookmark.tags` exists in Dexie schema but has no input or filter UI in dashboard.
 - **Plan**: Add tag chips to cards, popover tag input, and tag filter list to sidebar.
 
-### 3.16 `[Open]` Undo Toast for Deletions (`I6`)
+### 3.16 `[Fixed]` Undo Toast for Deletions (`I6`)
 - **Location**: `src/dashboard/Dashboard.tsx`
 - **Details**: Immediate hard deletion via browser confirm prompt.
 - **Plan**: Implement optimistic deletion with 6-second undo toast window.

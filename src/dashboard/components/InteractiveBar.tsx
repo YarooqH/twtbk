@@ -73,6 +73,56 @@ export const InteractiveBar: React.FC<InteractiveBarProps> = ({
   const isTwtbkDrag = (e: React.DragEvent) =>
     Array.from(e.dataTransfer.types).includes(dragDataType);
 
+  // ── FLIP animation refs — must be declared unconditionally (Rules of Hooks) ──
+  const cellRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
+
+  // ── Injected mode: slot computation (safe to compute always) ──────────────
+  const activeSlot = saveMode === 'injected' ? (posToSlot[injectedPosition] ?? 5) : 0;
+  const previewSlot = dragOver !== null ? dragOver : activeSlot;
+
+  // Build slotsData only relevant for injected mode, but compute it always so
+  // hook order stays stable across mode switches
+  const slotsData: Array<{ id: string; isButton: boolean; iconKey?: string }> = [];
+  if (saveMode === 'injected') {
+    let nativeIdx = 0;
+    for (let slot = 0; slot < 7; slot++) {
+      if (slot === previewSlot) {
+        slotsData.push({ id: 'button', isButton: true });
+      } else {
+        const iconKey = NATIVE_ICONS[nativeIdx++].key;
+        slotsData.push({ id: iconKey, isButton: false, iconKey });
+      }
+    }
+  }
+
+  useLayoutEffect(() => {
+    if (saveMode !== 'injected') return;
+    const prevRects = prevRectsRef.current;
+    const nextRects = new Map<string, DOMRect>();
+    cellRefs.current.forEach((el, id) => nextRects.set(id, el.getBoundingClientRect()));
+
+    cellRefs.current.forEach((el, id) => {
+      const prev = prevRects.get(id);
+      const next = nextRects.get(id);
+      if (!prev || !next) return;
+      const dx = prev.left - next.left;
+      if (Math.abs(dx) < 1) return;
+
+      el.style.transition = 'none';
+      el.style.transform = `translateX(${dx}px)`;
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      el.getBoundingClientRect(); // force reflow
+      requestAnimationFrame(() => {
+        el.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        el.style.transform = 'translateX(0)';
+      });
+    });
+
+    prevRectsRef.current = nextRects;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewSlot, saveMode]);
+
   // ── Native-override mode: static display ─────────────────────────────────
   if (saveMode === 'native-override') {
     return (
@@ -113,8 +163,7 @@ export const InteractiveBar: React.FC<InteractiveBarProps> = ({
     );
   }
 
-  // ── Injected mode: 7 equal-width flex slots ──────────────────────────────
-  const activeSlot = posToSlot[injectedPosition] ?? 5;
+  // ── Injected mode render ──────────────────────────────────────────────────
 
   const getSlotFromMouseX = (e: React.DragEvent<HTMLDivElement>): number => {
     const bar = e.currentTarget;
@@ -123,56 +172,6 @@ export const InteractiveBar: React.FC<InteractiveBarProps> = ({
     const fraction = relX / rect.width;
     return Math.min(6, Math.max(0, Math.floor(fraction * 7)));
   };
-
-  // While actively dragging, preview the button at the hovered slot so the
-  // native icons make room for it live — not just once the drop commits.
-  const previewSlot = dragOver !== null ? dragOver : activeSlot;
-
-  // Build array of 7 items (6 native icons + 1 injected bookmark button at previewSlot).
-  // Each item carries a stable `id` (icon key, or 'button') so React keeps the same
-  // DOM node across reorders instead of remounting — that's what makes the slide
-  // animation below possible.
-  const slotsData: Array<{ id: string; isButton: boolean; iconKey?: string }> = [];
-  let nativeIdx = 0;
-  for (let slot = 0; slot < 7; slot++) {
-    if (slot === previewSlot) {
-      slotsData.push({ id: 'button', isButton: true });
-    } else {
-      const iconKey = NATIVE_ICONS[nativeIdx++].key;
-      slotsData.push({ id: iconKey, isButton: false, iconKey });
-    }
-  }
-
-  // ── FLIP: animate cells sliding to their new position whenever the preview
-  // slot changes — during drag-hover (making room live) and on commit alike ──
-  const cellRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
-
-  useLayoutEffect(() => {
-    const prevRects = prevRectsRef.current;
-    const nextRects = new Map<string, DOMRect>();
-    cellRefs.current.forEach((el, id) => nextRects.set(id, el.getBoundingClientRect()));
-
-    cellRefs.current.forEach((el, id) => {
-      const prev = prevRects.get(id);
-      const next = nextRects.get(id);
-      if (!prev || !next) return;
-      const dx = prev.left - next.left;
-      if (Math.abs(dx) < 1) return;
-
-      el.style.transition = 'none';
-      el.style.transform = `translateX(${dx}px)`;
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      el.getBoundingClientRect(); // force reflow so the jump above applies before animating
-      requestAnimationFrame(() => {
-        el.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        el.style.transform = 'translateX(0)';
-      });
-    });
-
-    prevRectsRef.current = nextRects;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewSlot]);
 
   return (
     <div style={{ marginTop: '8px' }}>
