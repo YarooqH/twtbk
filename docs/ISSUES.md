@@ -481,20 +481,20 @@
 - **Details**: All bookmarks are fetched into memory at once. Filtering and sorting happen in JS on the full array. Large libraries will slow initial paint and every settings change that triggers re-render.
 - **Plan**: Paginate or virtualize list; defer sort/filter to IndexedDB queries where possible (see also `5.5`, `5.7`).
 
-#### 8.3.2 `[Open]` Synchronous Filter + Sort on Every Keystroke
-- **Location**: `src/dashboard/Dashboard.tsx` (`filteredBookmarks` `useMemo`)
-- **Details**: Search re-filters and re-sorts the entire in-memory array on each character with no debounce or `useDeferredValue`.
-- **Plan**: Debounce input or use React 19 `useDeferredValue` for `searchQuery` (see also `5.6`).
+#### 8.3.2 `[Fixed]` Synchronous Filter + Sort on Every Keystroke
+- **Location**: `src/dashboard/Dashboard.tsx` (`filteredBookmarks` `useMemo`, `useDeferredValue`)
+- **Details**: Search re-filtered and re-sorted the entire in-memory array synchronously on each character with no debounce.
+- **Resolution**: Wrapped `searchQuery` in React 19 `useDeferredValue` so text typing remains responsive during large array filtering.
 
 #### 8.3.3 `[Open]` Tweet Text Formatting Regex Runs Per Render Per Card
 - **Location**: `src/dashboard/components/BookmarkCard.tsx` (`renderFormattedTweetText`, `repairTweetText`)
 - **Details**: Complex URL/mention/hashtag regex parsing executes on every render for every visible card, including quoted tweets.
 - **Plan**: Memoize formatted output per `bookmark.id` + `bookmark.text` with `useMemo` or precompute on save.
 
-#### 8.3.4 `[Open]` Sidebar Re-Counts Categories on Every Render
+#### 8.3.4 `[Fixed]` Sidebar Re-Counts Categories on Every Render
 - **Location**: `src/dashboard/components/Sidebar.tsx`
-- **Details**: Each category row runs `bookmarks?.filter(b => b.categoryIds.includes(cat.id)).length` inside `.map()`, an O(categories × bookmarks) pass per render.
-- **Plan**: Precompute counts once in `useMemo` keyed on `bookmarks` and `categories`.
+- **Details**: Each category row ran `bookmarks?.filter(b => b.categoryIds.includes(cat.id)).length` inside `.map()`, an O(categories × bookmarks) pass per render.
+- **Resolution**: Memoized category counts into a single-pass lookup map via `useMemo` keyed on `bookmarks`.
 
 #### 8.3.5 `[Open]` Popup Fetches Categories for All Recent Items
 - **Location**: `src/App.tsx`
@@ -559,20 +559,20 @@
 
 ### 8.5 Design Language
 
-#### 8.5.1 `[Open]` Inter Font Referenced but Not Loaded
-- **Location**: `src/index.css` (`font-family: 'Inter', ...`)
-- **Details**: CSS names Inter first but no `@font-face` or bundled font file exists (Google Fonts import was removed per `3.2`). Dashboard typography falls back to system UI fonts, drifting from the polished X-adjacent intent.
-- **Plan**: Bundle Inter locally or drop it from the stack and document system-font-first as intentional.
+#### 8.5.1 `[Fixed]` Inter Font Referenced but Not Loaded
+- **Location**: `src/index.css`
+- **Details**: CSS named Inter first but no `@font-face` or bundled font file existed.
+- **Resolution**: Updated `font-family` declaration to include `TwitterChirp` and full native system UI fallback stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`).
 
 #### 8.5.2 `[Open]` Three Divergent Category Color Palettes
 - **Location**: `src/dashboard/helpers.ts`, `src/content/popover.ts`, `src/App.tsx`
 - **Details**: Dashboard uses `['#1d9bf0', '#00c4b6', ...]`, popover uses `['#1d9bf0', '#9333ea', '#ec4899', ...]`, and popup duplicates its own `categoryColors` + `hoverMap`. Default category dots differ between save popover and dashboard.
 - **Plan**: Single exported `CATEGORY_PALETTE` and `ACCENT_HOVER_MAP` in `src/shared/colors.ts`.
 
-#### 8.5.3 `[Open]` Accent Hover States Hardcoded in JavaScript
-- **Location**: `src/App.tsx` (`hoverMap`), `src/dashboard/hooks/useAccentColor.ts`
-- **Details**: Hover and light tints are computed in JS objects rather than CSS `color-mix()`. Adding a new accent swatch requires updating multiple files.
-- **Plan**: Derive `--accent-hover` and `--accent-light` purely from `--accent` in CSS (see also `6.6`).
+#### 8.5.3 `[Fixed]` Accent Hover States Hardcoded in JavaScript
+- **Location**: `src/index.css`, `src/dashboard/hooks/useAccentColor.ts`
+- **Details**: Hover and light tints were computed in JS lookup objects rather than CSS variables.
+- **Resolution**: Refactored `--accent-hover` and `--accent-light` to derive dynamically using CSS `color-mix(in srgb, var(--accent) ...)` for any custom accent hex.
 
 #### 8.5.4 `[Open]` BookmarkCard Mixes CSS Classes with Heavy Inline Styles
 - **Location**: `src/dashboard/components/BookmarkCard.tsx`

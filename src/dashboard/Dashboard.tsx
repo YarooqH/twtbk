@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
 import { db } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useOutsideClick } from './hooks/useOutsideClick';
@@ -19,6 +19,7 @@ export type SortOption = 'newest' | 'oldest' | 'posted-newest' | 'posted-oldest'
 // ── Component ────────────────────────────────────────
 export const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<Set<string>>(new Set());
@@ -160,8 +161,8 @@ export const Dashboard: React.FC = () => {
     if (selectedCategoryId) {
       result = result.filter(b => b.categoryIds.includes(selectedCategoryId));
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (deferredSearchQuery.trim()) {
+      const q = deferredSearchQuery.toLowerCase();
       const isTagSearch = q.startsWith('#');
       const tagQuery = isTagSearch ? q.slice(1) : q;
       
@@ -203,7 +204,7 @@ export const Dashboard: React.FC = () => {
     });
 
     return result;
-  }, [bookmarks, searchQuery, selectedCategoryId, sortOrder]);
+  }, [bookmarks, deferredSearchQuery, selectedCategoryId, sortOrder]);
 
   const visibleBookmarkIds = useMemo(() => new Set(filteredBookmarks.map(bookmark => bookmark.id)), [filteredBookmarks]);
   const hiddenSelectedCount = useMemo(

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { db } from '../../db';
 import { getCategoryColor, categoryColors } from '../helpers';
 import { AllIcon } from '../icons';
@@ -40,6 +40,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isClassifying, classifyProgress,
   runAutoCategorizeJobs,
 }) => {
+  const categoryCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (!bookmarks) return map;
+    for (const b of bookmarks) {
+      if (b.categoryIds) {
+        for (const catId of b.categoryIds) {
+          map[catId] = (map[catId] || 0) + 1;
+        }
+      }
+    }
+    return map;
+  }, [bookmarks]);
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -82,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {categories && categories.length > 0 && (
           <ul>
             {categories.map((cat: any) => {
-              const count = bookmarks?.filter((b: any) => b.categoryIds.includes(cat.id)).length ?? 0;
+              const count = categoryCounts[cat.id] ?? 0;
               const isEditing = editingCatId === cat.id;
               return (
                 <li
