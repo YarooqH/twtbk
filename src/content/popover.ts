@@ -86,7 +86,7 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
           catList.appendChild(item);
           newCatInput.value = '';
         } else {
-          alert('Failed to create category: ' + (res?.error || 'Unknown error'));
+          showToast('Failed to create category: ' + (res?.error || 'Unknown error'), false);
         }
       });
     });
@@ -98,7 +98,7 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
       data.categoryIds = catId ? [catId] : [];
       chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (response) => {
         if (!response?.success) {
-          alert('Failed to save: ' + response?.error);
+          showToast('Failed to save: ' + (response?.error || 'Unknown error'), false);
         } else {
           showToast("Saved to XMarks!");
           // The native bookmark control belongs to X. Only replace the icon on our clone.

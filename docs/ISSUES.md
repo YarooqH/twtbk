@@ -505,20 +505,20 @@
 
 ### 8.4 UX
 
-#### 8.4.1 `[Open]` Search Ignores Notes and Tags
+#### 8.4.1 `[Fixed]` Search Ignores Notes and Tags
 - **Location**: `src/dashboard/Dashboard.tsx` (`filteredBookmarks`)
-- **Details**: Search only matches `text`, `authorName`, and `authorHandle`. Users who annotate bookmarks with notes or tags cannot find them via search despite schema support.
-- **Plan**: Include `b.note`, `b.tags`, and optionally `articles[].title` in the filter predicate.
+- **Details**: Search only matched `text`, `authorName`, and `authorHandle`. Notes, quoted tweet text/author, and article titles could not be searched.
+- **Resolution**: Updated `filteredBookmarks` predicate to match `b.note`, `b.tags`, `b.quotedTweet`, and `b.articles` metadata.
 
 #### 8.4.2 `[Open]` Single-Category Picker Despite Multi-Category Schema
 - **Location**: `src/dashboard/components/BookmarkCard.tsx`, `src/content/popover.ts`
 - **Details**: `categoryIds` is an array but UI always replaces with a single selection (`categoryIds: [cat.id]`). Multi-category organization is impossible in practice.
 - **Plan**: Multi-select chips in popover and card picker, or document single-category as intentional and simplify schema.
 
-#### 8.4.3 `[Open]` Content Script Still Uses Native `alert()`
-- **Location**: `src/content/inject.ts` (line ~338), `src/content/popover.ts` (lines 89, 101)
-- **Details**: Dashboard migrated to in-app `Modal`/`Toast`, but X-page save flows still call `alert()` for context invalidation and save failures — jarring, unthemed, and blocks the page.
-- **Plan**: Route errors through existing `showToast()` or a themed in-page dialog (see also `3.10`).
+#### 8.4.3 `[Fixed]` Content Script Still Uses Native `alert()`
+- **Location**: `src/content/inject.ts`, `src/content/popover.ts`
+- **Details**: Dashboard migrated to in-app `Modal`/`Toast`, but X-page save flows still called `alert()` for context invalidation and save failures.
+- **Resolution**: Replaced native `alert()` prompts with X-styled non-blocking `showToast(...)` notifications.
 
 #### 8.4.4 `[Open]` Save Mode Controls Lack Contextual Help
 - **Location**: `src/dashboard/components/SaveConfigCard.tsx`
@@ -535,10 +535,10 @@
 - **Details**: JSON import calls `bulkPut` on bookmarks only. No schema validation, duplicate reporting, or category import. Malformed files partially import with silent data loss risk.
 - **Plan**: Validate shape, report skipped rows, optionally import categories in the same file.
 
-#### 8.4.7 `[Open]` Delete Confirmation Has No Undo Window
-- **Location**: `src/dashboard/Dashboard.tsx` (`handleDelete`)
-- **Details**: Confirmed deletes are immediate and irreversible. Toast says "Bookmark deleted" with no recovery path.
-- **Plan**: Soft-delete with 6-second undo toast (see also `3.16`).
+#### 8.4.7 `[Fixed]` Delete Confirmation Has No Undo Window
+- **Location**: `src/dashboard/Dashboard.tsx` (`handleDelete`, `requestBulkDelete`)
+- **Details**: Single and bulk deletes require safe, reversible feedback.
+- **Resolution**: Implemented 6-second `Toast` window with single and bulk restoration (`Undo`).
 
 #### 8.4.8 `[Open]` Popup Empty State Omits Bulk Sync Path
 - **Location**: `src/App.tsx`

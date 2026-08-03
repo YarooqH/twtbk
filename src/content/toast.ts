@@ -1,6 +1,6 @@
 import { MSG } from '../messages';
 
-export function showToast(message: string) {
+export function showToast(message: string, showViewBtn: boolean = true) {
   const existing = document.getElementById('twtbk-toast');
   if (existing) existing.remove();
 
@@ -13,7 +13,7 @@ export function showToast(message: string) {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background-color: var(--twtbk-accent);
+    background-color: var(--twtbk-accent, #1d9bf0);
     color: #ffffff;
     padding: 12px 20px;
     border-radius: 9999px;
@@ -32,13 +32,15 @@ export function showToast(message: string) {
 
   toast.innerHTML = `
     <span>${message}</span>
-    <button style="background: none; border: none; color: #ffffff; text-decoration: underline; font-weight: 800; cursor: pointer; padding: 0; font-family: inherit; font-size: inherit;">View</button>
+    ${showViewBtn ? '<button style="background: none; border: none; color: #ffffff; text-decoration: underline; font-weight: 800; cursor: pointer; padding: 0; font-family: inherit; font-size: inherit;">View</button>' : ''}
   `;
 
-  toast.querySelector('button')?.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ type: MSG.OPEN_DASHBOARD });
-    toast.remove();
-  });
+  if (showViewBtn) {
+    toast.querySelector('button')?.addEventListener('click', () => {
+      chrome.runtime.sendMessage({ type: MSG.OPEN_DASHBOARD });
+      toast.remove();
+    });
+  }
 
   document.body.appendChild(toast);
 

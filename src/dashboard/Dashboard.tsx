@@ -172,7 +172,12 @@ export const Dashboard: React.FC = () => {
         return b.text?.toLowerCase().includes(q) ||
                b.authorName?.toLowerCase().includes(q) ||
                b.authorHandle.toLowerCase().includes(q) ||
-               b.tags?.some(tag => tag.toLowerCase().includes(q));
+               b.note?.toLowerCase().includes(q) ||
+               b.tags?.some(tag => tag.toLowerCase().includes(q)) ||
+               b.quotedTweet?.text?.toLowerCase().includes(q) ||
+               b.quotedTweet?.authorName?.toLowerCase().includes(q) ||
+               b.quotedTweet?.authorHandle?.toLowerCase().includes(q) ||
+               b.articles?.some(art => art.title?.toLowerCase().includes(q) || art.snippet?.toLowerCase().includes(q));
       });
     }
     

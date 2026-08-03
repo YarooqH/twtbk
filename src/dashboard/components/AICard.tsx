@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface AICardProps {
   autoCategorize: boolean;
@@ -15,10 +15,6 @@ export const AICard: React.FC<AICardProps> = ({
   isClassifying, classifyProgress, runAutoCategorizeJobs,
 }) => {
   const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    if (modelProgress !== null || isClassifying) setExpanded(true);
-  }, [modelProgress, isClassifying]);
 
   const classifyPercent = classifyProgress && classifyProgress.total > 0
     ? Math.round((classifyProgress.current / classifyProgress.total) * 100)
