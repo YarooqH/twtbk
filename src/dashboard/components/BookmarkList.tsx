@@ -43,20 +43,58 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
 }) => {
   const [headerCollapsed, setHeaderCollapsed] = React.useState(false);
   const lastScrollY = React.useRef(0);
+  const downDistance = React.useRef(0);
+  const upDistance = React.useRef(0);
+  const frameRequest = React.useRef<number | null>(null);
+  const collapsedRef = React.useRef(false);
 
   React.useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > 40 && currentScrollY > lastScrollY.current) {
-        setHeaderCollapsed(true);
-      } else if (currentScrollY < lastScrollY.current || currentScrollY <= 20) {
-        setHeaderCollapsed(false);
-      }
+    lastScrollY.current = window.scrollY;
+
+    const updateHeader = () => {
+      frameRequest.current = null;
+      const currentScrollY = Math.max(0, window.scrollY);
+      const delta = currentScrollY - lastScrollY.current;
       lastScrollY.current = currentScrollY;
+
+      if (currentScrollY <= 20) {
+        downDistance.current = 0;
+        upDistance.current = 0;
+        if (collapsedRef.current) {
+          collapsedRef.current = false;
+          setHeaderCollapsed(false);
+        }
+        return;
+      }
+
+      if (delta > 0) {
+        downDistance.current += delta;
+        upDistance.current = 0;
+        if (!collapsedRef.current && downDistance.current >= 24) {
+          collapsedRef.current = true;
+          setHeaderCollapsed(true);
+        }
+      } else if (delta < 0) {
+        upDistance.current += Math.abs(delta);
+        downDistance.current = 0;
+        if (collapsedRef.current && upDistance.current >= 16) {
+          collapsedRef.current = false;
+          setHeaderCollapsed(false);
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (frameRequest.current === null) {
+        frameRequest.current = window.requestAnimationFrame(updateHeader);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (frameRequest.current !== null) window.cancelAnimationFrame(frameRequest.current);
+    };
   }, []);
 
   return (
