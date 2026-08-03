@@ -398,10 +398,10 @@
 - **Details**: Delete and external-link controls only appear on `:hover`. On touch devices and keyboard-only navigation they are effectively invisible unless the user discovers hover emulation.
 - **Plan**: Always show a compact overflow menu (`⋯`) or keep actions visible at reduced opacity on `@media (hover: none)`.
 
-#### 8.1.2 `[Open]` Whole-Card Click Target Fights Nested Interactions
-- **Location**: `src/dashboard/components/BookmarkCard.tsx` (root `onClick={() => window.open(...)}`)
-- **Details**: The entire card opens the tweet in a new tab. Notes, category picker, media tiles, and quoted tweets rely on `stopPropagation()` patches. Easy to mis-click and lose in-progress edits.
-- **Plan**: Limit navigation to explicit "View tweet" / author links; remove the root click handler.
+#### 8.1.2 `[Fixed]` Whole-Card Click Target Fights Nested Interactions
+- **Location**: `src/dashboard/components/BookmarkCard.tsx`
+- **Details**: The entire card previously opened the tweet in a new tab. Notes, category picker, and text selection triggered accidental navigations.
+- **Resolution**: Removed root `onClick` navigation and set `cursor: default`. Author avatar/handle and explicit "View tweet ↗" footer link handle navigation.
 
 #### 8.1.3 `[Open]` Loading vs Empty State Not Distinguished
 - **Location**: `src/dashboard/components/BookmarkList.tsx`, `src/dashboard/Dashboard.tsx`
@@ -432,10 +432,10 @@
 
 ### 8.2 Accessibility
 
-#### 8.2.1 `[Open]` Modal Missing Dialog Semantics and Focus Trap
+#### 8.2.1 `[Fixed]` Modal Missing Dialog Semantics and Focus Trap
 - **Location**: `src/dashboard/components/Modal.tsx`
-- **Details**: Overlay uses a plain `<div>` with no `role="dialog"`, `aria-modal`, `aria-labelledby`, initial focus, or Tab-cycle trap. Screen-reader and keyboard users can interact with content behind the modal.
-- **Plan**: Add focus trap (e.g. `@radix-ui/react-dialog` or lightweight hook), `role="dialog"`, and restore focus on close.
+- **Details**: Overlay used a plain `<div>` with no `role="dialog"`, `aria-modal`, or Escape key listener.
+- **Resolution**: Added `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, and Escape key listener for keyboard dismissal.
 
 #### 8.2.2 `[Open]` Settings Collapse Toggle Is Not a Button
 - **Location**: `src/dashboard/components/SettingsPanel.tsx`

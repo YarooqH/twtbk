@@ -25,6 +25,17 @@ export const Modal: React.FC<ModalProps> = ({
   onCancel,
   isBusy = false,
 }) => {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   return (
@@ -44,6 +55,9 @@ export const Modal: React.FC<ModalProps> = ({
       onClick={onCancel}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="twtbk-modal-title"
         style={{
           width: '100%',
           maxWidth: '400px',
@@ -62,7 +76,7 @@ export const Modal: React.FC<ModalProps> = ({
         }}
         onClick={e => e.stopPropagation()}
       >
-        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>
+        <h3 id="twtbk-modal-title" style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>
           {title}
         </h3>
         <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.5', whiteSpace: 'pre-line' }}>
