@@ -41,10 +41,28 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   mobileSettingsOpen, setMobileSettingsOpen,
   selectedBookmarkIds = new Set(), toggleBookmarkSelection,
 }) => {
+  const [headerCollapsed, setHeaderCollapsed] = React.useState(false);
+  const lastScrollY = React.useRef(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > 40 && currentScrollY > lastScrollY.current) {
+        setHeaderCollapsed(true);
+      } else if (currentScrollY < lastScrollY.current || currentScrollY <= 20) {
+        setHeaderCollapsed(false);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <main className="content">
       <div className="content-header">
-        <div className="content-header-top">
+        <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">
             {selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks'}
           </h1>
