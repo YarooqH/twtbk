@@ -323,8 +323,8 @@ export const Dashboard: React.FC = () => {
     reader.readAsText(file);
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = async (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation?.();
     
     // Find the bookmark before deleting it so we can restore it
     const bookmarkToRestore = await db.bookmarks.get(id);

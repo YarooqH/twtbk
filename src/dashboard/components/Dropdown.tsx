@@ -4,7 +4,7 @@ interface DropdownItem {
   id: string;
   label: React.ReactNode;
   icon?: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   href?: string;
   target?: string;
   style?: React.CSSProperties;
@@ -111,7 +111,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsOpen(false);
-                  item.onClick?.();
+                  item.onClick?.(e);
                 }}
               >
                 {item.icon}
