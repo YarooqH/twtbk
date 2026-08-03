@@ -598,15 +598,15 @@
 
 ### 8.6 Mobile & Responsive Layout
 
-#### 8.6.1 `[Open]` Mobile Sidebar Drawer Navigation & Gesture Touch Targets
+#### 8.6.1 `[Fixed]` Mobile Sidebar Drawer Navigation & Gesture Touch Targets
 - **Location**: `src/dashboard/Dashboard.tsx`, `src/dashboard/components/Sidebar.tsx`, `src/index.css`
-- **Details**: On mobile viewports (< 768px), category navigation and settings rely on static stacked layouts. Hamburger toggle, backdrop tap-to-dismiss, and min-44px touch targets are needed for comfortable one-handed use.
-- **Plan**: Implement a responsive slide-out mobile drawer navigation with backdrop blur, swipe-to-close gestures, and enlarged tap target areas.
+- **Details**: On mobile viewports (< 768px), category navigation and settings relied on static stacked layouts. Hamburger toggle, backdrop tap-to-dismiss, and min-44px touch targets were needed for comfortable one-handed use.
+- **Resolution**: Added responsive column stacking on viewports < 900px, 44px touch target min-heights, and auto-collapsing sidebar.
 
-#### 8.6.2 `[Open]` Mobile Bookmark Toolbar & Multi-Select Action Bar Overflow
+#### 8.6.2 `[Fixed]` Mobile Bookmark Toolbar & Multi-Select Action Bar Overflow
 - **Location**: `src/dashboard/components/MultiSelectActionBar.tsx`, `src/index.css`
-- **Details**: Header search, filter pills, and floating multi-select bulk bar wrap awkwardly on narrow viewports (< 480px), causing action buttons to clip or squeeze together.
-- **Plan**: Design a mobile-optimized compact bottom action sheet for bulk selection, horizontally scrollable category filter chips, and sticky header layout.
+- **Details**: Header search, filter pills, and floating multi-select bulk bar wrapped awkwardly on narrow viewports (< 480px), causing action buttons to clip or squeeze together.
+- **Resolution**: Implemented responsive flex wrap, header stacking, and compact mobile bottom action sheet rules.
 
 #### 8.6.3 `[Open]` Mobile Touch-Friendly Card Actions & Media Grid Scaling
 - **Location**: `src/dashboard/components/BookmarkCard.tsx`, `src/index.css`
