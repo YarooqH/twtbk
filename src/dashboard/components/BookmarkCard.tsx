@@ -130,9 +130,24 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   return (
     <div 
       className={`bookmark-card ${isSelected ? 'selected' : ''}`}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) return;
+        window.open(bookmark.tweetUrl, '_blank');
+      }}
+      onMouseDown={(e) => {
+        if (e.button === 1 && !(e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) {
+          e.preventDefault();
+        }
+      }}
+      onAuxClick={(e) => {
+        if (e.button === 1 && !(e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) {
+          e.preventDefault();
+          window.open(bookmark.tweetUrl, '_blank');
+        }
+      }}
       style={{
         position: 'relative',
-        cursor: 'default',
+        cursor: 'pointer',
         background: isSelected ? 'var(--bg-hover)' : undefined
       }}
     >
@@ -151,28 +166,21 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             />
             <span className="bm-selection-checkmark" aria-hidden="true" />
           </label>
-          <a
-            href={`https://x.com/${bookmark.authorHandle}`}
-            target="_blank"
-            rel="noreferrer"
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}
-          >
-            <div className="bm-avatar" style={{ overflow: 'hidden' }}>
-              {bookmark.authorAvatarUrl ? (
-                <img 
-                  src={bookmark.authorAvatarUrl} 
-                  alt={bookmark.authorName} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-              ) : (
-                getInitials(bookmark.authorName || bookmark.authorHandle)
-              )}
-            </div>
-            <div>
-              <div className="bm-author-name">{bookmark.authorName || bookmark.authorHandle}</div>
-              <div className="bm-handle">@{bookmark.authorHandle}</div>
-            </div>
-          </a>
+          <div className="bm-avatar" style={{ overflow: 'hidden' }}>
+            {bookmark.authorAvatarUrl ? (
+              <img 
+                src={bookmark.authorAvatarUrl} 
+                alt={bookmark.authorName} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+            ) : (
+              getInitials(bookmark.authorName || bookmark.authorHandle)
+            )}
+          </div>
+          <div>
+            <div className="bm-author-name">{bookmark.authorName || bookmark.authorHandle}</div>
+            <div className="bm-handle">@{bookmark.authorHandle}</div>
+          </div>
         </div>
           <Dropdown
             align="right"
