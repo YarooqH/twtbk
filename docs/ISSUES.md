@@ -593,3 +593,23 @@
 - **Location**: `src/dashboard/components/BookmarkCard.tsx`
 - **Details**: Cards expose both a link icon in the hover actions row and a "View tweet ↗" text link in the footer, plus the whole-card click — three ways to do the same thing with uneven discoverability.
 - **Plan**: Keep one primary external-link control; align with fix in `8.1.2`.
+
+---
+
+### 8.6 Mobile & Responsive Layout
+
+#### 8.6.1 `[Open]` Mobile Sidebar Drawer Navigation & Gesture Touch Targets
+- **Location**: `src/dashboard/Dashboard.tsx`, `src/dashboard/components/Sidebar.tsx`, `src/index.css`
+- **Details**: On mobile viewports (< 768px), category navigation and settings rely on static stacked layouts. Hamburger toggle, backdrop tap-to-dismiss, and min-44px touch targets are needed for comfortable one-handed use.
+- **Plan**: Implement a responsive slide-out mobile drawer navigation with backdrop blur, swipe-to-close gestures, and enlarged tap target areas.
+
+#### 8.6.2 `[Open]` Mobile Bookmark Toolbar & Multi-Select Action Bar Overflow
+- **Location**: `src/dashboard/components/MultiSelectActionBar.tsx`, `src/index.css`
+- **Details**: Header search, filter pills, and floating multi-select bulk bar wrap awkwardly on narrow viewports (< 480px), causing action buttons to clip or squeeze together.
+- **Plan**: Design a mobile-optimized compact bottom action sheet for bulk selection, horizontally scrollable category filter chips, and sticky header layout.
+
+#### 8.6.3 `[Open]` Mobile Touch-Friendly Card Actions & Media Grid Scaling
+- **Location**: `src/dashboard/components/BookmarkCard.tsx`, `src/index.css`
+- **Details**: Desktop hover-dependent action buttons (`:hover .bm-actions`) require taps or focus to reveal on mobile. Media grids (images/videos) can exceed mobile container height.
+- **Plan**: Always expose tap-friendly action menus on touch viewports, improve responsive media aspect ratios, and optimize card line-height and padding for small screens.
+
