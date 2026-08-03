@@ -280,10 +280,16 @@ body {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  background: var(--bg-overlay);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.75);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
   z-index: 10;
+}
+
+@media (prefers-color-scheme: dark) {
+  .content-header {
+    background: rgba(0, 0, 0, 0.65);
+  }
 }
 
 .content-header-top {
