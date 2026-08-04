@@ -4,8 +4,13 @@ export function extractCleanTweetText(tweetElement: Element): string {
 
   const clone = textEl.cloneNode(true) as HTMLElement;
 
-  // Replace br elements with explicit newlines
-  clone.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+  // Preserve Twitter/X inline emojis (e.g. <img alt="🚨" ...>) before removing aria-hidden elements
+  clone.querySelectorAll('img[alt]').forEach(img => {
+    const alt = img.getAttribute('alt');
+    if (alt) {
+      img.replaceWith(document.createTextNode(alt));
+    }
+  });
 
   // Remove hidden aria-hidden spans (e.g. hidden http:// prefixes or visual hides)
   clone.querySelectorAll('[aria-hidden="true"]').forEach(el => el.remove());
