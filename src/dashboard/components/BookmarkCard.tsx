@@ -336,7 +336,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                 key={idx} 
                 style={{ 
                   position: 'relative', 
-                  paddingBottom: bookmark.media.length === 1 ? '56.25%' : (bookmark.media.length === 2 ? '100%' : '75%'),
+                  paddingBottom: bookmark.media.length === 1 ? '62.5%' : (bookmark.media.length === 2 ? '120%' : '85%'),
                   height: 0, 
                   overflow: 'hidden',
                   background: 'var(--bg-secondary)',
