@@ -43,6 +43,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   isModelLoaded, modelProgress,
   isClassifying, classifyProgress, runAutoCategorizeJobs,
 }) => {
+  React.useEffect(() => {
+    if (!mobileSettingsOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileSettingsOpen]);
+
   return (
     <>
       {mobileSettingsOpen && setMobileSettingsOpen && (
@@ -93,6 +102,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="mobile-only-ai-card">
+                <AICard
+                  autoCategorize={autoCategorize}
+                  toggleAutoCategorize={toggleAutoCategorize}
+                  isModelLoaded={isModelLoaded}
+                  modelProgress={modelProgress}
+                  isClassifying={isClassifying}
+                  classifyProgress={classifyProgress}
+                  runAutoCategorizeJobs={runAutoCategorizeJobs}
+                />
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { BookmarkIcon, SearchIcon, DownloadIcon, UploadIcon, SettingsIcon } from '../icons';
+import { BookmarkIcon, SearchIcon, DownloadIcon, UploadIcon, TuneIcon } from '../icons';
+import { getCategoryColor } from '../helpers';
 import { BookmarkCard } from './BookmarkCard';
 import { SortOption } from '../Dashboard';
 import { SortDropdown } from './SortDropdown';
@@ -10,6 +11,7 @@ interface BookmarkListProps {
   sortOrder: SortOption;
   setSortOrder: (val: SortOption) => void;
   selectedCategoryId: string | null;
+  setSelectedCategoryId: (id: string | null) => void;
   filteredBookmarks: any[];
   bookmarks: any[] | undefined;
   categories: any[] | undefined;
@@ -32,7 +34,7 @@ interface BookmarkListProps {
 export const BookmarkList: React.FC<BookmarkListProps> = ({
   searchQuery, setSearchQuery,
   sortOrder, setSortOrder,
-  selectedCategoryId,
+  selectedCategoryId, setSelectedCategoryId,
   filteredBookmarks, bookmarks, categories,
   handleExport, handleImport, handleDelete,
   getCategoryName,
@@ -99,29 +101,54 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
 
   return (
     <main className="content">
+      <nav className="mobile-category-nav" aria-label="Bookmark categories">
+        <button
+          type="button"
+          className={`mobile-category-chip ${!selectedCategoryId ? 'active' : ''}`}
+          onClick={() => setSelectedCategoryId(null)}
+        >
+          All <span>{bookmarks?.length ?? 0}</span>
+        </button>
+        {(categories || []).map((category: any) => {
+          const count = bookmarks?.filter(bookmark => bookmark.categoryIds?.includes(category.id)).length ?? 0;
+          return (
+            <button
+              type="button"
+              key={category.id}
+              className={`mobile-category-chip ${selectedCategoryId === category.id ? 'active' : ''}`}
+              onClick={() => setSelectedCategoryId(selectedCategoryId === category.id ? null : category.id)}
+            >
+              <i style={{ background: getCategoryColor(category.id, category.color) }} aria-hidden="true" />
+              <span>{category.name}</span>
+              <span>{count}</span>
+            </button>
+          );
+        })}
+      </nav>
       <div className="content-header">
         <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">
             {selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks'}
           </h1>
           <div className="header-actions">
-            {setMobileSettingsOpen && (
-              <button 
-                className="btn btn-ghost mobile-settings-btn" 
-                onClick={() => setMobileSettingsOpen(!mobileSettingsOpen)} 
-                title="Settings"
-                style={{ padding: '6px 10px' }}
-              >
-                <SettingsIcon /> Settings
-              </button>
-            )}
-            <button className="btn btn-ghost" onClick={handleExport} title="Export JSON">
+            <button className="btn btn-ghost" onClick={handleExport} title="Export JSON" aria-label="Export bookmarks">
               <DownloadIcon /> Export
             </button>
-            <label className="btn btn-ghost" title="Import JSON" style={{ cursor: 'pointer' }}>
+            <label className="btn btn-ghost" title="Import JSON" aria-label="Import bookmarks" style={{ cursor: 'pointer' }}>
               <UploadIcon /> Import
               <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
             </label>
+            {setMobileSettingsOpen && (
+              <button
+                className="btn btn-ghost mobile-settings-btn"
+                onClick={() => setMobileSettingsOpen(!mobileSettingsOpen)}
+                title="Open settings"
+                aria-label="Open settings"
+                style={{ padding: '6px 10px' }}
+              >
+                <TuneIcon /> <span>Settings</span>
+              </button>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

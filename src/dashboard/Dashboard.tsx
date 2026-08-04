@@ -377,6 +377,7 @@ export const Dashboard: React.FC = () => {
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
         selectedCategoryId={selectedCategoryId}
+        setSelectedCategoryId={setSelectedCategoryId}
         filteredBookmarks={filteredBookmarks}
         bookmarks={bookmarks}
         categories={categories}
