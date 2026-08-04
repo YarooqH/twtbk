@@ -545,10 +545,10 @@
 - **Details**: Empty popup says "Click the save button on any tweet!" but never mentions the sidebar "Sync Bookmarks" importer — the primary onboarding path for existing X bookmark libraries.
 - **Plan**: Add secondary CTA: "Or sync existing bookmarks from X →".
 
-#### 8.4.9 `[Open]` Uncategorized Count Computed but Never Shown
-- **Location**: `src/dashboard/Dashboard.tsx` (`uncategorizedCount`)
-- **Details**: `uncategorizedCount` is derived via `useMemo` but never passed to sidebar or list header. Users lack a quick filter for unsorted bookmarks.
-- **Plan**: Surface as sidebar item or badge, or remove dead computation.
+#### 8.4.9 `[Fixed]` Uncategorized Count Computed but Never Shown
+- **Location**: `src/dashboard/Dashboard.tsx`, `src/dashboard/components/Sidebar.tsx`, `src/dashboard/components/BookmarkList.tsx`
+- **Details**: `uncategorizedCount` was derived via `useMemo` but never passed to sidebar or list header. Users lacked a quick filter for unsorted bookmarks.
+- **Resolution**: Added selectable "Uncategorized" filter row under Library in `Sidebar.tsx` displaying the uncategorized badge count, filtering bookmarks with empty `categoryIds`.
 
 #### 8.4.10 `[Open]` Popover Category Names Injected via Unescaped `innerHTML`
 - **Location**: `src/content/popover.ts`
@@ -564,10 +564,10 @@
 - **Details**: CSS named Inter first but no `@font-face` or bundled font file existed.
 - **Resolution**: Updated `font-family` declaration to include `TwitterChirp` and full native system UI fallback stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`).
 
-#### 8.5.2 `[Open]` Three Divergent Category Color Palettes
-- **Location**: `src/dashboard/helpers.ts`, `src/content/popover.ts`, `src/App.tsx`
-- **Details**: Dashboard uses `['#1d9bf0', '#00c4b6', ...]`, popover uses `['#1d9bf0', '#9333ea', '#ec4899', ...]`, and popup duplicates its own `categoryColors` + `hoverMap`. Default category dots differ between save popover and dashboard.
-- **Plan**: Single exported `CATEGORY_PALETTE` and `ACCENT_HOVER_MAP` in `src/shared/colors.ts`.
+#### 8.5.2 `[Fixed]` Three Divergent Category Color Palettes
+- **Location**: `src/shared/colors.ts`, `src/dashboard/helpers.ts`, `src/content/popover.ts`, `src/App.tsx`
+- **Details**: Dashboard, popover, and popup duplicated divergent hardcoded category color arrays.
+- **Resolution**: Unified category palette and `getCategoryColor()` helper into single shared module `src/shared/colors.ts`.
 
 #### 8.5.3 `[Fixed]` Accent Hover States Hardcoded in JavaScript
 - **Location**: `src/index.css`, `src/dashboard/hooks/useAccentColor.ts`

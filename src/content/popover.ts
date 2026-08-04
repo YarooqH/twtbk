@@ -2,6 +2,7 @@ import { MSG } from '../messages';
 import { showToast } from './toast';
 import { currentAccentColor } from './settings';
 import { markButtonAsSaved } from './inject';
+import { getCategoryColor } from '../shared/colors';
 
 export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
   // Remove any existing popover
@@ -27,8 +28,6 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
 
   chrome.runtime.sendMessage({ type: MSG.GET_CATEGORIES }, (categories: any[]) => {
     const safeCats = categories || [];
-    const categoryColors = ['#1d9bf0', '#9333ea', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
-    const getCategoryColor = (id: string, color?: string) => color || categoryColors[id.charCodeAt(id.length - 1) % categoryColors.length];
 
     container.innerHTML = `
       <div class="twtbk-new-cat-row">

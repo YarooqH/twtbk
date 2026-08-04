@@ -109,6 +109,14 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
         >
           All <span>{bookmarks?.length ?? 0}</span>
         </button>
+        <button
+          type="button"
+          className={`mobile-category-chip ${selectedCategoryId === '__uncategorized__' ? 'active' : ''}`}
+          onClick={() => setSelectedCategoryId(selectedCategoryId === '__uncategorized__' ? null : '__uncategorized__')}
+        >
+          <span>Uncategorized</span>
+          <span>{bookmarks?.filter(b => !b.categoryIds || b.categoryIds.length === 0).length ?? 0}</span>
+        </button>
         {(categories || []).map((category: any) => {
           const count = bookmarks?.filter(bookmark => bookmark.categoryIds?.includes(category.id)).length ?? 0;
           return (
@@ -128,7 +136,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
       <div className="content-header">
         <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">
-            {selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks'}
+            {selectedCategoryId === '__uncategorized__' ? 'Uncategorized' : (selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks')}
           </h1>
           <div className="header-actions">
             <button className="btn btn-ghost mobile-header-action" type="button" onClick={handleExport} title="Export JSON" aria-label="Export bookmarks">
