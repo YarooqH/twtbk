@@ -131,20 +131,19 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
             {selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks'}
           </h1>
           <div className="header-actions">
-            <button className="btn btn-ghost" onClick={handleExport} title="Export JSON" aria-label="Export bookmarks">
+            <button className="btn btn-ghost mobile-header-action" type="button" onClick={handleExport} title="Export JSON" aria-label="Export bookmarks">
               <DownloadIcon /> Export
             </button>
-            <label className="btn btn-ghost" title="Import JSON" aria-label="Import bookmarks" style={{ cursor: 'pointer' }}>
+            <label className="btn btn-ghost mobile-header-action" title="Import JSON" aria-label="Import bookmarks" style={{ cursor: 'pointer' }}>
               <UploadIcon /> Import
               <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
             </label>
             {setMobileSettingsOpen && (
               <button
-                className="btn btn-ghost mobile-settings-btn"
+                className="btn btn-ghost mobile-header-action mobile-settings-btn"
                 onClick={() => setMobileSettingsOpen(!mobileSettingsOpen)}
                 title="Open settings"
                 aria-label="Open settings"
-                style={{ padding: '6px 10px' }}
               >
                 <TuneIcon /> <span>Settings</span>
               </button>
