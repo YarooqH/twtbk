@@ -77,6 +77,12 @@ async function handleSaveTweet(payload: Partial<Bookmark>) {
     };
 
     await db.bookmarks.add(newBookmark);
+    chrome.storage?.local?.get('xmarks_onboarding', result => {
+      const state = result?.xmarks_onboarding || { version: 1 };
+      chrome.storage?.local?.set({
+        xmarks_onboarding: { ...state, firstSaveCompleted: true, firstSaveCompletedAt: new Date().toISOString() }
+      });
+    });
     return { success: true, id: payload.id };
   } catch (error: any) {
     console.error('Error saving tweet:', error);
@@ -124,6 +130,12 @@ async function handleImportBatch(payload: Partial<Bookmark>[]) {
     
     if (newBookmarks.length > 0) {
       await db.bookmarks.bulkAdd(newBookmarks);
+      chrome.storage?.local?.get('xmarks_onboarding', result => {
+        const state = result?.xmarks_onboarding || { version: 1 };
+        chrome.storage?.local?.set({
+          xmarks_onboarding: { ...state, firstSyncCompleted: true, firstSyncCompletedAt: new Date().toISOString() }
+        });
+      });
     }
     return { success: true, count: newBookmarks.length };
   } catch (error: any) {

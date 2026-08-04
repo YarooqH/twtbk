@@ -3,6 +3,7 @@ import { getCategoryColor } from './shared/colors';
 import { db } from './db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import './index.css';
+import { useOnboarding } from './onboarding/state';
 
 const BookmarkIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -28,6 +29,7 @@ const hoverMap: Record<string, string> = {
 
 
 function App() {
+  const { markPopupSeen } = useOnboarding();
   const recentBookmarks = useLiveQuery(
     () => db.bookmarks.orderBy('savedAt').reverse().limit(5).toArray()
   );
@@ -37,6 +39,7 @@ function App() {
 
   // Apply accent color from storage so popup reflects user's choice
   useEffect(() => {
+    markPopupSeen();
     chrome.storage?.sync?.get(['accentColor'], (result) => {
       if (result.accentColor) {
         const color = result.accentColor as string;
@@ -49,6 +52,10 @@ function App() {
 
   const openDashboard = () => {
     chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+  };
+
+  const openXBookmarks = () => {
+    chrome.tabs.create({ url: 'https://x.com/i/bookmarks' });
   };
 
   const getInitials = (name: string) => name.trim().charAt(0).toUpperCase();
@@ -70,7 +77,7 @@ function App() {
       <div className="popup-recent-label">Recent Saves</div>
 
       {recentBookmarks && recentBookmarks.length > 0 ? (
-        <div>
+        <div className="popup-bookmarks-list">
           {recentBookmarks.map(bm => (
             <div 
               key={bm.id} 
@@ -172,11 +179,13 @@ function App() {
           ))}
         </div>
       ) : (
-        <div className="popup-empty">
+        <div className="popup-empty popup-onboarding">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
             <path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"/>
           </svg>
-          <p>No bookmarks yet.<br />Click the save button on any tweet!</p>
+          <h2>Build your local bookmark library</h2>
+          <p>Sync your existing X bookmarks or save a tweet with XMarks. Your data stays in this browser.</p>
+          <button className="popup-onboarding-link" onClick={openXBookmarks}>Open X Bookmarks</button>
         </div>
       )}
 

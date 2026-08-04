@@ -13,6 +13,10 @@ interface BookmarkListProps {
   selectedCategoryId: string | null;
   setSelectedCategoryId: (id: string | null) => void;
   filteredBookmarks: any[];
+  showWelcomePanel?: boolean;
+  dismissWelcome?: () => void;
+  markFirstAction?: () => void;
+  openXBookmarks?: () => void;
   bookmarks: any[] | undefined;
   categories: any[] | undefined;
   handleExport: () => void;
@@ -36,6 +40,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   sortOrder, setSortOrder,
   selectedCategoryId, setSelectedCategoryId,
   filteredBookmarks, bookmarks, categories,
+  showWelcomePanel = false, dismissWelcome, markFirstAction, openXBookmarks,
   handleExport, handleImport, handleDelete,
   getCategoryName,
   editingNoteId, setEditingNoteId, tempNote, setTempNote,
@@ -121,7 +126,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
         <button
           type="button"
           className={`mobile-category-chip ${!selectedCategoryId ? 'active' : ''}`}
-          onClick={() => setSelectedCategoryId(null)}
+          onClick={() => { setSelectedCategoryId(null); markFirstAction?.(); }}
         >
           All <span>{bookmarks?.length ?? 0}</span>
         </button>
@@ -140,7 +145,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
               type="button"
               key={category.id}
               className={`mobile-category-chip ${selectedCategoryId === category.id ? 'active' : ''}`}
-              onClick={() => setSelectedCategoryId(selectedCategoryId === category.id ? null : category.id)}
+              onClick={() => { setSelectedCategoryId(selectedCategoryId === category.id ? null : category.id); markFirstAction?.(); }}
             >
               <i style={{ background: getCategoryColor(category.id, category.color) }} aria-hidden="true" />
               <span>{category.name}</span>
@@ -149,6 +154,16 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
           );
         })}
       </nav>
+      {showWelcomePanel && (
+        <section className="dashboard-welcome" aria-label="Welcome to XMarks">
+          <div>
+            <p className="dashboard-welcome-kicker">Your library is ready</p>
+            <h2>Search and organize your saved ideas.</h2>
+            <p>Try a search, add a category, or select a bookmark to see what XMarks can do.</p>
+          </div>
+          <button type="button" className="dashboard-welcome-dismiss" onClick={dismissWelcome} aria-label="Dismiss welcome message">×</button>
+        </section>
+      )}
       <div className="content-header">
         <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">
@@ -182,7 +197,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
               type="text"
               placeholder="Search by author or text..."
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={e => { setSearchQuery(e.target.value); markFirstAction?.(); }}
             />
           </div>
           
@@ -196,8 +211,14 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
             <div className="empty-icon"><BookmarkIcon size={28} /></div>
             <p className="empty-title">No bookmarks found</p>
             <p className="empty-desc">
-              {searchQuery ? 'Try a different search term.' : 'Start saving tweets using the button injected into X.'}
+              {searchQuery ? 'Try a different search term.' : 'Sync existing X bookmarks or save a tweet to start your library.'}
             </p>
+            {!searchQuery && !bookmarks?.length && (
+              <div className="empty-state-actions">
+                {openXBookmarks && <button type="button" className="btn btn-primary" onClick={openXBookmarks}>Open X Bookmarks</button>}
+                {/* <button type="button" className="btn btn-ghost" onClick={() => window.location.reload()}>Refresh library</button> */}
+              </div>
+            )}
           </div>
         ) : (
           filteredBookmarks.map((bookmark: any) => (

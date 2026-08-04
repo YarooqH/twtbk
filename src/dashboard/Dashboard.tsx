@@ -13,6 +13,7 @@ import { Toast } from './components/Toast';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { MultiSelectActionBar } from './components/MultiSelectActionBar';
+import { useOnboarding } from '../onboarding/state';
 
 export type SortOption = 'newest' | 'oldest' | 'posted-newest' | 'posted-oldest' | 'author';
 
@@ -24,6 +25,7 @@ export const Dashboard: React.FC = () => {
   
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<'categorize' | 'export' | 'delete' | null>(null);
+  const { state: onboarding, isLoaded: onboardingLoaded, markDashboardSeen, dismissWelcome, markFirstAction } = useOnboarding();
   
   // In-App Toast & Modal Notifications (W4)
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -92,6 +94,10 @@ export const Dashboard: React.FC = () => {
   // Category rename
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editingCatName, setEditingCatName] = useState('');
+
+  useEffect(() => {
+    if (onboardingLoaded && !onboarding.dashboardSeenAt) markDashboardSeen();
+  }, [onboardingLoaded, onboarding.dashboardSeenAt, markDashboardSeen]);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -383,6 +389,10 @@ export const Dashboard: React.FC = () => {
         selectedCategoryId={selectedCategoryId}
         setSelectedCategoryId={setSelectedCategoryId}
         filteredBookmarks={filteredBookmarks}
+        showWelcomePanel={onboardingLoaded && Boolean(bookmarks?.length) && !onboarding.welcomePanelDismissed && !onboarding.firstDashboardActionCompleted}
+        dismissWelcome={dismissWelcome}
+        markFirstAction={markFirstAction}
+        openXBookmarks={() => chrome.tabs.create({ url: 'https://x.com/i/bookmarks' })}
         bookmarks={bookmarks}
         categories={categories}
         handleExport={handleExport}
