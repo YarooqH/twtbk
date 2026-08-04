@@ -51,7 +51,10 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   const collapsedRef = React.useRef(false);
 
   React.useEffect(() => {
-    lastScrollY.current = window.scrollY;
+    const initialScrollY = Math.max(0, window.scrollY);
+    lastScrollY.current = initialScrollY;
+    collapsedRef.current = initialScrollY > 40;
+    setHeaderCollapsed(collapsedRef.current);
 
     const updateHeader = () => {
       frameRequest.current = null;
@@ -92,9 +95,22 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
       }
     };
 
+    const handleResize = () => {
+      const currentScrollY = Math.max(0, window.scrollY);
+      if (currentScrollY <= 20 && collapsedRef.current) {
+        collapsedRef.current = false;
+        setHeaderCollapsed(false);
+        downDistance.current = 0;
+        upDistance.current = 0;
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
       if (frameRequest.current !== null) window.cancelAnimationFrame(frameRequest.current);
     };
   }, []);
