@@ -206,7 +206,10 @@ function updatePanelUI() {
   } else if (importFinished) {
     if (title) title.textContent = "Sync complete";
     if (desc) desc.textContent = `Your local library is ready with ${totalImported} new bookmark${totalImported === 1 ? '' : 's'}.`;
-    if (startBtn) startBtn.textContent = "Sync Again";
+    if (startBtn) {
+      startBtn.textContent = "Sync Again";
+      startBtn.style.backgroundColor = "var(--twtbk-accent, #1d9bf0)";
+    }
     progress?.classList.remove('is-active');
     progress?.classList.add('is-complete');
     if (progressLabel) progressLabel.textContent = `${totalImported} new bookmarks saved`;
@@ -320,7 +323,9 @@ function toggleImporterPanel(btn: HTMLElement) {
 
   const openDashboardBtn = document.getElementById('twtbk-open-dashboard-btn');
   if (openDashboardBtn) {
-    openDashboardBtn.onclick = () => chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+    openDashboardBtn.onclick = () => {
+      chrome.runtime.sendMessage({ type: MSG.OPEN_DASHBOARD });
+    };
   }
 
   const onClickOutside = (e: MouseEvent) => {

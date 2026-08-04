@@ -326,43 +326,51 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             border: '1px solid var(--border)'
           }}
         >
-          {bookmark.media.slice(0, 4).map((item, idx) => (
-            <div 
-              key={idx} 
-              style={{ 
-                position: 'relative', 
-                paddingBottom: bookmark.media.length === 1 ? '56.25%' : '75%',
-                height: 0, 
-                overflow: 'hidden',
-                background: 'var(--bg-secondary)',
-                cursor: 'pointer'
-              }}
-              onClick={() => window.open(item.url, '_blank')}
-            >
-              <img 
-                src={item.previewUrl || item.url} 
-                alt="media preview" 
-                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
-              />
-              {item.type === 'video' && (
-                <div style={{
-                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'rgba(0,0,0,0.15)'
-                }}>
+          {bookmark.media.slice(0, 4).map((item, idx) => {
+            const isVideo = item.type === 'video';
+            const isDirectVideoUrl = isVideo && item.url && !item.url.startsWith('blob:') && (item.url.includes('.mp4') || item.url.includes('video.twimg.com'));
+            const targetUrl = isDirectVideoUrl ? item.url : bookmark.tweetUrl;
+
+            return (
+              <div 
+                key={idx} 
+                style={{ 
+                  position: 'relative', 
+                  paddingBottom: '56.25%', // Uniform 16:9 aspect ratio
+                  height: 0, 
+                  overflow: 'hidden',
+                  background: 'var(--bg-secondary)',
+                  cursor: 'pointer'
+                }}
+                title={isVideo ? (isDirectVideoUrl ? 'Play video in new tab' : 'Open tweet on X') : 'Open tweet on X'}
+                onClick={() => window.open(targetUrl, '_blank')}
+              >
+                <img 
+                  src={item.previewUrl || item.url} 
+                  alt="media preview" 
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+                {isVideo && (
                   <div style={{
-                    width: '40px', height: '40px', borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', color: '#fff'
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.2)'
                   }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
+                    <div style={{
+                      width: '44px', height: '44px', borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', color: '#fff',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
