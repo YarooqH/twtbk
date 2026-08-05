@@ -148,7 +148,6 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
       style={{
         position: 'relative',
         cursor: 'pointer',
-        boxShadow: isSelected ? '0 0 0 2px var(--accent)' : undefined,
         background: isSelected ? 'var(--bg-hover)' : undefined
       }}
     >

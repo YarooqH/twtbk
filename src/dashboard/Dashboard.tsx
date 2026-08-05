@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
 import { db } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useOutsideClick } from './hooks/useOutsideClick';
@@ -19,6 +19,7 @@ export type SortOption = 'newest' | 'oldest' | 'posted-newest' | 'posted-oldest'
 // ── Component ────────────────────────────────────────
 export const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<Set<string>>(new Set());
@@ -41,7 +42,7 @@ export const Dashboard: React.FC = () => {
 
   // Mobile Settings Drawer State (W3)
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
-  const [settingsExpanded, setSettingsExpanded] = useState(true);
+  const [settingsExpanded, setSettingsExpanded] = useState(false);
 
   // Accent color customization
   const [accentColor, setAccentColor] = useAccentColor();
@@ -160,8 +161,8 @@ export const Dashboard: React.FC = () => {
     if (selectedCategoryId) {
       result = result.filter(b => b.categoryIds.includes(selectedCategoryId));
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (deferredSearchQuery.trim()) {
+      const q = deferredSearchQuery.toLowerCase();
       const isTagSearch = q.startsWith('#');
       const tagQuery = isTagSearch ? q.slice(1) : q;
       
@@ -172,7 +173,12 @@ export const Dashboard: React.FC = () => {
         return b.text?.toLowerCase().includes(q) ||
                b.authorName?.toLowerCase().includes(q) ||
                b.authorHandle.toLowerCase().includes(q) ||
-               b.tags?.some(tag => tag.toLowerCase().includes(q));
+               b.note?.toLowerCase().includes(q) ||
+               b.tags?.some(tag => tag.toLowerCase().includes(q)) ||
+               b.quotedTweet?.text?.toLowerCase().includes(q) ||
+               b.quotedTweet?.authorName?.toLowerCase().includes(q) ||
+               b.quotedTweet?.authorHandle?.toLowerCase().includes(q) ||
+               b.articles?.some(art => art.title?.toLowerCase().includes(q) || art.snippet?.toLowerCase().includes(q));
       });
     }
     
@@ -198,7 +204,7 @@ export const Dashboard: React.FC = () => {
     });
 
     return result;
-  }, [bookmarks, searchQuery, selectedCategoryId, sortOrder]);
+  }, [bookmarks, deferredSearchQuery, selectedCategoryId, sortOrder]);
 
   const visibleBookmarkIds = useMemo(() => new Set(filteredBookmarks.map(bookmark => bookmark.id)), [filteredBookmarks]);
   const hiddenSelectedCount = useMemo(
@@ -317,8 +323,8 @@ export const Dashboard: React.FC = () => {
     reader.readAsText(file);
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = async (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation?.();
     
     // Find the bookmark before deleting it so we can restore it
     const bookmarkToRestore = await db.bookmarks.get(id);

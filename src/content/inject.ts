@@ -9,6 +9,7 @@ import {
 } from './settings';
 import { extractTweetData } from './extract';
 import { showCategoryPopover } from './popover';
+import { showToast } from './toast';
 import {
   type ActionType,
   findAction,
@@ -407,7 +408,7 @@ export function injectSaveButtons() {
       e.stopPropagation();
       e.preventDefault();
       if (!chrome.runtime?.id) {
-        alert("Extension context was updated. Please refresh the page to save bookmarks!");
+        showToast("Extension updated. Please refresh page to save!", false);
         return;
       }
       saveTweet(tweet, btnContainer);

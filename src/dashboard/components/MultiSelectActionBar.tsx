@@ -65,10 +65,10 @@ export const MultiSelectActionBar: React.FC<MultiSelectActionBarProps> = ({
           triggerStyle={{
             opacity: isBusy ? 0.55 : 1,
             minHeight: '36px',
-            padding: '0 12px',
+            padding: '0 14px',
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
+            borderRadius: '9999px',
             color: 'var(--text)',
             font: 'inherit',
             fontSize: '13px',

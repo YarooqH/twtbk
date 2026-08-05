@@ -41,10 +41,66 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   mobileSettingsOpen, setMobileSettingsOpen,
   selectedBookmarkIds = new Set(), toggleBookmarkSelection,
 }) => {
+  const [headerCollapsed, setHeaderCollapsed] = React.useState(false);
+  const lastScrollY = React.useRef(0);
+  const downDistance = React.useRef(0);
+  const upDistance = React.useRef(0);
+  const frameRequest = React.useRef<number | null>(null);
+  const collapsedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    lastScrollY.current = window.scrollY;
+
+    const updateHeader = () => {
+      frameRequest.current = null;
+      const currentScrollY = Math.max(0, window.scrollY);
+      const delta = currentScrollY - lastScrollY.current;
+      lastScrollY.current = currentScrollY;
+
+      if (currentScrollY <= 20) {
+        downDistance.current = 0;
+        upDistance.current = 0;
+        if (collapsedRef.current) {
+          collapsedRef.current = false;
+          setHeaderCollapsed(false);
+        }
+        return;
+      }
+
+      if (delta > 0) {
+        downDistance.current += delta;
+        upDistance.current = 0;
+        if (!collapsedRef.current && downDistance.current >= 24) {
+          collapsedRef.current = true;
+          setHeaderCollapsed(true);
+        }
+      } else if (delta < 0) {
+        upDistance.current += Math.abs(delta);
+        downDistance.current = 0;
+        if (collapsedRef.current && upDistance.current >= 16) {
+          collapsedRef.current = false;
+          setHeaderCollapsed(false);
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (frameRequest.current === null) {
+        frameRequest.current = window.requestAnimationFrame(updateHeader);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (frameRequest.current !== null) window.cancelAnimationFrame(frameRequest.current);
+    };
+  }, []);
+
   return (
     <main className="content">
       <div className="content-header">
-        <div className="content-header-top">
+        <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">
             {selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks'}
           </h1>

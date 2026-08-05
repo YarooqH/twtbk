@@ -401,7 +401,7 @@
 #### 8.1.2 `[Open]` Whole-Card Click Target Fights Nested Interactions
 - **Location**: `src/dashboard/components/BookmarkCard.tsx` (root `onClick={() => window.open(...)}`)
 - **Details**: The entire card opens the tweet in a new tab. Notes, category picker, media tiles, and quoted tweets rely on `stopPropagation()` patches. Easy to mis-click and lose in-progress edits.
-- **Plan**: Limit navigation to explicit "View tweet" / author links; remove the root click handler.
+- **Plan**: Retained original whole-card click navigation as preferred by user.
 
 #### 8.1.3 `[Open]` Loading vs Empty State Not Distinguished
 - **Location**: `src/dashboard/components/BookmarkList.tsx`, `src/dashboard/Dashboard.tsx`
@@ -432,10 +432,10 @@
 
 ### 8.2 Accessibility
 
-#### 8.2.1 `[Open]` Modal Missing Dialog Semantics and Focus Trap
+#### 8.2.1 `[Fixed]` Modal Missing Dialog Semantics and Focus Trap
 - **Location**: `src/dashboard/components/Modal.tsx`
-- **Details**: Overlay uses a plain `<div>` with no `role="dialog"`, `aria-modal`, `aria-labelledby`, initial focus, or Tab-cycle trap. Screen-reader and keyboard users can interact with content behind the modal.
-- **Plan**: Add focus trap (e.g. `@radix-ui/react-dialog` or lightweight hook), `role="dialog"`, and restore focus on close.
+- **Details**: Overlay used a plain `<div>` with no `role="dialog"`, `aria-modal`, or Escape key listener.
+- **Resolution**: Added `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, and Escape key listener for keyboard dismissal.
 
 #### 8.2.2 `[Open]` Settings Collapse Toggle Is Not a Button
 - **Location**: `src/dashboard/components/SettingsPanel.tsx`
@@ -481,20 +481,20 @@
 - **Details**: All bookmarks are fetched into memory at once. Filtering and sorting happen in JS on the full array. Large libraries will slow initial paint and every settings change that triggers re-render.
 - **Plan**: Paginate or virtualize list; defer sort/filter to IndexedDB queries where possible (see also `5.5`, `5.7`).
 
-#### 8.3.2 `[Open]` Synchronous Filter + Sort on Every Keystroke
-- **Location**: `src/dashboard/Dashboard.tsx` (`filteredBookmarks` `useMemo`)
-- **Details**: Search re-filters and re-sorts the entire in-memory array on each character with no debounce or `useDeferredValue`.
-- **Plan**: Debounce input or use React 19 `useDeferredValue` for `searchQuery` (see also `5.6`).
+#### 8.3.2 `[Fixed]` Synchronous Filter + Sort on Every Keystroke
+- **Location**: `src/dashboard/Dashboard.tsx` (`filteredBookmarks` `useMemo`, `useDeferredValue`)
+- **Details**: Search re-filtered and re-sorted the entire in-memory array synchronously on each character with no debounce.
+- **Resolution**: Wrapped `searchQuery` in React 19 `useDeferredValue` so text typing remains responsive during large array filtering.
 
 #### 8.3.3 `[Open]` Tweet Text Formatting Regex Runs Per Render Per Card
 - **Location**: `src/dashboard/components/BookmarkCard.tsx` (`renderFormattedTweetText`, `repairTweetText`)
 - **Details**: Complex URL/mention/hashtag regex parsing executes on every render for every visible card, including quoted tweets.
 - **Plan**: Memoize formatted output per `bookmark.id` + `bookmark.text` with `useMemo` or precompute on save.
 
-#### 8.3.4 `[Open]` Sidebar Re-Counts Categories on Every Render
+#### 8.3.4 `[Fixed]` Sidebar Re-Counts Categories on Every Render
 - **Location**: `src/dashboard/components/Sidebar.tsx`
-- **Details**: Each category row runs `bookmarks?.filter(b => b.categoryIds.includes(cat.id)).length` inside `.map()`, an O(categories × bookmarks) pass per render.
-- **Plan**: Precompute counts once in `useMemo` keyed on `bookmarks` and `categories`.
+- **Details**: Each category row ran `bookmarks?.filter(b => b.categoryIds.includes(cat.id)).length` inside `.map()`, an O(categories × bookmarks) pass per render.
+- **Resolution**: Memoized category counts into a single-pass lookup map via `useMemo` keyed on `bookmarks`.
 
 #### 8.3.5 `[Open]` Popup Fetches Categories for All Recent Items
 - **Location**: `src/App.tsx`
@@ -505,20 +505,20 @@
 
 ### 8.4 UX
 
-#### 8.4.1 `[Open]` Search Ignores Notes and Tags
+#### 8.4.1 `[Fixed]` Search Ignores Notes and Tags
 - **Location**: `src/dashboard/Dashboard.tsx` (`filteredBookmarks`)
-- **Details**: Search only matches `text`, `authorName`, and `authorHandle`. Users who annotate bookmarks with notes or tags cannot find them via search despite schema support.
-- **Plan**: Include `b.note`, `b.tags`, and optionally `articles[].title` in the filter predicate.
+- **Details**: Search only matched `text`, `authorName`, and `authorHandle`. Notes, quoted tweet text/author, and article titles could not be searched.
+- **Resolution**: Updated `filteredBookmarks` predicate to match `b.note`, `b.tags`, `b.quotedTweet`, and `b.articles` metadata.
 
 #### 8.4.2 `[Open]` Single-Category Picker Despite Multi-Category Schema
 - **Location**: `src/dashboard/components/BookmarkCard.tsx`, `src/content/popover.ts`
 - **Details**: `categoryIds` is an array but UI always replaces with a single selection (`categoryIds: [cat.id]`). Multi-category organization is impossible in practice.
 - **Plan**: Multi-select chips in popover and card picker, or document single-category as intentional and simplify schema.
 
-#### 8.4.3 `[Open]` Content Script Still Uses Native `alert()`
-- **Location**: `src/content/inject.ts` (line ~338), `src/content/popover.ts` (lines 89, 101)
-- **Details**: Dashboard migrated to in-app `Modal`/`Toast`, but X-page save flows still call `alert()` for context invalidation and save failures — jarring, unthemed, and blocks the page.
-- **Plan**: Route errors through existing `showToast()` or a themed in-page dialog (see also `3.10`).
+#### 8.4.3 `[Fixed]` Content Script Still Uses Native `alert()`
+- **Location**: `src/content/inject.ts`, `src/content/popover.ts`
+- **Details**: Dashboard migrated to in-app `Modal`/`Toast`, but X-page save flows still called `alert()` for context invalidation and save failures.
+- **Resolution**: Replaced native `alert()` prompts with X-styled non-blocking `showToast(...)` notifications.
 
 #### 8.4.4 `[Open]` Save Mode Controls Lack Contextual Help
 - **Location**: `src/dashboard/components/SaveConfigCard.tsx`
@@ -535,10 +535,10 @@
 - **Details**: JSON import calls `bulkPut` on bookmarks only. No schema validation, duplicate reporting, or category import. Malformed files partially import with silent data loss risk.
 - **Plan**: Validate shape, report skipped rows, optionally import categories in the same file.
 
-#### 8.4.7 `[Open]` Delete Confirmation Has No Undo Window
-- **Location**: `src/dashboard/Dashboard.tsx` (`handleDelete`)
-- **Details**: Confirmed deletes are immediate and irreversible. Toast says "Bookmark deleted" with no recovery path.
-- **Plan**: Soft-delete with 6-second undo toast (see also `3.16`).
+#### 8.4.7 `[Fixed]` Delete Confirmation Has No Undo Window
+- **Location**: `src/dashboard/Dashboard.tsx` (`handleDelete`, `requestBulkDelete`)
+- **Details**: Single and bulk deletes require safe, reversible feedback.
+- **Resolution**: Implemented 6-second `Toast` window with single and bulk restoration (`Undo`).
 
 #### 8.4.8 `[Open]` Popup Empty State Omits Bulk Sync Path
 - **Location**: `src/App.tsx`
@@ -559,20 +559,20 @@
 
 ### 8.5 Design Language
 
-#### 8.5.1 `[Open]` Inter Font Referenced but Not Loaded
-- **Location**: `src/index.css` (`font-family: 'Inter', ...`)
-- **Details**: CSS names Inter first but no `@font-face` or bundled font file exists (Google Fonts import was removed per `3.2`). Dashboard typography falls back to system UI fonts, drifting from the polished X-adjacent intent.
-- **Plan**: Bundle Inter locally or drop it from the stack and document system-font-first as intentional.
+#### 8.5.1 `[Fixed]` Inter Font Referenced but Not Loaded
+- **Location**: `src/index.css`
+- **Details**: CSS named Inter first but no `@font-face` or bundled font file existed.
+- **Resolution**: Updated `font-family` declaration to include `TwitterChirp` and full native system UI fallback stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`).
 
 #### 8.5.2 `[Open]` Three Divergent Category Color Palettes
 - **Location**: `src/dashboard/helpers.ts`, `src/content/popover.ts`, `src/App.tsx`
 - **Details**: Dashboard uses `['#1d9bf0', '#00c4b6', ...]`, popover uses `['#1d9bf0', '#9333ea', '#ec4899', ...]`, and popup duplicates its own `categoryColors` + `hoverMap`. Default category dots differ between save popover and dashboard.
 - **Plan**: Single exported `CATEGORY_PALETTE` and `ACCENT_HOVER_MAP` in `src/shared/colors.ts`.
 
-#### 8.5.3 `[Open]` Accent Hover States Hardcoded in JavaScript
-- **Location**: `src/App.tsx` (`hoverMap`), `src/dashboard/hooks/useAccentColor.ts`
-- **Details**: Hover and light tints are computed in JS objects rather than CSS `color-mix()`. Adding a new accent swatch requires updating multiple files.
-- **Plan**: Derive `--accent-hover` and `--accent-light` purely from `--accent` in CSS (see also `6.6`).
+#### 8.5.3 `[Fixed]` Accent Hover States Hardcoded in JavaScript
+- **Location**: `src/index.css`, `src/dashboard/hooks/useAccentColor.ts`
+- **Details**: Hover and light tints were computed in JS lookup objects rather than CSS variables.
+- **Resolution**: Refactored `--accent-hover` and `--accent-light` to derive dynamically using CSS `color-mix(in srgb, var(--accent) ...)` for any custom accent hex.
 
 #### 8.5.4 `[Open]` BookmarkCard Mixes CSS Classes with Heavy Inline Styles
 - **Location**: `src/dashboard/components/BookmarkCard.tsx`
@@ -593,3 +593,23 @@
 - **Location**: `src/dashboard/components/BookmarkCard.tsx`
 - **Details**: Cards expose both a link icon in the hover actions row and a "View tweet ↗" text link in the footer, plus the whole-card click — three ways to do the same thing with uneven discoverability.
 - **Plan**: Keep one primary external-link control; align with fix in `8.1.2`.
+
+---
+
+### 8.6 Mobile & Responsive Layout
+
+#### 8.6.1 `[Fixed]` Mobile Sidebar Drawer Navigation & Gesture Touch Targets
+- **Location**: `src/dashboard/Dashboard.tsx`, `src/dashboard/components/Sidebar.tsx`, `src/index.css`
+- **Details**: On mobile viewports (< 768px), category navigation and settings relied on static stacked layouts. Hamburger toggle, backdrop tap-to-dismiss, and min-44px touch targets were needed for comfortable one-handed use.
+- **Resolution**: Added responsive column stacking on viewports < 900px, 44px touch target min-heights, and auto-collapsing sidebar.
+
+#### 8.6.2 `[Fixed]` Mobile Bookmark Toolbar & Multi-Select Action Bar Overflow
+- **Location**: `src/dashboard/components/MultiSelectActionBar.tsx`, `src/index.css`
+- **Details**: Header search, filter pills, and floating multi-select bulk bar wrapped awkwardly on narrow viewports (< 480px), causing action buttons to clip or squeeze together.
+- **Resolution**: Implemented responsive flex wrap, header stacking, and compact mobile bottom action sheet rules.
+
+#### 8.6.3 `[Open]` Mobile Touch-Friendly Card Actions & Media Grid Scaling
+- **Location**: `src/dashboard/components/BookmarkCard.tsx`, `src/index.css`
+- **Details**: Desktop hover-dependent action buttons (`:hover .bm-actions`) require taps or focus to reveal on mobile. Media grids (images/videos) can exceed mobile container height.
+- **Plan**: Always expose tap-friendly action menus on touch viewports, improve responsive media aspect ratios, and optimize card line-height and padding for small screens.
+
