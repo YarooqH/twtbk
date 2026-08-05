@@ -117,46 +117,62 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 />
 
                 <div className="settings-card">
-                  <div className="settings-card-title">Personalization</div>
-                  
-                  {/* Theme Mode Switcher */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-                    <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>
-                      THEME MODE
-                      <InfoTooltip text="Switch between System preference, clean Light mode, or sleek Dark mode." />
-                    </span>
-                    <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <div className="settings-card-title" style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                      Personalization
+                      <InfoTooltip text="Switch theme mode (System, Light, Dark) or select your custom accent color." />
+                    </div>
+
+                    {/* Compact 3-state Theme Mode Icon Toggle */}
+                    <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)', position: 'relative' }}>
                       {[
-                        { id: 'system', label: 'System', icon: '💻' },
-                        { id: 'light', label: 'Light', icon: '☀️' },
-                        { id: 'dark', label: 'Dark', icon: '🌙' },
-                      ].map(mode => (
-                        <button
-                          key={mode.id}
-                          type="button"
-                          onClick={() => setThemeMode(mode.id as ThemeMode)}
-                          style={{
-                            flex: 1,
-                            background: themeMode === mode.id ? 'var(--accent)' : 'transparent',
-                            color: themeMode === mode.id ? '#ffffff' : 'var(--text-muted)',
-                            border: 'none',
-                            borderRadius: 'var(--radius-full)',
-                            padding: '6px',
-                            fontSize: '11.5px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px',
-                            transition: 'background 0.15s, color 0.15s'
-                          }}
-                        >
-                          <span>{mode.icon}</span>
-                          <span>{mode.label}</span>
-                        </button>
-                      ))}
+                        { id: 'system', label: 'System preference', icon: '💻' },
+                        { id: 'light', label: 'Light mode', icon: '☀️' },
+                        { id: 'dark', label: 'Dark mode', icon: '🌙' },
+                      ].map(mode => {
+                        const isActive = themeMode === mode.id;
+                        return (
+                          <button
+                            key={mode.id}
+                            type="button"
+                            onClick={() => setThemeMode(mode.id as ThemeMode)}
+                            title={mode.label}
+                            aria-label={mode.label}
+                            style={{
+                              position: 'relative',
+                              background: 'transparent',
+                              color: isActive ? '#ffffff' : 'var(--text-muted)',
+                              border: 'none',
+                              borderRadius: 'var(--radius-full)',
+                              width: '28px',
+                              height: '24px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              zIndex: 1,
+                              transition: 'color 0.2s',
+                            }}
+                          >
+                            {isActive && (
+                              <motion.span
+                                layoutId="theme-mode-pill"
+                                transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  background: 'var(--accent)',
+                                  borderRadius: 'var(--radius-full)',
+                                  zIndex: -1,
+                                }}
+                              />
+                            )}
+                            <span style={{ position: 'relative', zIndex: 2 }}>{mode.icon}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
