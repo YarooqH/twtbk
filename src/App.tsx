@@ -31,7 +31,7 @@ const hoverMap: Record<string, string> = {
 function App() {
   const { markPopupSeen } = useOnboarding();
   const recentBookmarks = useLiveQuery(
-    () => db.bookmarks.orderBy('savedAt').reverse().limit(5).toArray()
+    () => db.bookmarks.orderBy('savedAt').reverse().limit(15).toArray()
   );
   const totalCount = useLiveQuery(() => db.bookmarks.count());
   const categories = useLiveQuery(() => db.categories.toArray());
@@ -134,16 +134,14 @@ function App() {
                           <span key={catId} style={{ 
                             display: 'inline-flex', 
                             alignItems: 'center', 
-                            gap: '4px', 
                             fontSize: '11px', 
-                            padding: '3px 6px', 
+                            padding: '3px 8px', 
                             borderRadius: '4px', 
                             background: `${catColor}18`,
                             color: catColor,
                             fontWeight: 600,
                             lineHeight: 1
                           }}>
-                            <div style={{ width: '6.5px', height: '6.5px', borderRadius: '50%', background: catColor }}></div>
                             {cat.name}
                           </span>
                         );
