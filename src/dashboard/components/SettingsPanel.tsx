@@ -52,6 +52,21 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const panelTransition = getMotionTransition(Boolean(reducedMotion));
   const [isMobileViewport, setIsMobileViewport] = React.useState(false);
 
+  const [experimentalColors, setExperimentalColors] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    chrome.storage?.sync?.get(['experimentalColors'], (res) => {
+      if (res && res.experimentalColors !== undefined) {
+        setExperimentalColors(Boolean(res.experimentalColors));
+      }
+    });
+  }, []);
+
+  const handleToggleExperimental = (val: boolean) => {
+    setExperimentalColors(val);
+    chrome.storage?.sync?.set({ experimentalColors: val });
+  };
+
   React.useEffect(() => {
     const media = window.matchMedia('(max-width: 1100px)');
     const updateViewport = () => setIsMobileViewport(media.matches);
@@ -180,9 +195,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>
                       ACCENT COLOR
-                      <InfoTooltip text="Pick a preset or choose any custom accent color using the custom color wheel." />
+                      <InfoTooltip text="Select a preset accent color for your XMarks dashboard interface." />
                     </span>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-start' }}>
                       {categoryColors.map(color => (
                         <span
                           key={color}
@@ -203,39 +218,66 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                           }}
                         />
                       ))}
-                      {/* Custom Color Selector Swatch */}
-                      <label
-                        title="Pick custom color"
-                        style={{
-                          position: 'relative',
-                          width: '22px',
-                          height: '22px',
-                          borderRadius: '50%',
-                          background: 'conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1px solid var(--border-strong)',
-                          boxShadow: '0 0 4px rgba(0,0,0,0.15)',
-                        }}
-                      >
+                      
+                      {/* Custom Color Selector Swatch (Only when Experimental mode is ON) */}
+                      <AnimatePresence>
+                        {experimentalColors && (
+                          <motion.label
+                            key="custom-color-picker"
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.6 }}
+                            transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                            title="Pick custom color"
+                            style={{
+                              position: 'relative',
+                              width: '22px',
+                              height: '22px',
+                              borderRadius: '50%',
+                              background: 'conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1px solid var(--border-strong)',
+                              boxShadow: '0 0 4px rgba(0,0,0,0.15)',
+                              marginLeft: '2px',
+                            }}
+                          >
+                            <input
+                              type="color"
+                              value={accentColor}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setAccentColor(val);
+                                chrome.storage?.sync?.set({ accentColor: val });
+                              }}
+                              style={{
+                                position: 'absolute',
+                                opacity: 0,
+                                width: '100%',
+                                height: '100%',
+                                cursor: 'pointer',
+                              }}
+                            />
+                          </motion.label>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Experimental Custom Color Switch */}
+                    <div className="toggle-row" style={{ marginTop: '8px', marginBottom: 0, paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                      <span className="toggle-label" style={{ fontSize: '11.5px', display: 'flex', alignItems: 'center', color: 'var(--text-muted)' }}>
+                        Experimental Custom Color
+                        <InfoTooltip text="⚠️ Caution: Custom accent colors are experimental. Certain custom hex hues may degrade text contrast or legibility in some UI themes." />
+                      </span>
+                      <label className="toggle-switch">
                         <input
-                          type="color"
-                          value={accentColor}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setAccentColor(val);
-                            chrome.storage?.sync?.set({ accentColor: val });
-                          }}
-                          style={{
-                            position: 'absolute',
-                            opacity: 0,
-                            width: '100%',
-                            height: '100%',
-                            cursor: 'pointer',
-                          }}
+                          type="checkbox"
+                          checked={experimentalColors}
+                          onChange={(e) => handleToggleExperimental(e.target.checked)}
                         />
+                        <span className="toggle-slider" />
                       </label>
                     </div>
                   </div>
