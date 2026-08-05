@@ -24,6 +24,15 @@ export function useTour({
       driverRef.current.destroy();
     }
 
+    const isMobile = typeof window.matchMedia === 'function'
+      && window.matchMedia('(max-width: 900px)').matches;
+    const categoriesTarget = isMobile
+      ? '[data-onboarding="mobile-categories"]'
+      : '[data-onboarding="desktop-categories"]';
+    const settingsTarget = isMobile
+      ? '.mobile-settings-btn'
+      : '[data-onboarding="settings-toggle"]';
+
     const steps = [
       {
         element: '[data-onboarding="search-input"]',
@@ -35,7 +44,7 @@ export function useTour({
         },
       },
       {
-        element: '[data-onboarding="categories"]',
+        element: categoriesTarget,
         popover: {
           title: 'Custom Categories',
           description: 'Organize your bookmarks into color-coded categories or view Uncategorized items.',
@@ -53,7 +62,7 @@ export function useTour({
         },
       },
       {
-        element: '[data-onboarding="settings-toggle"]',
+        element: settingsTarget,
         popover: {
           title: 'Settings & Overrides',
           description: 'Configure bookmark save modes, button positions, accent color, and native X overrides.',
@@ -73,9 +82,19 @@ export function useTour({
     ];
 
     // Filter out steps whose element isn't currently in the DOM
+    const isVisible = (element: Element) => {
+      let current: Element | null = element;
+      while (current) {
+        const styles = window.getComputedStyle(current);
+        if (styles.display === 'none' || styles.visibility === 'hidden') return false;
+        current = current.parentElement;
+      }
+      return true;
+    };
+
     const validSteps = steps.filter(step => {
-      const el = document.querySelector(step.element);
-      return Boolean(el);
+      const elements = Array.from(document.querySelectorAll(step.element));
+      return elements.some(isVisible);
     });
 
     if (validSteps.length === 0) return;
@@ -88,17 +107,26 @@ export function useTour({
       steps: validSteps,
       onHighlightStarted: (element, step) => {
         const attr = element?.getAttribute?.('data-onboarding') || (typeof step?.element === 'string' ? step.element : '');
-        if (attr === 'settings-toggle' || attr === 'settings-panel' || attr.includes('settings-toggle') || attr.includes('settings-panel')) {
+        if (
+          attr === 'settings-toggle' ||
+          attr === 'settings-panel' ||
+          attr.includes('settings-toggle') ||
+          attr.includes('settings-panel') ||
+          element?.classList?.contains('mobile-settings-btn')
+        ) {
           // Trigger Motion transition for Settings drawer before step highlight
           setSettingsExpanded?.(true);
           if (window.innerWidth <= 1100) {
             setMobileSettingsOpen?.(true);
           }
+          // Allow Motion drawer transition to complete before refreshing highlight positioning
+          window.setTimeout(() => {
+            driverObj.refresh();
+          }, 300);
         }
       },
       onDestroyStarted: () => {
         const isLastStep = driverObj.isLastStep();
-        driverObj.destroy();
         if (isLastStep) {
           markTourCompleted();
           onToastMessage?.('Tour completed! You are ready to use XMarks.');

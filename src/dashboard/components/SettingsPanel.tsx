@@ -30,7 +30,6 @@ interface SettingsPanelProps {
   isClassifying: boolean;
   classifyProgress: { current: number; total: number } | null;
   runAutoCategorizeJobs: () => void;
-  onStartTour?: () => void;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -45,7 +44,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   autoCategorize, toggleAutoCategorize,
   isModelLoaded, modelProgress,
   isClassifying, classifyProgress, runAutoCategorizeJobs,
-  onStartTour,
 }) => {
   const reducedMotion = useReducedMotion();
   const panelTransition = getMotionTransition(Boolean(reducedMotion));
@@ -140,18 +138,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       ))}
                     </div>
                   </div>
-                  {onStartTour && (
-                    <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        style={{ width: '100%', fontSize: '12px', justifyContent: 'center' }}
-                        onClick={onStartTour}
-                      >
-                        Re-run Guided Tour
-                      </button>
-                    </div>
-                  )}
                 </div>
               </motion.div>
 

@@ -127,7 +127,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
 
   return (
     <main className="content">
-      <nav className="mobile-category-nav" aria-label="Bookmark categories">
+      <nav className="mobile-category-nav" data-onboarding="mobile-categories" aria-label="Bookmark categories">
         <button
           type="button"
           className={`mobile-category-chip ${!selectedCategoryId ? 'active' : ''}`}

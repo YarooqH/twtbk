@@ -458,7 +458,6 @@ export const Dashboard: React.FC = () => {
         isClassifying={isClassifying}
         classifyProgress={classifyProgress}
         runAutoCategorizeJobs={runAutoCategorizeJobs}
-        onStartTour={startTour}
       />
 
       {/* Toast Notification */}
