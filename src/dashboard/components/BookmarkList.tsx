@@ -159,35 +159,6 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
           );
         })}
       </nav>
-      <AnimatePresence>
-        {showWelcomePanel && (
-          <motion.section
-            className="dashboard-welcome"
-            aria-label="Welcome to XMarks"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={transition}
-          >
-            <div>
-              <p className="dashboard-welcome-kicker">Your library is ready</p>
-              <h2>Search and organize your saved ideas.</h2>
-              <p>Try a search, add a category, or take a quick tour of XMarks features.</p>
-              {onStartTour && (
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  style={{ marginTop: '12px', fontSize: '13px', padding: '6px 14px' }}
-                  onClick={onStartTour}
-                >
-                  Take Quick Tour
-                </button>
-              )}
-            </div>
-            <button type="button" className="dashboard-welcome-dismiss" onClick={dismissWelcome} aria-label="Dismiss welcome message">×</button>
-          </motion.section>
-        )}
-      </AnimatePresence>
       <div className="content-header">
         <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">

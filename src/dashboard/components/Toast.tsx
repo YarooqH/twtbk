@@ -38,10 +38,11 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
         color: '#ffffff',
         padding: '12px 24px',
         borderRadius: 'var(--radius-full)',
-        boxShadow: 'var(--shadow-md)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
         fontSize: '14px',
         fontWeight: 600,
-        zIndex: 10001,
+        zIndex: 9999999,
+        pointerEvents: 'auto',
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
@@ -51,7 +52,7 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
       <span>{message}</span>
       {action && (
         <button
-          onClick={(e) => { e.stopPropagation(); action.onClick(); onClose(); }}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); action.onClick(); onClose(); }}
           style={{
             background: 'rgba(255, 255, 255, 0.2)',
             border: 'none',
@@ -61,25 +62,33 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
             borderRadius: '4px',
             fontWeight: 700,
             fontSize: '13px',
-            marginLeft: '8px'
+            marginLeft: '8px',
+            pointerEvents: 'auto'
           }}
         >
           {action.label}
         </button>
       )}
       <button
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onClose();
+        }}
         style={{
           background: 'none',
           border: 'none',
           color: '#ffffff',
           cursor: 'pointer',
-          padding: 0,
+          padding: '4px 8px',
+          margin: '-4px -8px -4px 0',
           fontWeight: 700,
-          opacity: 0.8,
-          fontSize: '16px',
-          lineHeight: 1
+          opacity: 0.9,
+          fontSize: '18px',
+          lineHeight: 1,
+          pointerEvents: 'auto'
         }}
+        aria-label="Close notification"
       >
         ×
       </button>
