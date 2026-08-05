@@ -37,15 +37,22 @@ function App() {
   const categories = useLiveQuery(() => db.categories.toArray());
 
 
-  // Apply accent color from storage so popup reflects user's choice
+  // Apply accent color and theme mode from storage so popup reflects user's choice
   useEffect(() => {
     markPopupSeen();
-    chrome.storage?.sync?.get(['accentColor'], (result) => {
+    chrome.storage?.sync?.get(['accentColor', 'themeMode'], (result) => {
       if (result.accentColor) {
         const color = result.accentColor as string;
         document.documentElement.style.setProperty('--accent', color);
         document.documentElement.style.setProperty('--accent-hover', hoverMap[color] || color);
         document.documentElement.style.setProperty('--accent-light', color + '14');
+      }
+      if (result.themeMode) {
+        if (result.themeMode === 'system') {
+          document.documentElement.removeAttribute('data-theme');
+        } else {
+          document.documentElement.setAttribute('data-theme', result.themeMode as string);
+        }
       }
     });
   }, []);

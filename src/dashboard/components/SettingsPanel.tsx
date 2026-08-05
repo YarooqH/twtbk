@@ -6,6 +6,7 @@ import { categoryColors } from '../helpers';
 import { SaveConfigCard } from './SaveConfigCard';
 import { AICard } from './AICard';
 import { InfoTooltip } from './InfoTooltip';
+import { useThemeMode, type ThemeMode } from '../hooks/useThemeMode';
 
 interface SettingsPanelProps {
   settingsExpanded: boolean;
@@ -46,6 +47,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   isModelLoaded, modelProgress,
   isClassifying, classifyProgress, runAutoCategorizeJobs,
 }) => {
+  const [themeMode, setThemeMode] = useThemeMode();
   const reducedMotion = useReducedMotion();
   const panelTransition = getMotionTransition(Boolean(reducedMotion));
   const [isMobileViewport, setIsMobileViewport] = React.useState(false);
@@ -116,12 +118,55 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
                 <div className="settings-card">
                   <div className="settings-card-title">Personalization</div>
+                  
+                  {/* Theme Mode Switcher */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                    <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>
+                      THEME MODE
+                      <InfoTooltip text="Switch between System preference, clean Light mode, or sleek Dark mode." />
+                    </span>
+                    <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)' }}>
+                      {[
+                        { id: 'system', label: 'System', icon: '💻' },
+                        { id: 'light', label: 'Light', icon: '☀️' },
+                        { id: 'dark', label: 'Dark', icon: '🌙' },
+                      ].map(mode => (
+                        <button
+                          key={mode.id}
+                          type="button"
+                          onClick={() => setThemeMode(mode.id as ThemeMode)}
+                          style={{
+                            flex: 1,
+                            background: themeMode === mode.id ? 'var(--accent)' : 'transparent',
+                            color: themeMode === mode.id ? '#ffffff' : 'var(--text-muted)',
+                            border: 'none',
+                            borderRadius: 'var(--radius-full)',
+                            padding: '6px',
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            transition: 'background 0.15s, color 0.15s'
+                          }}
+                        >
+                          <span>{mode.icon}</span>
+                          <span>{mode.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Accent Color Palette & Custom Color Picker */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>
                       ACCENT COLOR
-                      <InfoTooltip text="Customizes the accent color across XMarks UI and saved bookmark badges." />
+                      <InfoTooltip text="Pick a preset or choose any custom accent color using the custom color wheel." />
                     </span>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'space-between' }}>
                       {categoryColors.map(color => (
                         <span
                           key={color}
@@ -129,17 +174,53 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             setAccentColor(color);
                             chrome.storage?.sync?.set({ accentColor: color });
                           }}
+                          title={color}
                           style={{
-                            width: '22px',
-                            height: '22px',
+                            width: '20px',
+                            height: '20px',
                             borderRadius: '50%',
                             background: color,
                             cursor: 'pointer',
-                            border: accentColor === color ? '2px solid var(--text)' : 'none',
-                            boxShadow: '0 0 4px rgba(0,0,0,0.1)'
+                            border: accentColor.toLowerCase() === color.toLowerCase() ? '2px solid var(--text)' : 'none',
+                            boxShadow: '0 0 4px rgba(0,0,0,0.1)',
+                            transition: 'transform 0.15s',
                           }}
                         />
                       ))}
+                      {/* Custom Color Selector Swatch */}
+                      <label
+                        title="Pick custom color"
+                        style={{
+                          position: 'relative',
+                          width: '22px',
+                          height: '22px',
+                          borderRadius: '50%',
+                          background: 'conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1px solid var(--border-strong)',
+                          boxShadow: '0 0 4px rgba(0,0,0,0.15)',
+                        }}
+                      >
+                        <input
+                          type="color"
+                          value={accentColor}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAccentColor(val);
+                            chrome.storage?.sync?.set({ accentColor: val });
+                          }}
+                          style={{
+                            position: 'absolute',
+                            opacity: 0,
+                            width: '100%',
+                            height: '100%',
+                            cursor: 'pointer',
+                          }}
+                        />
+                      </label>
                     </div>
                   </div>
                 </div>
