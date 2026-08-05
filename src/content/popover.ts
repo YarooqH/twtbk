@@ -1,13 +1,15 @@
 import { MSG } from '../messages';
 import { showToast } from './toast';
 import { currentAccentColor } from './settings';
-import { markButtonAsSaved } from './inject';
+import { markButtonAsSaved, markButtonAsUnsaved } from './inject';
 import { getCategoryColor } from '../shared/colors';
 
 export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
   // Remove any existing popover
   const existing = document.getElementById('twtbk-picker');
   if (existing) existing.remove();
+
+  const isSaved = anchorEl.dataset.saved === 'true';
 
   const container = document.createElement('div');
   container.id = 'twtbk-picker';
@@ -51,6 +53,14 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
       <div class="twtbk-note-row">
         <textarea id="twtbk-note" placeholder="Add a note..."></textarea>
       </div>
+
+      ${isSaved ? `
+        <div class="twtbk-popover-footer" style="padding: 8px 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: flex-end;">
+          <button id="twtbk-remove-bookmark" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.15s;">
+            Remove from XMarks
+          </button>
+        </div>
+      ` : ''}
     `;
 
     document.body.appendChild(container);
@@ -111,6 +121,25 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
         cleanup();
       });
     };
+
+    // Handle removing/unsaving a bookmark
+    container.querySelector('#twtbk-remove-bookmark')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      chrome.runtime.sendMessage({ type: MSG.DELETE_BOOKMARK, payload: { id: data.id } }, (res) => {
+        if (res && res.success) {
+          if (anchorEl.classList.contains('twtbk-save-btn')) {
+            markButtonAsUnsaved(anchorEl);
+          } else {
+            anchorEl.dataset.saved = 'false';
+            anchorEl.setAttribute('title', 'Save to XMarks');
+          }
+          showToast('Removed from XMarks');
+        } else {
+          showToast('Failed to remove: ' + (res?.error || 'Unknown error'), false);
+        }
+        cleanup();
+      });
+    });
 
     // Attach click handlers to all list items
     const items = container.querySelectorAll('.twtbk-cat-item');

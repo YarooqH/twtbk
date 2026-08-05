@@ -11,7 +11,7 @@ let importPaused = false;
 
 function updateOnboardingState(changes: Record<string, unknown>) {
   chrome.storage?.local?.get('xmarks_onboarding', result => {
-    const current = result?.xmarks_onboarding || { version: 1 };
+    const current: any = result?.xmarks_onboarding || { version: 1 };
     chrome.storage?.local?.set({ xmarks_onboarding: { ...current, ...changes } });
   });
 }

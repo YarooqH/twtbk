@@ -10,6 +10,7 @@ import type { Bookmark } from './db';
 // ── Message type constants (use these instead of raw strings) ──────────────
 export const MSG = {
   SAVE_TWEET:       'SAVE_TWEET',
+  DELETE_BOOKMARK:  'DELETE_BOOKMARK',
   CHECK_TWEET_SAVED:'CHECK_TWEET_SAVED',
   IMPORT_BATCH:     'IMPORT_BATCH',
   GET_CATEGORIES:   'GET_CATEGORIES',
@@ -21,6 +22,7 @@ export type MessageType = (typeof MSG)[keyof typeof MSG];
 
 // ── Per-message payload shapes ─────────────────────────────────────────────
 export type SaveTweetPayload       = Partial<Bookmark>;
+export type DeleteBookmarkPayload  = { id: string };
 export type CheckTweetSavedPayload = { id: string };
 export type ImportBatchPayload     = Partial<Bookmark>[];
 export type CreateCategoryPayload  = { name: string };
@@ -28,6 +30,7 @@ export type CreateCategoryPayload  = { name: string };
 // ── Discriminated union (background handler's single source of truth) ──────
 export type ActionMessage =
   | { type: typeof MSG.SAVE_TWEET;        payload: SaveTweetPayload }
+  | { type: typeof MSG.DELETE_BOOKMARK;    payload: DeleteBookmarkPayload }
   | { type: typeof MSG.CHECK_TWEET_SAVED; payload: CheckTweetSavedPayload }
   | { type: typeof MSG.IMPORT_BATCH;      payload: ImportBatchPayload }
   | { type: typeof MSG.GET_CATEGORIES }
