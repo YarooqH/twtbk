@@ -1620,80 +1620,39 @@ body {
   color: var(--text-muted) !important;
 }
 
-/* Info Tooltip Styling */
-.info-tooltip-wrap {
+/* Info Tooltip Styling (Portal-based, zero cropping) */
+.info-tooltip-anchor {
   display: inline-flex;
   align-items: center;
-  position: relative;
   margin-left: 5px;
   cursor: help;
   outline: none;
 }
 
-.info-tooltip-icon {
-  color: var(--text-muted);
-  opacity: 0.65;
-  transition: opacity 0.2s, color 0.2s;
-  display: inline-flex;
-  align-items: center;
+.info-tooltip-portal {
+  pointer-events: none;
 }
 
-.info-tooltip-wrap:hover .info-tooltip-icon,
-.info-tooltip-wrap:focus .info-tooltip-icon {
-  opacity: 1;
-  color: var(--accent);
-}
-
-.info-tooltip-bubble {
-  position: absolute;
-  bottom: 130%;
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  background: var(--bg-secondary);
+.info-tooltip-content {
+  background-color: var(--bg-secondary);
   color: var(--text);
   border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-md);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 11.5px;
-  font-weight: 400;
-  line-height: 1.35;
-  white-space: normal;
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.42;
   width: max-content;
-  max-width: 230px;
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
-  z-index: 1000;
+  max-width: 240px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  word-break: break-word;
+  white-space: normal;
   text-transform: none;
+  letter-spacing: normal;
 }
 
-.info-tooltip-bubble.align-left {
-  left: 0;
-  transform: translateX(0) translateY(4px);
-}
-.info-tooltip-wrap:hover .info-tooltip-bubble.align-left,
-.info-tooltip-wrap:focus .info-tooltip-bubble.align-left {
-  transform: translateX(0) translateY(0);
-}
-
-.info-tooltip-bubble.align-right {
-  left: auto;
-  right: 0;
-  transform: translateX(0) translateY(4px);
-}
-.info-tooltip-wrap:hover .info-tooltip-bubble.align-right,
-.info-tooltip-wrap:focus .info-tooltip-bubble.align-right {
-  transform: translateX(0) translateY(0);
-}
-
-.info-tooltip-wrap:hover .info-tooltip-bubble,
-.info-tooltip-wrap:focus .info-tooltip-bubble {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-}
 
 
 
