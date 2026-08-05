@@ -425,7 +425,6 @@ export function injectSaveButtons() {
     });
 
     // ── Mode-specific click handler ────────────────────────────────────
-    // Injected / arrow / augment: the XMarks button always calls saveTweet.
     btnContainer.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -433,7 +432,21 @@ export function injectSaveButtons() {
         showToast("Extension updated. Please refresh page to save!", false);
         return;
       }
-      saveTweet(tweet, btnContainer);
+
+      if (btnContainer.dataset.saved === 'true') {
+        // Toggle OFF: directly remove bookmark
+        chrome.runtime.sendMessage({ type: MSG.DELETE_BOOKMARK, payload: { id: tweetId } }, (res) => {
+          if (chrome.runtime.lastError || !res?.success) {
+            showToast("Failed to remove bookmark", false);
+            return;
+          }
+          markButtonAsUnsaved(btnContainer);
+          showToast("Removed from XMarks");
+        });
+      } else {
+        // Toggle ON: save tweet via popover
+        saveTweet(tweet, btnContainer);
+      }
     });
 
     // Check if this tweet is already saved in XMarks DB (C1)
