@@ -5,7 +5,7 @@
   --bg: #ffffff;
   --bg-secondary: #f7f9f9;
   --bg-hover: #f7f9f9;
-  --bg-overlay: rgba(255, 255, 255, 0.35);
+  --bg-overlay: rgba(255, 255, 255, 0.85);
   --border: #eff3f4;
   --border-strong: #cfd9de;
   --accent: #1d9bf0;
@@ -39,7 +39,7 @@
     --bg: #000000;
     --bg-secondary: #16181c;
     --bg-hover: #16181c;
-    --bg-overlay: rgba(15, 20, 25, 0.4);
+    --bg-overlay: rgba(0, 0, 0, 0.75);
     --border: #2f3336;
     --border-strong: #3f4447;
     --accent-light: rgba(29, 155, 240, 0.15);
@@ -56,7 +56,7 @@
   --bg: #ffffff;
   --bg-secondary: #f7f9f9;
   --bg-hover: #f7f9f9;
-  --bg-overlay: rgba(255, 255, 255, 0.35);
+  --bg-overlay: rgba(255, 255, 255, 0.85);
   --border: #eff3f4;
   --border-strong: #cfd9de;
   --accent-light: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -72,7 +72,7 @@
   --bg: #000000;
   --bg-secondary: #16181c;
   --bg-hover: #16181c;
-  --bg-overlay: rgba(15, 20, 25, 0.4);
+  --bg-overlay: rgba(0, 0, 0, 0.75);
   --border: #2f3336;
   --border-strong: #3f4447;
   --accent-light: rgba(29, 155, 240, 0.15);
@@ -325,16 +325,10 @@ body {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--bg-overlay);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
   backdrop-filter: blur(12px) saturate(160%);
   z-index: 10;
-}
-
-@media (prefers-color-scheme: dark) {
-  .content-header {
-    background: rgba(0, 0, 0, 0.65);
-  }
 }
 
 .content-header-top {
