@@ -55,6 +55,15 @@ export const SettingsIcon = () => (
   </svg>
 );
 
+export const TuneIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M4 6h16M4 12h16M4 18h16" />
+    <circle cx="8" cy="6" r="2" fill="var(--bg)" />
+    <circle cx="16" cy="12" r="2" fill="var(--bg)" />
+    <circle cx="10" cy="18" r="2" fill="var(--bg)" />
+  </svg>
+);
+
 export const SortIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <path d="M3 6h18M7 12h10M11 18h2"/>

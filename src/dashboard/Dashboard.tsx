@@ -159,7 +159,11 @@ export const Dashboard: React.FC = () => {
     if (!bookmarks) return [];
     let result = bookmarks;
     if (selectedCategoryId) {
-      result = result.filter(b => b.categoryIds.includes(selectedCategoryId));
+      if (selectedCategoryId === '__uncategorized__') {
+        result = result.filter(b => !b.categoryIds || b.categoryIds.length === 0);
+      } else {
+        result = result.filter(b => b.categoryIds?.includes(selectedCategoryId));
+      }
     }
     if (deferredSearchQuery.trim()) {
       const q = deferredSearchQuery.toLowerCase();
@@ -377,6 +381,7 @@ export const Dashboard: React.FC = () => {
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
         selectedCategoryId={selectedCategoryId}
+        setSelectedCategoryId={setSelectedCategoryId}
         filteredBookmarks={filteredBookmarks}
         bookmarks={bookmarks}
         categories={categories}

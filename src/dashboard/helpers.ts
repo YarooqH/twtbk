@@ -1,9 +1,6 @@
+import { categoryColors, getCategoryColor } from '../shared/colors';
+
 const getInitials = (name: string) => name?.trim()?.charAt(0)?.toUpperCase() || '?';
-const categoryColors = ['#1d9bf0', '#00c4b6', '#f91880', '#7856ff', '#ff7a00', '#00ba7c'];
-const getCategoryColor = (id: string, customColor?: string) => {
-  if (customColor) return customColor;
-  return categoryColors[id.charCodeAt(id.length - 1) % categoryColors.length];
-};
 
 const formatDate = (date: Date | string | undefined) => {
   if (!date) return '';

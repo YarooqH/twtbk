@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { getCategoryColor } from './shared/colors';
 import { db } from './db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import './index.css';
@@ -24,11 +25,7 @@ const hoverMap: Record<string, string> = {
   '#00ba7c': '#00a36c',
 };
 
-const categoryColors = ['#1d9bf0', '#00c4b6', '#f91880', '#7856ff', '#ff7a00', '#00ba7c'];
-const getCategoryColor = (id: string, customColor?: string) => {
-  if (customColor) return customColor;
-  return categoryColors[id.charCodeAt(id.length - 1) % categoryColors.length];
-};
+
 
 function App() {
   const recentBookmarks = useLiveQuery(

@@ -53,6 +53,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return map;
   }, [bookmarks]);
 
+  const uncategorizedCount = useMemo(() => {
+    if (!bookmarks) return 0;
+    return bookmarks.filter(b => !b.categoryIds || b.categoryIds.length === 0).length;
+  }, [bookmarks]);
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -72,9 +77,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => setSelectedCategoryId(null)}
         >
           <span className="sidebar-item-icon"><AllIcon /></span>
-          All Bookmarks
-          {!selectedCategoryId && bookmarks && (
+          <span style={{ flex: 1 }}>All Bookmarks</span>
+          {bookmarks && (
             <span className="sidebar-item-badge">{bookmarks.length}</span>
+          )}
+        </li>
+        <li
+          className={`sidebar-item ${selectedCategoryId === '__uncategorized__' ? 'active' : ''}`}
+          onClick={() => setSelectedCategoryId(selectedCategoryId === '__uncategorized__' ? null : '__uncategorized__')}
+        >
+          <span className="sidebar-item-icon" style={{ opacity: 0.75, display: 'inline-flex', alignItems: 'center' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </span>
+          <span style={{ flex: 1 }}>Uncategorized</span>
+          {bookmarks && (
+            <span className="sidebar-item-badge">{uncategorizedCount}</span>
           )}
         </li>
       </ul>

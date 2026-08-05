@@ -1,5 +1,6 @@
 import React from 'react';
-import { BookmarkIcon, SearchIcon, DownloadIcon, UploadIcon, SettingsIcon } from '../icons';
+import { BookmarkIcon, SearchIcon, DownloadIcon, UploadIcon, TuneIcon } from '../icons';
+import { getCategoryColor } from '../helpers';
 import { BookmarkCard } from './BookmarkCard';
 import { SortOption } from '../Dashboard';
 import { SortDropdown } from './SortDropdown';
@@ -10,6 +11,7 @@ interface BookmarkListProps {
   sortOrder: SortOption;
   setSortOrder: (val: SortOption) => void;
   selectedCategoryId: string | null;
+  setSelectedCategoryId: (id: string | null) => void;
   filteredBookmarks: any[];
   bookmarks: any[] | undefined;
   categories: any[] | undefined;
@@ -32,7 +34,7 @@ interface BookmarkListProps {
 export const BookmarkList: React.FC<BookmarkListProps> = ({
   searchQuery, setSearchQuery,
   sortOrder, setSortOrder,
-  selectedCategoryId,
+  selectedCategoryId, setSelectedCategoryId,
   filteredBookmarks, bookmarks, categories,
   handleExport, handleImport, handleDelete,
   getCategoryName,
@@ -49,7 +51,10 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   const collapsedRef = React.useRef(false);
 
   React.useEffect(() => {
-    lastScrollY.current = window.scrollY;
+    const initialScrollY = Math.max(0, window.scrollY);
+    lastScrollY.current = initialScrollY;
+    collapsedRef.current = initialScrollY > 40;
+    setHeaderCollapsed(collapsedRef.current);
 
     const updateHeader = () => {
       frameRequest.current = null;
@@ -90,38 +95,83 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
       }
     };
 
+    const handleResize = () => {
+      const currentScrollY = Math.max(0, window.scrollY);
+      if (currentScrollY <= 20 && collapsedRef.current) {
+        collapsedRef.current = false;
+        setHeaderCollapsed(false);
+        downDistance.current = 0;
+        upDistance.current = 0;
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
       if (frameRequest.current !== null) window.cancelAnimationFrame(frameRequest.current);
     };
   }, []);
 
   return (
     <main className="content">
+      <nav className="mobile-category-nav" aria-label="Bookmark categories">
+        <button
+          type="button"
+          className={`mobile-category-chip ${!selectedCategoryId ? 'active' : ''}`}
+          onClick={() => setSelectedCategoryId(null)}
+        >
+          All <span>{bookmarks?.length ?? 0}</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-category-chip ${selectedCategoryId === '__uncategorized__' ? 'active' : ''}`}
+          onClick={() => setSelectedCategoryId(selectedCategoryId === '__uncategorized__' ? null : '__uncategorized__')}
+        >
+          <span>Uncategorized</span>
+          <span>{bookmarks?.filter(b => !b.categoryIds || b.categoryIds.length === 0).length ?? 0}</span>
+        </button>
+        {(categories || []).map((category: any) => {
+          const count = bookmarks?.filter(bookmark => bookmark.categoryIds?.includes(category.id)).length ?? 0;
+          return (
+            <button
+              type="button"
+              key={category.id}
+              className={`mobile-category-chip ${selectedCategoryId === category.id ? 'active' : ''}`}
+              onClick={() => setSelectedCategoryId(selectedCategoryId === category.id ? null : category.id)}
+            >
+              <i style={{ background: getCategoryColor(category.id, category.color) }} aria-hidden="true" />
+              <span>{category.name}</span>
+              <span>{count}</span>
+            </button>
+          );
+        })}
+      </nav>
       <div className="content-header">
         <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">
-            {selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks'}
+            {selectedCategoryId === '__uncategorized__' ? 'Uncategorized' : (selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks')}
           </h1>
           <div className="header-actions">
-            {setMobileSettingsOpen && (
-              <button 
-                className="btn btn-ghost mobile-settings-btn" 
-                onClick={() => setMobileSettingsOpen(!mobileSettingsOpen)} 
-                title="Settings"
-                style={{ padding: '6px 10px' }}
-              >
-                <SettingsIcon /> Settings
-              </button>
-            )}
-            <button className="btn btn-ghost" onClick={handleExport} title="Export JSON">
+            <button className="btn btn-ghost mobile-header-action" type="button" onClick={handleExport} title="Export JSON" aria-label="Export bookmarks">
               <DownloadIcon /> Export
             </button>
-            <label className="btn btn-ghost" title="Import JSON" style={{ cursor: 'pointer' }}>
+            <label className="btn btn-ghost mobile-header-action" title="Import JSON" aria-label="Import bookmarks" style={{ cursor: 'pointer' }}>
               <UploadIcon /> Import
               <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
             </label>
+            {setMobileSettingsOpen && (
+              <button
+                className="btn btn-ghost mobile-header-action mobile-settings-btn"
+                onClick={() => setMobileSettingsOpen(!mobileSettingsOpen)}
+                title="Open settings"
+                aria-label="Open settings"
+              >
+                <TuneIcon /> <span>Settings</span>
+              </button>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
