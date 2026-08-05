@@ -5,6 +5,7 @@ import { SettingsIcon, svgIcons } from '../icons';
 import { categoryColors } from '../helpers';
 import { SaveConfigCard } from './SaveConfigCard';
 import { AICard } from './AICard';
+import { InfoTooltip } from './InfoTooltip';
 
 interface SettingsPanelProps {
   settingsExpanded: boolean;
@@ -116,7 +117,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 <div className="settings-card">
                   <div className="settings-card-title">Personalization</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>ACCENT COLOR</span>
+                    <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>
+                      ACCENT COLOR
+                      <InfoTooltip text="Customizes the accent color across XMarks UI and saved bookmark badges." />
+                    </span>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between' }}>
                       {categoryColors.map(color => (
                         <span

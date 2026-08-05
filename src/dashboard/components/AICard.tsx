@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
+import { InfoTooltip } from './InfoTooltip';
 
 interface AICardProps {
   autoCategorize: boolean;
@@ -44,8 +45,9 @@ export const AICard: React.FC<AICardProps> = ({
           >
             <div className="settings-card">
               <div className="toggle-row ai-toggle-row">
-                <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px' }}>
+                <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center' }}>
                   AI Auto-Categorize <span className="ai-model-size">(45MB)</span>
+                  <InfoTooltip text="The model might be inaccurate at times, but it does its absolute best to auto-categorize!" />
                 </span>
                 <label className="toggle-switch" onClick={e => e.stopPropagation()}>
                   <input type="checkbox" checked={autoCategorize} onChange={toggleAutoCategorize} />

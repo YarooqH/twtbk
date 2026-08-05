@@ -3,6 +3,7 @@ import { db } from '../../db';
 import { getCategoryColor, categoryColors } from '../helpers';
 import { AllIcon } from '../icons';
 import { AICard } from './AICard';
+import { InfoTooltip } from './InfoTooltip';
 
 interface SidebarProps {
   bookmarks: any[] | undefined;
@@ -70,7 +71,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      <div className="sidebar-section-label">Library</div>
+      <div className="sidebar-section-label" style={{ display: 'flex', alignItems: 'center' }}>
+        Library
+        <InfoTooltip text="Filter bookmarks by category or add custom color-coded categories." />
+      </div>
       <ul>
         <li
           className={`sidebar-item ${!selectedCategoryId ? 'active' : ''}`}

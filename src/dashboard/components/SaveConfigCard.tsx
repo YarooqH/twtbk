@@ -1,5 +1,6 @@
 import React from 'react';
 import { InteractiveBar } from './InteractiveBar';
+import { InfoTooltip } from './InfoTooltip';
 
 interface SaveConfigCardProps {
   saveMode: 'injected' | 'native-override';
@@ -27,7 +28,10 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
       <div className="settings-card-title">Save Configuration</div>
       
       <div className="toggle-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', marginBottom: '4px' }}>
-        <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>SAVE MODE</span>
+        <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'flex', alignItems: 'center' }}>
+          SAVE MODE
+          <InfoTooltip text="Injected adds a custom XMarks button; Override integrates into X's native bookmark icon." />
+        </span>
         <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)' }}>
           <button
             onClick={() => {
@@ -80,45 +84,12 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
         <InteractiveBar saveMode={saveMode} injectedPosition={injectedPosition} setInjectedPosition={setInjectedPosition} nativeOverrideAction={nativeOverrideAction} accentColor={accentColor} />
       </div>
 
-      {/* BUTTON ALIGNMENT control safely bypassed to preserve X's native alignment; easy to plug back in if needed */}
-      {/*
-      {saveMode === 'injected' && (
-        <div className="toggle-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', marginBottom: '4px' }}>
-          <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>BUTTON ALIGNMENT</span>
-          <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)' }}>
-            {(['left', 'center', 'right'] as const).map(align => (
-              <button
-                key={align}
-                onClick={() => {
-                  setButtonAlignment(align);
-                  chrome.storage?.sync?.set({ buttonAlignment: align });
-                }}
-                style={{
-                  flex: 1,
-                  background: buttonAlignment === align ? 'var(--accent)' : 'transparent',
-                  color: buttonAlignment === align ? '#fff' : 'var(--text-muted)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-full)',
-                  padding: '6px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  textTransform: 'capitalize',
-                  transition: 'background 0.15s, color 0.15s'
-                }}
-              >
-                {align}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      */}
-
       {saveMode === 'native-override' && (
         <div className="toggle-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', marginBottom: '4px' }}>
-          <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>OVERRIDE ACTION</span>
+          <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'flex', alignItems: 'center' }}>
+            OVERRIDE ACTION
+            <InfoTooltip text="Choose whether native bookmark click saves directly or shows a category dropdown arrow." />
+          </span>
           <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)' }}>
             <button
               onClick={() => {
@@ -168,7 +139,10 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
 
       {saveMode === 'injected' && (
         <div className="toggle-row" style={{ marginBottom: '0px' }}>
-          <span className="toggle-label" style={{ fontSize: '13px' }}>Also Save Native Bookmarks</span>
+          <span className="toggle-label" style={{ fontSize: '13px', display: 'flex', alignItems: 'center' }}>
+            Also Save Native Bookmarks
+            <InfoTooltip text="Automatically saves the tweet to your official X bookmarks when saving in XMarks." />
+          </span>
           <label className="toggle-switch">
             <input type="checkbox" checked={alsoSaveNative} onChange={(e) => setAlsoSaveNative(e.target.checked)} />
             <span className="toggle-slider" />
