@@ -1,4 +1,6 @@
 import React from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { getMotionTransition } from '../../motion/presets';
 import { DownloadIcon, TrashIcon } from '../icons';
 import { Dropdown } from './Dropdown';
 
@@ -27,12 +29,22 @@ export const MultiSelectActionBar: React.FC<MultiSelectActionBarProps> = ({
   hiddenSelectedCount = 0,
   isBusy = false,
 }) => {
-  if (selectedIds.size === 0) return null;
-
+  const reducedMotion = useReducedMotion();
+  const toolbarTransition = getMotionTransition(Boolean(reducedMotion));
   const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id));
 
   return (
-    <div className="multi-select-bar" role="toolbar" aria-label="Bulk bookmark actions">
+    <AnimatePresence initial={false}>
+      {selectedIds.size > 0 && (
+        <motion.div
+          className="multi-select-bar"
+          role="toolbar"
+          aria-label="Bulk bookmark actions"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={toolbarTransition}
+        >
       <div className="multi-select-summary">
         <span className="multi-select-count" aria-live="polite">
           {selectedIds.size}
@@ -109,6 +121,8 @@ export const MultiSelectActionBar: React.FC<MultiSelectActionBarProps> = ({
       >
         <span aria-hidden="true">×</span>
       </button>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

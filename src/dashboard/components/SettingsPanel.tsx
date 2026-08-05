@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { getMotionTransition } from '../../motion/presets';
 import { SettingsIcon, svgIcons } from '../icons';
 import { categoryColors } from '../helpers';
 import { SaveConfigCard } from './SaveConfigCard';
@@ -43,6 +45,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   isModelLoaded, modelProgress,
   isClassifying, classifyProgress, runAutoCategorizeJobs,
 }) => {
+  const reducedMotion = useReducedMotion();
+  const panelTransition = getMotionTransition(Boolean(reducedMotion));
+
   React.useEffect(() => {
     if (!mobileSettingsOpen) return;
     const previousOverflow = document.body.style.overflow;
@@ -66,7 +71,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           {/* Content panel — GPU accelerated translateY slide */}
           <div className={`settings-content-wrapper ${settingsExpanded ? 'is-expanded' : 'is-collapsed'}`}>
             <div className="settings-content-inner">
-              <div className="accordion-slider">
+              <motion.div
+                className="accordion-slider"
+                initial={false}
+                animate={{
+                  opacity: settingsExpanded ? 1 : 0,
+                  y: settingsExpanded ? 0 : 8,
+                }}
+                transition={panelTransition}
+              >
                 <SaveConfigCard
                   saveMode={saveMode} setSaveMode={setSaveMode}
                   injectedPosition={injectedPosition} setInjectedPosition={setInjectedPosition}
@@ -102,7 +115,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               <div className="mobile-only-ai-card">
                 <AICard

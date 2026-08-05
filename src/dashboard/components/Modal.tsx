@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { getMotionTransition } from '../../motion/presets';
 
 interface ModalProps {
   isOpen: boolean;
@@ -25,6 +27,9 @@ export const Modal: React.FC<ModalProps> = ({
   onCancel,
   isBusy = false,
 }) => {
+  const reducedMotion = useReducedMotion();
+  const modalTransition = getMotionTransition(Boolean(reducedMotion));
+
   React.useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -39,7 +44,10 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={modalTransition}
       style={{
         position: 'fixed',
         inset: 0,
@@ -49,12 +57,14 @@ export const Modal: React.FC<ModalProps> = ({
         justifyContent: 'center',
         background: 'rgba(0, 0, 0, 0.6)',
         backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
-        animation: 'twtbk-fade-in 0.15s ease-out'
+        WebkitBackdropFilter: 'blur(4px)'
       }}
       onClick={onCancel}
     >
-      <div
+      <motion.div
+        initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.96, y: reducedMotion ? 0 : 6 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={modalTransition}
         role="dialog"
         aria-modal="true"
         aria-labelledby="twtbk-modal-title"
@@ -71,7 +81,6 @@ export const Modal: React.FC<ModalProps> = ({
           flexDirection: 'column',
           gap: '16px',
           fontFamily: 'inherit',
-          animation: 'twtbk-scale-up 0.15s ease-out',
           margin: '16px'
         }}
         onClick={e => e.stopPropagation()}
@@ -113,7 +122,7 @@ export const Modal: React.FC<ModalProps> = ({
             {isBusy ? 'Working…' : (type === 'alert' ? (confirmText === 'Confirm' ? 'OK' : confirmText) : confirmText)}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

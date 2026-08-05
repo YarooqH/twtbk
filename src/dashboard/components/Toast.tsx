@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { getMotionTransition } from '../../motion/presets';
 
 interface ToastProps {
   message: string | null;
@@ -8,6 +10,9 @@ interface ToastProps {
 }
 
 export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration = 3500 }) => {
+  const reducedMotion = useReducedMotion();
+  const toastTransition = getMotionTransition(Boolean(reducedMotion));
+
   useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => {
@@ -19,12 +24,14 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
   if (!message) return null;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: reducedMotion ? 0 : 12, x: '-50%' }}
+      animate={{ opacity: 1, y: 0, x: '-50%' }}
+      transition={toastTransition}
       style={{
         position: 'fixed',
         bottom: '24px',
         left: '50%',
-        transform: 'translateX(-50%)',
         background: 'var(--accent)',
         color: '#ffffff',
         padding: '12px 24px',
@@ -36,8 +43,7 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        fontFamily: 'inherit',
-        animation: 'twtbk-toast-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+        fontFamily: 'inherit'
       }}
     >
       <span>{message}</span>
@@ -75,6 +81,6 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
       >
         ×
       </button>
-    </div>
+    </motion.div>
   );
 };

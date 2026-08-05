@@ -11,6 +11,10 @@ const checkNavigation = () => {
 };
 
 const observer = new MutationObserver((mutations) => {
+  // JSDOM can deliver queued mutation callbacks after the test environment
+  // has torn down the window/document globals. Ignore those late callbacks.
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
   let shouldInject = false;
   for (const mutation of mutations) {
     const target = mutation.target as Element;

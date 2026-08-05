@@ -348,9 +348,11 @@ export function injectSaveButtons() {
     itemWrapper.dataset.twtbkMode = mode;
     itemWrapper.dataset.twtbkPlacement = placement;
 
-    // Preserve X's native computed alignment/flex from the cloned neighbor —
-    // do NOT force a flex value here; it must match whichever group (evenly
-    // grown vs fixed-width) the neighbor actually belongs to.
+    // Strip margin-left: auto that X's share/bookmark wrapper carries to push
+    // itself to the right edge. When WE clone it and sit next to it, the cloned
+    // margin would add unequal extra spacing between our icon and its neighbours.
+    itemWrapper.style.marginLeft = '';
+    itemWrapper.style.marginRight = '';
 
     // Strip data-testid and aria-label from btnContainer and ALL descendants to prevent selector collisions
     btnContainer.removeAttribute('data-testid');

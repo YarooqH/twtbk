@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { getMotionTransition } from '../../motion/presets';
 
 interface AICardProps {
   autoCategorize: boolean;
@@ -15,6 +17,8 @@ export const AICard: React.FC<AICardProps> = ({
   isClassifying, classifyProgress, runAutoCategorizeJobs,
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const panelTransition = getMotionTransition(Boolean(reducedMotion));
 
   const classifyPercent = classifyProgress && classifyProgress.total > 0
     ? Math.round((classifyProgress.current / classifyProgress.total) * 100)
@@ -32,7 +36,12 @@ export const AICard: React.FC<AICardProps> = ({
     <div className="ai-card-wrapper" style={{ position: 'relative', width: '100%' }}>
       <div className={`ai-card-body-wrapper ${expanded ? 'is-expanded' : 'is-collapsed'}`}>
         <div className="ai-card-body-inner">
-          <div className="accordion-slider">
+          <motion.div
+            className="accordion-slider"
+            initial={false}
+            animate={{ opacity: expanded ? 1 : 0, y: expanded ? 0 : 8 }}
+            transition={panelTransition}
+          >
             <div className="settings-card">
               <div className="toggle-row ai-toggle-row">
                 <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px' }}>
@@ -93,7 +102,7 @@ export const AICard: React.FC<AICardProps> = ({
                 </button>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 

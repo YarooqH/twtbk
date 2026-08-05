@@ -1299,15 +1299,6 @@ body {
   flex-direction: column;
   gap: 16px;
   padding-bottom: 12px;
-  transform: translateY(100%);
-  opacity: 0;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-}
-
-.settings-content-wrapper.is-expanded .accordion-slider,
-.ai-card-body-wrapper.is-expanded .accordion-slider {
-  transform: translateY(0);
-  opacity: 1;
 }
 
 .ai-toggle-row { margin-bottom: 0; }
