@@ -31,6 +31,8 @@ const observer = new MutationObserver((mutations) => {
   if (shouldInject) {
     debouncedInjectSaveButtons();
     checkNavigation();
+  } else if (window.location.pathname.includes('/i/bookmarks') && !document.getElementById('twtbk-sidebar-importer-container')) {
+    checkBookmarkPage();
   }
 });
 

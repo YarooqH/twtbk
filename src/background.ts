@@ -8,6 +8,13 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true; // Keep channel open for async response
   }
+
+  if (message.type === MSG.DELETE_BOOKMARK) {
+    db.bookmarks.delete(message.payload.id)
+      .then(() => sendResponse({ success: true }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
   
   if (message.type === MSG.CHECK_TWEET_SAVED) {
     db.bookmarks.get(message.payload.id)
@@ -56,7 +63,13 @@ async function handleSaveTweet(payload: Partial<Bookmark>) {
   try {
     const existing = await db.bookmarks.get(payload.id);
     if (existing) {
-      return { success: true, message: 'Already saved', id: payload.id };
+      const updates: Partial<Bookmark> = {};
+      if (payload.categoryIds) updates.categoryIds = payload.categoryIds;
+      if (payload.note !== undefined) updates.note = payload.note;
+      if (Object.keys(updates).length > 0) {
+        await db.bookmarks.update(payload.id, updates);
+      }
+      return { success: true, message: 'Updated existing bookmark', id: payload.id };
     }
 
     const newBookmark: Bookmark = {
@@ -77,6 +90,12 @@ async function handleSaveTweet(payload: Partial<Bookmark>) {
     };
 
     await db.bookmarks.add(newBookmark);
+    chrome.storage?.local?.get('xmarks_onboarding', result => {
+      const state = result?.xmarks_onboarding || { version: 1 };
+      chrome.storage?.local?.set({
+        xmarks_onboarding: { ...state, firstSaveCompleted: true, firstSaveCompletedAt: new Date().toISOString() }
+      });
+    });
     return { success: true, id: payload.id };
   } catch (error: any) {
     console.error('Error saving tweet:', error);
@@ -124,6 +143,12 @@ async function handleImportBatch(payload: Partial<Bookmark>[]) {
     
     if (newBookmarks.length > 0) {
       await db.bookmarks.bulkAdd(newBookmarks);
+      chrome.storage?.local?.get('xmarks_onboarding', result => {
+        const state = result?.xmarks_onboarding || { version: 1 };
+        chrome.storage?.local?.set({
+          xmarks_onboarding: { ...state, firstSyncCompleted: true, firstSyncCompletedAt: new Date().toISOString() }
+        });
+      });
     }
     return { success: true, count: newBookmarks.length };
   } catch (error: any) {

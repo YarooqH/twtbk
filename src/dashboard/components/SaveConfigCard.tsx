@@ -72,6 +72,11 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
             Override Native
           </button>
         </div>
+        <p className="save-mode-help">
+          {saveMode === 'injected'
+            ? 'Adds a separate XMarks save button beside X controls.'
+            : 'Uses X’s bookmark action to save a copy into XMarks.'}
+        </p>
         <InteractiveBar saveMode={saveMode} injectedPosition={injectedPosition} setInjectedPosition={setInjectedPosition} nativeOverrideAction={nativeOverrideAction} accentColor={accentColor} />
       </div>
 

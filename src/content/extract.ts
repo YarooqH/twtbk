@@ -4,8 +4,13 @@ export function extractCleanTweetText(tweetElement: Element): string {
 
   const clone = textEl.cloneNode(true) as HTMLElement;
 
-  // Replace br elements with explicit newlines
-  clone.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+  // Preserve Twitter/X inline emojis (e.g. <img alt="🚨" ...>) before removing aria-hidden elements
+  clone.querySelectorAll('img[alt]').forEach(img => {
+    const alt = img.getAttribute('alt');
+    if (alt) {
+      img.replaceWith(document.createTextNode(alt));
+    }
+  });
 
   // Remove hidden aria-hidden spans (e.g. hidden http:// prefixes or visual hides)
   clone.querySelectorAll('[aria-hidden="true"]').forEach(el => el.remove());
@@ -30,6 +35,22 @@ export function extractCleanTweetText(tweetElement: Element): string {
     .replace(/([^\n])\n+(['’]s|['’]re|['’]ve|['’]t|['’]m|['’]d|['’]ll)/gi, '$1$2');
 
   return cleaned.trim();
+}
+
+function findQuoteTweetContainer(tweetElement: Element): HTMLElement | null {
+  const testIdQuote = tweetElement.querySelector('[data-testid="quoteTweet"]');
+  if (testIdQuote) return testIdQuote as HTMLElement;
+
+  const userNames = tweetElement.querySelectorAll('[data-testid="User-Name"]');
+  if (userNames.length > 1) {
+    const secondUser = userNames[1];
+    const candidate = secondUser.closest('div[role="link"], div[tabindex="0"]') as HTMLElement | null;
+    if (candidate && candidate !== tweetElement && !candidate.contains(userNames[0])) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 export function extractTweetData(tweetElement: Element) {
@@ -94,7 +115,7 @@ export function extractTweetData(tweetElement: Element) {
     const media: { type: "image" | "video" | "gif"; url: string; previewUrl?: string }[] = [];
     
     // Find quoteContainer & card elements to exclude their media from main tweet media
-    const mainQuoteEl = tweetElement.querySelector('div[role="link"] div[aria-labelledby], [data-testid="quoteTweet"], div[class*="css-175oi2r"][role="link"]');
+    const mainQuoteEl = findQuoteTweetContainer(tweetElement);
     const mainCardEl = tweetElement.querySelector('[data-testid="card.wrapper"], [data-testid="article-card"]');
 
     // Scrape tweet videos/GIFs FIRST
@@ -119,7 +140,9 @@ export function extractTweetData(tweetElement: Element) {
     });
 
     // Scrape tweet photos (excluding photos inside quoteContainer or card, and excluding video thumbnails/posters)
-    const photoEls = tweetElement.querySelectorAll('[data-testid="tweetPhoto"] img');
+    const photoEls = tweetElement.querySelectorAll(
+      '[data-testid="tweetPhoto"] img, a[href*="/photo/"] img, a[href*="/media/"] img, img[src*="pbs.twimg.com/media"]'
+    );
     photoEls.forEach(el => {
       if (mainQuoteEl?.contains(el) || mainCardEl?.contains(el)) return;
       if (el.closest('[data-testid="videoPlayer"], [data-testid="videoComponent"]')) return;
@@ -151,7 +174,7 @@ export function extractTweetData(tweetElement: Element) {
       media?: { type: "image" | "video" | "gif"; url: string; previewUrl?: string }[];
     } | undefined = undefined;
 
-    const quoteContainer = tweetElement.querySelector('div[role="link"] div[aria-labelledby], [data-testid="quoteTweet"], div[class*="css-175oi2r"][role="link"]');
+    const quoteContainer = mainQuoteEl;
     if (quoteContainer) {
       let qHandle = '';
       let qName = '';

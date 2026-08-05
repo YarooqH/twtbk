@@ -165,6 +165,34 @@ styleTag.textContent = `
   .twtbk-btn-primary:hover {
     background-color: var(--twtbk-accent-hover);
   }
+  .twtbk-import-progress-track {
+    height: 6px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--twtbk-border);
+  }
+  .twtbk-import-progress-fill {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: var(--twtbk-accent);
+    transition: width 0.2s ease;
+  }
+  .twtbk-import-progress-fill.is-active {
+    width: 45%;
+    animation: twtbk-import-progress 1.25s ease-in-out infinite;
+  }
+  .twtbk-import-progress-fill.is-complete {
+    width: 100%;
+  }
+  @keyframes twtbk-import-progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(220%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .twtbk-import-progress-fill.is-active { animation: none; width: 45%; }
+  }
   @keyframes twtbk-pop-in {
     from {
       opacity: 0;

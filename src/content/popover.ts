@@ -112,6 +112,8 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
       });
     };
 
+
+
     // Attach click handlers to all list items
     const items = container.querySelectorAll('.twtbk-cat-item');
     items.forEach(item => {

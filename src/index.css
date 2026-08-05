@@ -11,6 +11,8 @@
   --accent: #1d9bf0;
   --accent-hover: color-mix(in srgb, var(--accent) 85%, #000);
   --accent-light: color-mix(in srgb, var(--accent) 12%, transparent);
+  --scrollbar-thumb: color-mix(in srgb, var(--accent) 58%, var(--border-strong));
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--accent) 78%, var(--border-strong));
   --danger: #f4212e;
   --danger-light: rgba(244, 33, 46, 0.1);
   --success: #00ba7c;
@@ -49,6 +51,8 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 body {
@@ -181,9 +185,14 @@ body {
   font-size: 11px;
   font-weight: 700;
   border-radius: var(--radius-full);
-  padding: 1px 7px;
   min-width: 20px;
-  text-align: center;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-sizing: border-box;
 }
 
 /* color dot for categories */
@@ -756,6 +765,72 @@ body {
   .multi-select-bar { animation: none; }
 }
 
+/* ── ONBOARDING & EMPTY STATES ───────────────────── */
+.dashboard-welcome {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--accent-light);
+  color: var(--text);
+}
+
+.dashboard-welcome-kicker {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-welcome h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.dashboard-welcome p:last-child {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dashboard-welcome-dismiss {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dashboard-welcome-dismiss:hover { background: var(--bg-hover); color: var(--text); }
+
+.empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.empty-state-actions .btn {
+  min-height: 38px;
+  height: 38px;
+  line-height: 1;
+  align-items: center;
+}
+
 /* ── EMPTY STATE ──────────────────────────────────── */
 .empty-state {
   display: flex;
@@ -795,8 +870,13 @@ body {
 
 /* ── POPUP ─────────────────────────────────────────── */
 .popup-wrap {
-  padding: 0;
   width: 360px;
+  height: 600px;
+  max-height: 100vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .popup-header {
@@ -841,12 +921,20 @@ body {
 }
 
 .popup-recent-label {
+  flex: 0 0 auto;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-subtle);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 14px 16px 8px;
+}
+
+.popup-bookmarks-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .popup-bm-item {
@@ -903,10 +991,19 @@ body {
 }
 
 .popup-footer {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .popup-empty {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -923,6 +1020,51 @@ body {
 .popup-empty p {
   font-size: 13px;
   margin: 0;
+}
+
+.popup-onboarding {
+  padding: 28px 20px 24px;
+  gap: 10px;
+}
+
+.popup-onboarding .popup-empty-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 2px;
+  border-radius: var(--radius-full);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.popup-onboarding .popup-empty-icon svg {
+  width: 26px;
+  height: 26px;
+  margin: 0;
+}
+
+.popup-onboarding h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.popup-onboarding p {
+  max-width: 280px;
+  line-height: 1.45;
+}
+
+.popup-onboarding-link {
+  margin-top: 6px;
+  border: 0;
+  padding: 2px 8px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 /* Custom Dropdown styling */
@@ -965,24 +1107,32 @@ body {
   background: var(--bg-hover);
 }
 
-/* Custom Scrollbars (Sleek X style) */
+/* Theme-aware scrollbars for the popup and dashboard */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.2);
-  border-radius: 9999px;
+  min-height: 36px;
+  background: var(--scrollbar-thumb);
   border: 2px solid transparent;
+  border-radius: var(--radius-full);
   background-clip: padding-box;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.45);
-  border: 2px solid transparent;
+  background: var(--scrollbar-thumb-hover);
+  border-color: transparent;
   background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* New Category Input & Button (X-Style) */
@@ -1066,6 +1216,13 @@ body {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+}
+
+.save-mode-help {
+  margin: -2px 0 2px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .settings-card-title {

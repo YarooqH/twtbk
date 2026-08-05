@@ -6,13 +6,41 @@ export let isImporting = false;
 export let totalImported = 0;
 export let lastScrollHeight = 0;
 export let sameHeightCount = 0;
+let importFinished = false;
+let importPaused = false;
+
+function updateOnboardingState(changes: Record<string, unknown>) {
+  chrome.storage?.local?.get('xmarks_onboarding', result => {
+    const current: any = result?.xmarks_onboarding || { version: 1 };
+    chrome.storage?.local?.set({ xmarks_onboarding: { ...current, ...changes } });
+  });
+}
+
+let sidebarRetryTimer: number | null = null;
+let retryCount = 0;
 
 // Check for bookmark import page
 export function checkBookmarkPage() {
   const isBookmarkPage = window.location.pathname.includes('/i/bookmarks');
   if (isBookmarkPage) {
-    injectImporterSidebarUI();
+    if (document.getElementById('twtbk-sidebar-importer-container')) {
+      retryCount = 0;
+      if (sidebarRetryTimer) window.clearTimeout(sidebarRetryTimer);
+      return;
+    }
+
+    const success = injectImporterSidebarUI();
+    if (!success && retryCount < 25) {
+      retryCount++;
+      if (sidebarRetryTimer) window.clearTimeout(sidebarRetryTimer);
+      sidebarRetryTimer = window.setTimeout(checkBookmarkPage, 300);
+    } else if (success) {
+      retryCount = 0;
+      if (sidebarRetryTimer) window.clearTimeout(sidebarRetryTimer);
+    }
   } else {
+    retryCount = 0;
+    if (sidebarRetryTimer) window.clearTimeout(sidebarRetryTimer);
     const container = document.getElementById('twtbk-sidebar-importer-container');
     if (container) container.remove();
     const panel = document.getElementById('twtbk-importer-panel');
@@ -49,41 +77,50 @@ function getXTheme() {
   }
 }
 
-function injectImporterSidebarUI() {
-  if (document.getElementById('twtbk-sidebar-importer-container')) return;
+function injectImporterSidebarUI(): boolean {
+  if (document.getElementById('twtbk-sidebar-importer-container')) return true;
 
-  const postBtn = document.querySelector('[data-testid="SideNav_NewTweet_Button"]') || document.querySelector('a[href="/compose/post"]');
+  const postBtn = document.querySelector('[data-testid="SideNav_NewTweet_Button"]')
+    || document.querySelector('a[href="/compose/post"]')
+    || document.querySelector('a[href="/i/bookmarks"]')
+    || document.querySelector('[data-testid="AppTabBar_DirectMessage_Link"]')
+    || document.querySelector('nav[role="navigation"]');
+
   if (!postBtn) {
-    console.warn("XMarks: Sync Bookmarks sidebar button could not be injected — Post button selector did not match on this page.");
-    return;
+    return false;
   }
 
   const theme = getXTheme();
 
   const postBtnContainer = postBtn.closest('div') || postBtn.parentElement;
+  const primaryNav = postBtn.closest('nav') as HTMLElement | null;
+
+  // Find the navigation item that directly owns the Post button. Inserting
+  // beside this item keeps Sync Bookmarks in the same vertical flow instead
+  // of appending it to the end of a large, nested X navigation tree.
+  let postNavItem: HTMLElement = postBtnContainer as HTMLElement;
+  if (primaryNav && primaryNav.contains(postBtn)) {
+    let candidate: HTMLElement = postBtn as HTMLElement;
+    while (candidate.parentElement && candidate.parentElement !== primaryNav) {
+      candidate = candidate.parentElement;
+    }
+    postNavItem = candidate;
+  }
 
   const btnContainer = document.createElement('div');
   btnContainer.id = 'twtbk-sidebar-importer-container';
-  
-  if (postBtnContainer) {
-    // Copy X's layout classes and styles to align perfectly with the Post button
-    btnContainer.className = postBtnContainer.className;
-    btnContainer.setAttribute('style', postBtnContainer.getAttribute('style') || '');
-  }
-  
-  // Custom adjustments for sidebar flow
-  btnContainer.style.marginTop = '12px';
+  btnContainer.style.marginTop = '8px';
   btnContainer.style.marginBottom = '0px';
   btnContainer.style.display = 'flex';
+  btnContainer.style.width = '100%';
+  btnContainer.style.boxSizing = 'border-box';
   btnContainer.style.justifyContent = 'center';
 
   const btn = document.createElement('button');
   btn.id = 'twtbk-sidebar-importer-btn';
   btn.innerHTML = `
-    <div class="twtbk-sidebar-icon" style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; color: ${theme.text};">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"/>
-      </svg>
+    <div class="twtbk-sidebar-icon" style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex: 0 0 24px;">
+      <img src="${chrome.runtime.getURL('XMarks-logos/Xmarks-logo-only-square.svg')}" alt="" width="24" height="24" style="display: block; width: 24px; height: 24px; object-fit: contain;" />
     </div>
     <span class="twtbk-sidebar-label" style="margin-left: 16px; font-weight: 700; font-size: 17px; color: ${theme.text}; white-space: nowrap;">Sync Bookmarks</span>
   `;
@@ -110,28 +147,6 @@ function injectImporterSidebarUI() {
     btn.style.backgroundColor = 'transparent';
   };
 
-  if (!document.getElementById('twtbk-responsive-styles')) {
-    const style = document.createElement('style');
-    style.id = 'twtbk-responsive-styles';
-    style.innerHTML = `
-      @media (max-width: 1280px) {
-        #twtbk-sidebar-importer-container {
-          width: 52px !important;
-          margin-top: 12px !important;
-        }
-        #twtbk-sidebar-importer-btn {
-          width: 52px !important;
-          padding: 0 !important;
-          justify-content: center !important;
-          border-radius: 50% !important;
-        }
-        .twtbk-sidebar-label {
-          display: none !important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  }
 
   btn.onclick = (e) => {
     e.stopPropagation();
@@ -140,25 +155,30 @@ function injectImporterSidebarUI() {
 
   btnContainer.appendChild(btn);
 
-  // Prefer appending into the primary left nav so the button is a proper flex
-  // child of the sidebar column. X's header/nav containers can otherwise hide
-  // `after()` siblings or push them off-screen. Fall back to inserting next to
-  // the Post button's wrapper, then directly after the button itself.
-  const primaryNav =
-    (postBtn.closest('nav') as HTMLElement | null) ||
-    (postBtn.closest('header[role="banner"]') as HTMLElement | null) ||
-    (postBtnContainer?.parentElement as HTMLElement | null);
+  const syncButtonWidth = () => {
+    const referenceWidth = postBtn.getBoundingClientRect().width || postNavItem.getBoundingClientRect().width;
+    if (!referenceWidth) return;
+    btnContainer.style.width = `${Math.round(referenceWidth)}px`;
+    btn.style.width = '100%';
+  };
 
-  if (primaryNav && primaryNav !== postBtnContainer && primaryNav.contains(postBtn)) {
-    primaryNav.appendChild(btnContainer);
-  } else if (postBtnContainer && postBtnContainer.parentNode) {
+  syncButtonWidth();
+  if (typeof ResizeObserver !== 'undefined') {
+    const resizeObserver = new ResizeObserver(syncButtonWidth);
+    resizeObserver.observe(postBtn);
+  }
+
+  if (postNavItem?.parentNode) {
+    postNavItem.after(btnContainer);
+  } else if (postBtnContainer?.parentNode) {
     postBtnContainer.after(btnContainer);
   } else if (postBtn.parentNode) {
     postBtn.after(btnContainer);
   } else {
     console.warn("XMarks: No suitable container found for the Sync Bookmarks sidebar button.");
-    return;
+    return false;
   }
+  return true;
 }
 
 function updatePanelUI() {
@@ -169,20 +189,45 @@ function updatePanelUI() {
   const desc = panel.querySelector('p');
   const title = panel.querySelector('h3');
 
+  const progress = document.getElementById('twtbk-import-progress');
+  const progressLabel = document.getElementById('twtbk-import-progress-label');
+  const dashboardBtn = document.getElementById('twtbk-open-dashboard-btn');
+
   if (isImporting) {
-    if (title) title.textContent = "Syncing Bookmarks...";
-    if (desc) desc.textContent = `Sync in progress. Total saved: ${totalImported}`;
+    if (title) title.textContent = "Syncing your X bookmarks";
+    if (desc) desc.textContent = `Scanning and saving bookmarks locally · ${totalImported} new saved`;
     if (startBtn) {
-      startBtn.textContent = "Stop Sync";
-      startBtn.style.backgroundColor = "#f4212e"; // Red
+      startBtn.textContent = "Pause Sync";
+      startBtn.style.backgroundColor = "#f4212e";
     }
-  } else {
-    if (title) title.textContent = "Auto-Import Bookmarks";
-    if (desc) desc.textContent = "This will scroll through your bookmarks and save them locally.";
+    progress?.classList.add('is-active');
+    if (progressLabel) progressLabel.textContent = `${totalImported} new bookmarks saved`;
+    if (dashboardBtn) dashboardBtn.style.display = 'none';
+  } else if (importFinished) {
+    if (title) title.textContent = "Sync complete";
+    if (desc) desc.textContent = `Your local library is ready with ${totalImported} new bookmark${totalImported === 1 ? '' : 's'}.`;
     if (startBtn) {
-      startBtn.textContent = "Start Sync";
+      startBtn.textContent = "Sync Again";
       startBtn.style.backgroundColor = "var(--twtbk-accent, #1d9bf0)";
     }
+    progress?.classList.remove('is-active');
+    progress?.classList.add('is-complete');
+    if (progressLabel) progressLabel.textContent = `${totalImported} new bookmarks saved`;
+    if (dashboardBtn) dashboardBtn.style.display = 'flex';
+  } else if (importPaused) {
+    if (title) title.textContent = "Sync paused";
+    if (desc) desc.textContent = `${totalImported} new bookmarks saved so far. Resume when you are ready.`;
+    if (startBtn) startBtn.textContent = "Resume Sync";
+    progress?.classList.remove('is-active');
+    if (progressLabel) progressLabel.textContent = `${totalImported} new bookmarks saved`;
+    if (dashboardBtn) dashboardBtn.style.display = 'none';
+  } else {
+    if (title) title.textContent = "Sync your X bookmarks";
+    if (desc) desc.textContent = "XMarks will scan your bookmarks, skip duplicates, and keep a local searchable copy.";
+    if (startBtn) startBtn.textContent = "Start Sync";
+    progress?.classList.remove('is-active', 'is-complete');
+    if (progressLabel) progressLabel.textContent = "Ready to start";
+    if (dashboardBtn) dashboardBtn.style.display = 'none';
   }
 }
 
@@ -217,8 +262,11 @@ function toggleImporterPanel(btn: HTMLElement) {
 
   panel.innerHTML = `
     <h3 style="margin-top:0; margin-bottom: 8px; font-size: 16px; font-weight: 700; color: ${theme.text};">Auto-Import Bookmarks</h3>
-    <p style="font-size: 13px; color: ${theme.textMuted}; margin-bottom: 16px; line-height: 1.4;">This will scroll through your bookmarks and save them locally.</p>
-    <button id="twtbk-start-import-btn" style="width:100%; color: white; border: none; border-radius: 9999px; padding: 10px 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; font-family: inherit; transition: background-color 0.2s;"></button>
+    <p style="font-size: 13px; color: ${theme.textMuted}; margin-bottom: 12px; line-height: 1.4;"></p>
+    <div style="display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; font-size:11px; color:${theme.textMuted};"><span id="twtbk-import-progress-label">Ready to start</span><span>Local only</span></div>
+    <div class="twtbk-import-progress-track" role="progressbar" aria-label="Bookmark sync progress" aria-valuemin="0" aria-valuenow="0"><div id="twtbk-import-progress" class="twtbk-import-progress-fill"></div></div>
+    <button id="twtbk-start-import-btn" style="width:100%; margin-top:12px; color: white; border: none; border-radius: 9999px; padding: 10px 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; font-family: inherit; transition: background-color 0.2s;"></button>
+    <button id="twtbk-open-dashboard-btn" style="display:none; width:100%; margin-top:8px; color:${theme.text}; background:transparent; border:1px solid ${theme.border}; border-radius:9999px; padding:9px 16px; font-weight:700; cursor:pointer; justify-content:center; font-family:inherit;">Open your library</button>
   `;
 
   document.body.appendChild(panel);
@@ -253,17 +301,30 @@ function toggleImporterPanel(btn: HTMLElement) {
     startBtn.onclick = () => {
       if (isImporting) {
         isImporting = false;
-        showToast("Import stopped.");
+        importPaused = true;
+        showToast("Sync paused.");
         updatePanelUI();
       } else {
+        const wasPaused = importPaused;
         isImporting = true;
-        totalImported = 0;
+        importPaused = false;
+        importFinished = false;
+        if (!wasPaused) totalImported = 0;
         lastScrollHeight = 0;
         sameHeightCount = 0;
-        showToast("Starting Bookmarks Auto-Import...");
+        processedImportIds.clear();
+        updateOnboardingState({ firstSyncStartedAt: new Date().toISOString() });
+        showToast("Sync started. XMarks is saving a local copy.");
         updatePanelUI();
-        setTimeout(() => runImportLoop(), 1500);
+        setTimeout(() => runImportLoop(), 800);
       }
+    };
+  }
+
+  const openDashboardBtn = document.getElementById('twtbk-open-dashboard-btn');
+  if (openDashboardBtn) {
+    openDashboardBtn.onclick = () => {
+      chrome.runtime.sendMessage({ type: MSG.OPEN_DASHBOARD });
     };
   }
 
@@ -316,7 +377,10 @@ const runImportLoop = async () => {
 
     if (sameHeightCount >= 5) {
       isImporting = false;
-      showToast('Import finished! Added ' + totalImported + ' new bookmarks.');
+      importPaused = false;
+      importFinished = true;
+      updateOnboardingState({ firstSyncCompleted: true, firstSyncCompletedAt: new Date().toISOString() });
+      showToast('Sync complete. Added ' + totalImported + ' new bookmarks.');
       updatePanelUI();
       return;
     }
@@ -358,7 +422,10 @@ const runImportLoop = async () => {
 
     if (sameHeightCount >= 5) {
       isImporting = false;
-      showToast('Import finished! Added ' + totalImported + ' new bookmarks.');
+      importPaused = false;
+      importFinished = true;
+      updateOnboardingState({ firstSyncCompleted: true, firstSyncCompletedAt: new Date().toISOString() });
+      showToast('Sync complete. Added ' + totalImported + ' new bookmarks.');
       updatePanelUI();
       return;
     }

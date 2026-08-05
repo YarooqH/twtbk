@@ -123,6 +123,28 @@ export function markButtonAsSaved(btnContainer: HTMLElement) {
   }
 }
 
+export function markButtonAsUnsaved(btnContainer: HTMLElement) {
+  btnContainer.dataset.saved = 'false';
+  btnContainer.setAttribute('title', 'Save to XMarks');
+  btnContainer.setAttribute('aria-label', 'Save to XMarks');
+
+  const svg = btnContainer.querySelector('svg');
+  if (!svg) return;
+
+  svg.style.color = '#71767b';
+  svg.style.fill = 'none';
+  svg.style.stroke = 'currentColor';
+  svg.style.strokeWidth = '2';
+
+  if (settingSaveMode === 'native-override') {
+    svg.innerHTML = `<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="none" stroke="currentColor"/>`;
+  } else {
+    svg.innerHTML = `
+      <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>
+    `;
+  }
+}
+
 /** Map legacy testId strings to the adapter's ActionType. */
 function testIdToActionType(testId: string): ActionType | null {
   switch (testId) {
@@ -403,7 +425,6 @@ export function injectSaveButtons() {
     });
 
     // ── Mode-specific click handler ────────────────────────────────────
-    // Injected / arrow / augment: the XMarks button always calls saveTweet.
     btnContainer.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -411,7 +432,21 @@ export function injectSaveButtons() {
         showToast("Extension updated. Please refresh page to save!", false);
         return;
       }
-      saveTweet(tweet, btnContainer);
+
+      if (btnContainer.dataset.saved === 'true') {
+        // Toggle OFF: directly remove bookmark
+        chrome.runtime.sendMessage({ type: MSG.DELETE_BOOKMARK, payload: { id: tweetId } }, (res) => {
+          if (chrome.runtime.lastError || !res?.success) {
+            showToast("Failed to remove bookmark", false);
+            return;
+          }
+          markButtonAsUnsaved(btnContainer);
+          showToast("Removed from XMarks");
+        });
+      } else {
+        // Toggle ON: save tweet via popover
+        saveTweet(tweet, btnContainer);
+      }
     });
 
     // Check if this tweet is already saved in XMarks DB (C1)

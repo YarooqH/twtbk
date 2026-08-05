@@ -52,7 +52,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "wasm/*"
+        "wasm/*",
+        "XMarks-logos/Xmarks-logo-only-square.svg"
       ],
       "matches": [
         "*://*.twitter.com/*",
