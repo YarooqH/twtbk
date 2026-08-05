@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
 
 interface ToastProps {
@@ -21,13 +21,15 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
     return () => clearTimeout(timer);
   }, [message, duration, onClose]);
 
-  if (!message) return null;
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: reducedMotion ? 0 : 12, x: '-50%' }}
-      animate={{ opacity: 1, y: 0, x: '-50%' }}
-      transition={toastTransition}
+    <AnimatePresence>
+      {message && (
+        <motion.div
+          key={message}
+          initial={{ opacity: 0, y: reducedMotion ? 0 : 12, x: '-50%' }}
+          animate={{ opacity: 1, y: 0, x: '-50%' }}
+          exit={{ opacity: 0, y: reducedMotion ? 0 : 8, x: '-50%' }}
+          transition={toastTransition}
       style={{
         position: 'fixed',
         bottom: '24px',
@@ -81,6 +83,8 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
       >
         ×
       </button>
-    </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

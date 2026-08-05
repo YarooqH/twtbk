@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
 
 interface ModalProps {
@@ -41,13 +41,15 @@ export const Modal: React.FC<ModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onCancel]);
 
-  if (!isOpen) return null;
-
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={modalTransition}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={modalTransition}
       style={{
         position: 'fixed',
         inset: 0,
@@ -62,9 +64,10 @@ export const Modal: React.FC<ModalProps> = ({
       onClick={onCancel}
     >
       <motion.div
-        initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.96, y: reducedMotion ? 0 : 6 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={modalTransition}
+          initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.96, y: reducedMotion ? 0 : 6 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: reducedMotion ? 1 : 0.98, y: reducedMotion ? 0 : 4 }}
+          transition={modalTransition}
         role="dialog"
         aria-modal="true"
         aria-labelledby="twtbk-modal-title"
@@ -122,7 +125,9 @@ export const Modal: React.FC<ModalProps> = ({
             {isBusy ? 'Working…' : (type === 'alert' ? (confirmText === 'Confirm' ? 'OK' : confirmText) : confirmText)}
           </button>
         </div>
-      </motion.div>
-    </motion.div>
+        </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

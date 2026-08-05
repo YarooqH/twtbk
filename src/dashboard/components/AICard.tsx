@@ -33,7 +33,7 @@ export const AICard: React.FC<AICardProps> = ({
         : null;
 
   return (
-    <div className="ai-card-wrapper" style={{ position: 'relative', width: '100%' }}>
+    <div className="ai-card-wrapper" data-onboarding="ai-assistant" style={{ position: 'relative', width: '100%' }}>
       <div className={`ai-card-body-wrapper ${expanded ? 'is-expanded' : 'is-collapsed'}`}>
         <div className="ai-card-body-inner">
           <motion.div

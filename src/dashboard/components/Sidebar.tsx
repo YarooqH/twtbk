@@ -59,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [bookmarks]);
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" data-onboarding="categories">
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">
           <img src="/logo.svg" alt="XMarks Logo" width={16} height={16} />

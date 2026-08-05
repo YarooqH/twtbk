@@ -1,4 +1,6 @@
 import React from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { getMotionTransition } from '../../motion/presets';
 import { BookmarkIcon, SearchIcon, DownloadIcon, UploadIcon, TuneIcon } from '../icons';
 import { getCategoryColor } from '../helpers';
 import { BookmarkCard } from './BookmarkCard';
@@ -17,6 +19,7 @@ interface BookmarkListProps {
   dismissWelcome?: () => void;
   markFirstAction?: () => void;
   openXBookmarks?: () => void;
+  onStartTour?: () => void;
   bookmarks: any[] | undefined;
   categories: any[] | undefined;
   handleExport: () => void;
@@ -40,7 +43,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   sortOrder, setSortOrder,
   selectedCategoryId, setSelectedCategoryId,
   filteredBookmarks, bookmarks, categories,
-  showWelcomePanel = false, dismissWelcome, markFirstAction, openXBookmarks,
+  showWelcomePanel = false, dismissWelcome, markFirstAction, openXBookmarks, onStartTour,
   handleExport, handleImport, handleDelete,
   getCategoryName,
   editingNoteId, setEditingNoteId, tempNote, setTempNote,
@@ -54,6 +57,8 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   const upDistance = React.useRef(0);
   const frameRequest = React.useRef<number | null>(null);
   const collapsedRef = React.useRef(false);
+  const reducedMotion = useReducedMotion();
+  const transition = getMotionTransition(Boolean(reducedMotion));
 
   React.useEffect(() => {
     const initialScrollY = Math.max(0, window.scrollY);
@@ -154,16 +159,35 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
           );
         })}
       </nav>
-      {showWelcomePanel && (
-        <section className="dashboard-welcome" aria-label="Welcome to XMarks">
-          <div>
-            <p className="dashboard-welcome-kicker">Your library is ready</p>
-            <h2>Search and organize your saved ideas.</h2>
-            <p>Try a search, add a category, or select a bookmark to see what XMarks can do.</p>
-          </div>
-          <button type="button" className="dashboard-welcome-dismiss" onClick={dismissWelcome} aria-label="Dismiss welcome message">×</button>
-        </section>
-      )}
+      <AnimatePresence>
+        {showWelcomePanel && (
+          <motion.section
+            className="dashboard-welcome"
+            aria-label="Welcome to XMarks"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={transition}
+          >
+            <div>
+              <p className="dashboard-welcome-kicker">Your library is ready</p>
+              <h2>Search and organize your saved ideas.</h2>
+              <p>Try a search, add a category, or take a quick tour of XMarks features.</p>
+              {onStartTour && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  style={{ marginTop: '12px', fontSize: '13px', padding: '6px 14px' }}
+                  onClick={onStartTour}
+                >
+                  Take Quick Tour
+                </button>
+              )}
+            </div>
+            <button type="button" className="dashboard-welcome-dismiss" onClick={dismissWelcome} aria-label="Dismiss welcome message">×</button>
+          </motion.section>
+        )}
+      </AnimatePresence>
       <div className="content-header">
         <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">
@@ -190,7 +214,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <div className="search-wrap" style={{ flex: 1 }}>
+          <div className="search-wrap" style={{ flex: 1 }} data-onboarding="search-input">
             <span className="search-icon"><SearchIcon /></span>
             <input
               className="search-input"
@@ -205,7 +229,7 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
         </div>
       </div>
 
-      <div className="bookmarks-list">
+      <div className="bookmarks-list" data-onboarding="bookmark-list">
         {filteredBookmarks.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon"><BookmarkIcon size={28} /></div>

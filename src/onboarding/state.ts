@@ -12,6 +12,8 @@ export interface OnboardingState {
   firstDashboardActionCompleted?: boolean;
   syncHintDismissed?: boolean;
   saveModeGuidanceDismissed?: boolean;
+  tourCompletedAt?: string;
+  tourDismissedAt?: string;
 }
 
 const initialState: OnboardingState = { version: 1 };
@@ -58,6 +60,9 @@ export function useOnboarding() {
   const markDashboardSeen = useCallback(() => update({ dashboardSeenAt: new Date().toISOString() }), [update]);
   const dismissWelcome = useCallback(() => update({ welcomePanelDismissed: true }), [update]);
   const markFirstAction = useCallback(() => update({ firstDashboardActionCompleted: true }), [update]);
+  const markTourCompleted = useCallback(() => update({ tourCompletedAt: new Date().toISOString() }), [update]);
+  const markTourDismissed = useCallback(() => update({ tourDismissedAt: new Date().toISOString() }), [update]);
+  const resetTour = useCallback(() => update({ tourCompletedAt: undefined, tourDismissedAt: undefined }), [update]);
 
   return {
     state,
@@ -66,5 +71,8 @@ export function useOnboarding() {
     markDashboardSeen,
     dismissWelcome,
     markFirstAction,
+    markTourCompleted,
+    markTourDismissed,
+    resetTour,
   };
 }

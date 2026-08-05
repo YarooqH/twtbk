@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
 import { SettingsIcon, svgIcons } from '../icons';
 import { categoryColors } from '../helpers';
@@ -30,6 +30,7 @@ interface SettingsPanelProps {
   isClassifying: boolean;
   classifyProgress: { current: number; total: number } | null;
   runAutoCategorizeJobs: () => void;
+  onStartTour?: () => void;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -44,9 +45,19 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   autoCategorize, toggleAutoCategorize,
   isModelLoaded, modelProgress,
   isClassifying, classifyProgress, runAutoCategorizeJobs,
+  onStartTour,
 }) => {
   const reducedMotion = useReducedMotion();
   const panelTransition = getMotionTransition(Boolean(reducedMotion));
+  const [isMobileViewport, setIsMobileViewport] = React.useState(false);
+
+  React.useEffect(() => {
+    const media = window.matchMedia('(max-width: 1100px)');
+    const updateViewport = () => setIsMobileViewport(media.matches);
+    updateViewport();
+    media.addEventListener?.('change', updateViewport);
+    return () => media.removeEventListener?.('change', updateViewport);
+  }, []);
 
   React.useEffect(() => {
     if (!mobileSettingsOpen) return;
@@ -59,10 +70,25 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   return (
     <>
-      {mobileSettingsOpen && setMobileSettingsOpen && (
-        <div className="settings-backdrop" onClick={() => setMobileSettingsOpen(false)} />
-      )}
-      <aside className={`settings-sidebar ${mobileSettingsOpen ? 'open' : ''}`}>
+      <AnimatePresence>
+        {mobileSettingsOpen && setMobileSettingsOpen && (
+          <motion.div
+            className="settings-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={panelTransition}
+            onClick={() => setMobileSettingsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+      <motion.aside
+        className={`settings-sidebar ${mobileSettingsOpen ? 'open' : ''}`}
+        data-onboarding="settings-panel"
+        initial={false}
+        animate={isMobileViewport ? { x: mobileSettingsOpen ? 0 : '100%' } : { x: 0 }}
+        transition={panelTransition}
+      >
 
         {/* This wrapper is position:relative so the content panel can be
             absolutely placed ABOVE the toggle button via bottom: 100% */}
@@ -114,6 +140,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       ))}
                     </div>
                   </div>
+                  {onStartTour && (
+                    <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        style={{ width: '100%', fontSize: '12px', justifyContent: 'center' }}
+                        onClick={onStartTour}
+                      >
+                        Re-run Guided Tour
+                      </button>
+                    </div>
+                  )}
                 </div>
               </motion.div>
 
@@ -135,6 +173,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <button
             type="button"
             className={`sidebar-toggle-bar ${settingsExpanded ? 'is-expanded' : 'is-collapsed'}`}
+            data-onboarding="settings-toggle"
             aria-expanded={settingsExpanded}
             onClick={() => setSettingsExpanded(!settingsExpanded)}
           >
@@ -160,7 +199,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </button>
 
         </div>
-      </aside>
+      </motion.aside>
     </>
   );
 };
