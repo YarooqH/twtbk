@@ -1,7 +1,7 @@
 import React from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
-import { SettingsIcon, svgIcons } from '../icons';
+import { SettingsIcon, svgIcons, SunIcon, MoonIcon, SystemIcon } from '../icons';
 import { categoryColors } from '../helpers';
 import { SaveConfigCard } from './SaveConfigCard';
 import { AICard } from './AICard';
@@ -126,9 +126,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     {/* Compact 3-state Theme Mode Icon Toggle */}
                     <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)', position: 'relative' }}>
                       {[
-                        { id: 'system', label: 'System preference', icon: '💻' },
-                        { id: 'light', label: 'Light mode', icon: '☀️' },
-                        { id: 'dark', label: 'Dark mode', icon: '🌙' },
+                        { id: 'system', label: 'System preference', icon: <SystemIcon size={13} /> },
+                        { id: 'light', label: 'Light mode', icon: <SunIcon size={13} /> },
+                        { id: 'dark', label: 'Dark mode', icon: <MoonIcon size={13} /> },
                       ].map(mode => {
                         const isActive = themeMode === mode.id;
                         return (
@@ -144,8 +144,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                               color: isActive ? '#ffffff' : 'var(--text-muted)',
                               border: 'none',
                               borderRadius: 'var(--radius-full)',
-                              width: '28px',
-                              height: '24px',
+                              width: '26px',
+                              height: '22px',
                               fontSize: '12px',
                               fontWeight: 600,
                               cursor: 'pointer',
@@ -169,7 +169,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 }}
                               />
                             )}
-                            <span style={{ position: 'relative', zIndex: 2 }}>{mode.icon}</span>
+                            <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center' }}>{mode.icon}</span>
                           </button>
                         );
                       })}
