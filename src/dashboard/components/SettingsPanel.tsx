@@ -159,14 +159,12 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             {isActive && (
                               <motion.span
                                 layoutId="theme-mode-pill"
-                                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                                transition={{ type: 'spring', stiffness: 450, damping: 30 }}
                                 style={{
                                   position: 'absolute',
                                   inset: 0,
-                                  background: 'var(--bg)',
+                                  background: 'var(--accent)',
                                   borderRadius: 'var(--radius-full)',
-                                  boxShadow: 'var(--shadow-sm)',
-                                  border: '1px solid var(--border-strong)',
                                   zIndex: -1,
                                 }}
                               />
