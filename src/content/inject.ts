@@ -101,6 +101,45 @@ function validateWrapper(
 // Button rendering
 // ---------------------------------------------------------------------------
 
+let clipCounter = 0;
+
+export function setupButtonSVG(btnContainer: HTMLElement, mode: 'injected' | 'augment' | 'arrow' | 'replace' = 'injected') {
+  const svgEl = btnContainer.querySelector('svg');
+  if (!svgEl) return;
+
+  let clipId = svgEl.getAttribute('data-twtbk-clip-id');
+  if (!clipId) {
+    clipId = `twtbk-clip-${++clipCounter}`;
+    svgEl.setAttribute('data-twtbk-clip-id', clipId);
+  }
+
+  svgEl.setAttribute('viewBox', '0 0 24 24');
+  svgEl.style.transition = 'color 0.4s ease';
+
+  const isSaved = btnContainer.dataset.saved === 'true';
+  svgEl.style.color = isSaved ? currentAccentColor : '#71767b';
+
+  let pathD = '';
+  if (mode === 'arrow') {
+    pathD = 'M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z';
+  } else if (settingSaveMode === 'native-override') {
+    pathD = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z';
+  } else {
+    // Standard X / XMarks Bookmark Ribbon shape
+    pathD = 'M4 4.5C4 3.12 5.12 2 6.5 2h11C18.88 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5z';
+  }
+
+  svgEl.innerHTML = `
+    <defs>
+      <clipPath id="${clipId}">
+        <path d="${pathD}" />
+      </clipPath>
+    </defs>
+    <path d="${pathD}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <rect class="twtbk-fill-rect" clip-path="url(#${clipId})" x="0" y="0" width="${isSaved ? '100%' : '0%'}" height="100%" fill="currentColor" style="transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);" />
+  `;
+}
+
 export function markButtonAsSaved(btnContainer: HTMLElement) {
   btnContainer.dataset.saved = 'true';
   btnContainer.setAttribute('title', 'Saved in XMarks');
@@ -110,16 +149,13 @@ export function markButtonAsSaved(btnContainer: HTMLElement) {
   if (!svg) return;
 
   svg.style.color = currentAccentColor;
-  svg.style.fill = currentAccentColor;
-  svg.style.stroke = currentAccentColor;
-
-  if (settingSaveMode === 'native-override') {
-    svg.innerHTML = `<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/>`;
-  } else {
-    svg.innerHTML = `
-      <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M9 12l2 2 4-4" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    `;
+  let fillRect = svg.querySelector('.twtbk-fill-rect') as SVGRectElement | null;
+  if (!fillRect) {
+    setupButtonSVG(btnContainer, settingSaveMode === 'native-override' ? 'replace' : 'injected');
+    fillRect = svg.querySelector('.twtbk-fill-rect') as SVGRectElement | null;
+  }
+  if (fillRect) {
+    fillRect.style.width = '100%';
   }
 }
 
@@ -131,18 +167,20 @@ export function markButtonAsUnsaved(btnContainer: HTMLElement) {
   const svg = btnContainer.querySelector('svg');
   if (!svg) return;
 
-  svg.style.color = '#71767b';
-  svg.style.fill = 'none';
-  svg.style.stroke = 'currentColor';
-  svg.style.strokeWidth = '2';
-
-  if (settingSaveMode === 'native-override') {
-    svg.innerHTML = `<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="none" stroke="currentColor"/>`;
-  } else {
-    svg.innerHTML = `
-      <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>
-    `;
+  let fillRect = svg.querySelector('.twtbk-fill-rect') as SVGRectElement | null;
+  if (!fillRect) {
+    setupButtonSVG(btnContainer, settingSaveMode === 'native-override' ? 'replace' : 'injected');
+    fillRect = svg.querySelector('.twtbk-fill-rect') as SVGRectElement | null;
   }
+  if (fillRect) {
+    fillRect.style.width = '0%';
+  }
+
+  window.setTimeout(() => {
+    if (btnContainer.dataset.saved === 'false' && svg) {
+      svg.style.color = '#71767b';
+    }
+  }, 200);
 }
 
 /** Map legacy testId strings to the adapter's ActionType. */
@@ -392,27 +430,8 @@ export function injectSaveButtons() {
       btnContainer.style.marginLeft = '8px';
     }
 
-    // Replace inner SVG with XMarks icon
-    const svgEl = btnContainer.querySelector('svg');
-    if (svgEl) {
-      svgEl.setAttribute('viewBox', '0 0 24 24');
-      svgEl.style.color = '#71767b';
-      svgEl.style.transition = 'color 0.2s, fill 0.2s';
-
-      if (mode === 'arrow') {
-        // Arrow mode: small dropdown-affordance chevron alongside the native bookmark
-        svgEl.style.fill = 'currentColor';
-        svgEl.innerHTML = `<path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>`;
-      } else {
-        // injected / augment: save bookmark icon
-        svgEl.style.fill = 'none';
-        svgEl.style.stroke = 'currentColor';
-        svgEl.style.strokeWidth = '2';
-        svgEl.innerHTML = `
-          <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>
-        `;
-      }
-    }
+    // Replace inner SVG with XMarks icon using clipPath rect fill transition
+    setupButtonSVG(btnContainer, mode);
 
     btnContainer.addEventListener('mouseover', () => {
       const svg = btnContainer.querySelector('svg');
