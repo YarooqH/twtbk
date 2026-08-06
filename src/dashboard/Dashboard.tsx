@@ -373,7 +373,6 @@ export const Dashboard: React.FC = () => {
   };
 
   const [cardDensity, setCardDensity] = useCardDensity();
-  const [accentColor, setAccentColor] = useAccentColor();
 
   const getCategoryName = (id: string) => categories?.find(c => c.id === id)?.name || id;
 
