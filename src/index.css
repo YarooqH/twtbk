@@ -1410,7 +1410,8 @@ input[type="color"]::-webkit-color-swatch {
   gap: 16px;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
 }
 
 .save-mode-help {
@@ -1487,6 +1488,10 @@ input[type="color"]::-webkit-color-swatch {
   min-height: 0;
   overflow: hidden;
   /* Child will bottom-anchor inside this, unclipping as this grows */
+}
+
+.settings-content-wrapper.is-expanded .settings-content-inner {
+  overflow: visible;
 }
 
 .accordion-slider {

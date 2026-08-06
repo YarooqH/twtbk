@@ -248,8 +248,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                           }}
                         />
                       ))}
-
-                      {/* Custom Color Selector Swatch (Only when Experimental mode is ON) */}
+                      {/* Custom Color Selector Swatch & Floating Popover (Only when Experimental mode is ON) */}
                       <AnimatePresence>
                         {experimentalColors && (
                           <motion.div
@@ -259,86 +258,93 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0, opacity: 0 }}
                             transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                            style={{ position: 'relative' }}
                           >
                             {/* Swatch button - restoring original iconic rainbow wheel graphic */}
                             <div
                               className="custom-color-swatch"
                               title="Pick custom color"
-                              onClick={() => setColorPickerOpen(v => !v)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setColorPickerOpen(v => !v);
+                              }}
                               style={{
-                                border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--accent)' : '1.5px solid var(--border-strong)',
+                                border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1.5px solid var(--border-strong)',
                               }}
                             >
                               <span className="custom-color-swatch-inner" />
                             </div>
+
+                            {/* Floating Glass Popover */}
+                            <AnimatePresence>
+                              {colorPickerOpen && (
+                                <motion.div
+                                  key="colorful-popover"
+                                  initial={{ opacity: 0, scale: 0.9, y: 6 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.9, y: 6 }}
+                                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{
+                                    position: 'absolute',
+                                    bottom: 'calc(100% + 10px)',
+                                    right: 0,
+                                    zIndex: 9999,
+                                    background: 'var(--bg-secondary)',
+                                    backdropFilter: 'blur(16px) saturate(180%)',
+                                    WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                                    borderRadius: 'var(--radius-md)',
+                                    border: '1px solid var(--border-strong)',
+                                    boxShadow: 'var(--shadow-lg)',
+                                    padding: '12px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    transformOrigin: 'bottom right',
+                                  }}
+                                >
+                                  <HexColorPicker
+                                    color={accentColor}
+                                    onChange={(color) => {
+                                      handleColorChange(color);
+                                      handleColorCommit(color);
+                                    }}
+                                  />
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '180px' }}>
+                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>HEX:</span>
+                                    <input
+                                      type="text"
+                                      value={accentColor}
+                                      onChange={(e) => {
+                                        const v = e.target.value;
+                                        if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+                                          handleColorChange(v);
+                                          handleColorCommit(v);
+                                        }
+                                      }}
+                                      style={{
+                                        flex: 1,
+                                        padding: '5px 8px',
+                                        borderRadius: 'var(--radius-sm)',
+                                        border: '1px solid var(--border-strong)',
+                                        background: 'var(--bg)',
+                                        color: 'var(--text)',
+                                        fontSize: '12px',
+                                        fontFamily: 'monospace',
+                                        outline: 'none',
+                                        boxSizing: 'border-box',
+                                      }}
+                                    />
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
-
-                    {/* Inline Color Picker Drawer - Smooth height animation, zero clipping! */}
-                    <AnimatePresence>
-                      {experimentalColors && colorPickerOpen && (
-                        <motion.div
-                          key="colorful-inline-drawer"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                          style={{
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <div
-                            style={{
-                              marginTop: '8px',
-                              padding: '12px',
-                              background: 'var(--bg-secondary)',
-                              borderRadius: 'var(--radius-md)',
-                              border: '1px solid var(--border-strong)',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: '10px',
-                            }}
-                          >
-                            <HexColorPicker
-                              color={accentColor}
-                              onChange={(color) => {
-                                handleColorChange(color);
-                                handleColorCommit(color);
-                              }}
-                            />
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '200px' }}>
-                              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>HEX:</span>
-                              <input
-                                type="text"
-                                value={accentColor}
-                                onChange={(e) => {
-                                  const v = e.target.value;
-                                  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
-                                    handleColorChange(v);
-                                    handleColorCommit(v);
-                                  }
-                                }}
-                                style={{
-                                  flex: 1,
-                                  padding: '5px 8px',
-                                  borderRadius: 'var(--radius-sm)',
-                                  border: '1px solid var(--border-strong)',
-                                  background: 'var(--bg)',
-                                  color: 'var(--text)',
-                                  fontSize: '12px',
-                                  fontFamily: 'monospace',
-                                  outline: 'none',
-                                  boxSizing: 'border-box',
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
 
                     {/* Experimental Custom Color Switch */}
                     <div className="toggle-row" style={{ marginTop: '12px', marginBottom: 0, paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
