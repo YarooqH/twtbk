@@ -87,13 +87,20 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     return () => document.removeEventListener('mousedown', handler);
   }, [colorPickerOpen]);
 
+  // draftColorRef tracks color during drag — no React state update while dragging
+  const draftColorRef = useRef<string>(accentColor);
+
+  // Called on every HexColorPicker drag frame — ONLY mutates CSS var, zero re-renders
   const handleColorChange = useCallback((color: string) => {
+    draftColorRef.current = color;
     document.documentElement.style.setProperty('--accent', color);
   }, []);
 
-  const handleColorCommit = useCallback((color: string) => {
-    setAccentColor(color);
-    chrome.storage?.sync?.set({ accentColor: color });
+  // Called once when drag ends (pointerUp) or on direct hex text input
+  const handleColorCommit = useCallback((color?: string) => {
+    const c = color ?? draftColorRef.current;
+    setAccentColor(c);
+    chrome.storage?.sync?.set({ accentColor: c });
   }, [setAccentColor]);
 
   React.useEffect(() => {
@@ -286,6 +293,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                                   onMouseDown={(e) => e.stopPropagation()}
                                   onClick={(e) => e.stopPropagation()}
+                                  // Commit to React state only once when pointer is released
+                                  onPointerUp={() => handleColorCommit()}
                                   style={{
                                     position: 'absolute',
                                     bottom: 'calc(100% + 10px)',
@@ -307,10 +316,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 >
                                   <HexColorPicker
                                     color={accentColor}
-                                    onChange={(color) => {
-                                      handleColorChange(color);
-                                      handleColorCommit(color);
-                                    }}
+                                    onChange={handleColorChange}
                                   />
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '180px' }}>
                                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>HEX:</span>
