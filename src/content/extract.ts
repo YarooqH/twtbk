@@ -249,8 +249,11 @@ export function extractTweetData(tweetElement: Element) {
         }
       }
       if (!qHref || !qHref.includes('/status/')) {
-        // Look for any status link inside tweetElement that does NOT match the main tweet ID
-        const secondaryStatusLink = tweetElement.querySelector(`a[href*="/status/"]:not([href*="${id}"])`);
+        const allStatusLinks = Array.from(tweetElement.querySelectorAll('a[href*="/status/"]'));
+        const secondaryStatusLink = allStatusLinks.find(link => {
+          const href = link.getAttribute('href') || (link as HTMLAnchorElement).href || '';
+          return href.includes('/status/') && (!id || !href.includes(id));
+        });
         if (secondaryStatusLink) {
           qHref = secondaryStatusLink.getAttribute('href') || (secondaryStatusLink as HTMLAnchorElement).href || '';
         }
@@ -262,6 +265,11 @@ export function extractTweetData(tweetElement: Element) {
         const fullHref = qHref.startsWith('http') ? qHref : 'https://x.com' + qHref;
         const qMatch = fullHref.match(/\/status\/(\d+)/);
         if (qMatch) qId = qMatch[1];
+
+        const handleMatch = fullHref.match(/\.com\/([A-Za-z0-9_]+)\/status\//);
+        if (handleMatch && !qHandle) {
+          qHandle = handleMatch[1];
+        }
 
         // Clean URL to strip /photo/N or /video/N lightbox paths
         qUrl = fullHref.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');

@@ -119,8 +119,8 @@ function renderFormattedTweetText(rawText: string | undefined) {
   });
 }
 
-const MAX_TIMELINE_CHARS = 280;
-const MAX_TIMELINE_LINES = 4;
+const MAX_TIMELINE_CHARS = 480;
+const MAX_TIMELINE_LINES = 7;
 
 function truncateTextForTimeline(text: string): { truncated: string; isLong: boolean } {
   if (!text) return { truncated: '', isLong: false };
