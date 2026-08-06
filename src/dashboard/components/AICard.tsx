@@ -45,9 +45,12 @@ export const AICard: React.FC<AICardProps> = ({
           >
             <div className="settings-card">
               <div className="toggle-row ai-toggle-row">
-                <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center' }}>
-                  AI Auto-Categorize <span className="ai-model-size">(45MB)</span>
-                  <InfoTooltip text="The model might be inaccurate at times, but it does its absolute best to auto-categorize!" />
+                <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    AI Auto-Categorize
+                    <InfoTooltip text="The model might be inaccurate at times, but it does its absolute best to auto-categorize!" />
+                  </span>
+                  <span className="ai-model-size" style={{ fontSize: '11px', fontWeight: 500 }}>(45MB)</span>
                 </span>
                 <label className="toggle-switch" onClick={e => e.stopPropagation()}>
                   <input type="checkbox" checked={autoCategorize} onChange={toggleAutoCategorize} />
