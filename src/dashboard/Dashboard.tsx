@@ -3,6 +3,7 @@ import { db } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useOutsideClick } from './hooks/useOutsideClick';
 import { useAccentColor } from './hooks/useAccentColor';
+import { useCardDensity, CardDensity } from './hooks/useCardDensity';
 import { useChromeStorage } from './hooks/useChromeStorage';
 import { useAutoCategorize } from './hooks/useAutoCategorize';
 import { Sidebar } from './components/Sidebar';
@@ -371,6 +372,9 @@ export const Dashboard: React.FC = () => {
     setToastMessage('Bookmark deleted');
   };
 
+  const [cardDensity, setCardDensity] = useCardDensity();
+  const [accentColor, setAccentColor] = useAccentColor();
+
   const getCategoryName = (id: string) => categories?.find(c => c.id === id)?.name || id;
 
   return (
@@ -451,6 +455,8 @@ export const Dashboard: React.FC = () => {
         setAlsoSaveNative={setAlsoSaveNative}
         accentColor={accentColor}
         setAccentColor={setAccentColor}
+        cardDensity={cardDensity}
+        setCardDensity={setCardDensity}
         autoCategorize={autoCategorize}
         toggleAutoCategorize={toggleAutoCategorize}
         isModelLoaded={isModelLoaded}

@@ -7,6 +7,7 @@ import { SaveConfigCard } from './SaveConfigCard';
 import { AICard } from './AICard';
 import { InfoTooltip } from './InfoTooltip';
 import { useThemeMode, type ThemeMode } from '../hooks/useThemeMode';
+import { type CardDensity } from '../hooks/useCardDensity';
 
 interface SettingsPanelProps {
   settingsExpanded: boolean;
@@ -25,6 +26,8 @@ interface SettingsPanelProps {
   setAlsoSaveNative: (val: boolean) => void;
   accentColor: string;
   setAccentColor: (c: string) => void;
+  cardDensity?: CardDensity;
+  setCardDensity?: (d: CardDensity) => void;
   autoCategorize: boolean;
   toggleAutoCategorize: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isModelLoaded: boolean;
@@ -43,6 +46,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   buttonAlignment, setButtonAlignment,
   alsoSaveNative, setAlsoSaveNative,
   accentColor, setAccentColor,
+  cardDensity = 'compact', setCardDensity = () => {},
   autoCategorize, toggleAutoCategorize,
   isModelLoaded, modelProgress,
   isClassifying, classifyProgress, runAutoCategorizeJobs,
@@ -279,6 +283,60 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         />
                         <span className="toggle-slider" />
                       </label>
+                    </div>
+
+                    {/* Card Density / Tweet Size Control */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
+                      <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>
+                        TWEET DENSITY
+                        <InfoTooltip text="Adjust vertical tweet height. Compact mode displays up to 2x more bookmarks per screen." />
+                      </span>
+                      <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)', position: 'relative' }}>
+                        {[
+                          { id: 'compact', label: 'Compact' },
+                          { id: 'comfortable', label: 'Default' },
+                          { id: 'spacious', label: 'Spacious' },
+                        ].map(density => {
+                          const isActive = cardDensity === density.id;
+                          return (
+                            <button
+                              key={density.id}
+                              type="button"
+                              onClick={() => setCardDensity(density.id as CardDensity)}
+                              style={{
+                                flex: 1,
+                                position: 'relative',
+                                background: 'transparent',
+                                color: isActive ? '#ffffff' : 'var(--text-muted)',
+                                border: 'none',
+                                borderRadius: 'var(--radius-full)',
+                                padding: '5px 8px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                fontFamily: 'inherit',
+                                zIndex: 1,
+                                transition: 'color 0.15s',
+                              }}
+                            >
+                              {isActive && (
+                                <motion.span
+                                  layoutId="card-density-pill"
+                                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                                  style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    background: 'var(--accent)',
+                                    borderRadius: 'var(--radius-full)',
+                                    zIndex: -1,
+                                  }}
+                                />
+                              )}
+                              {density.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>

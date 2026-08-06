@@ -24,11 +24,54 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
 
+  /* Card Density variables (default compact) */
+  --card-padding: 10px 14px;
+  --card-avatar-size: 32px;
+  --card-font-size: 14px;
+  --card-line-height: 1.4;
+  --card-text-margin: 3px 0 6px 0;
+  --card-media-max-height: 240px;
+  --card-media-aspect-1: 45%;
+  --card-media-aspect-2: 65%;
+
   font-family: TwitterChirp, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 15px;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
+}
+
+:root[data-density="compact"] {
+  --card-padding: 10px 14px;
+  --card-avatar-size: 32px;
+  --card-font-size: 14px;
+  --card-line-height: 1.4;
+  --card-text-margin: 3px 0 6px 0;
+  --card-media-max-height: 240px;
+  --card-media-aspect-1: 45%;
+  --card-media-aspect-2: 65%;
+}
+
+:root[data-density="comfortable"] {
+  --card-padding: 14px 16px;
+  --card-avatar-size: 36px;
+  --card-font-size: 14.5px;
+  --card-line-height: 1.48;
+  --card-text-margin: 5px 0 8px 0;
+  --card-media-max-height: 300px;
+  --card-media-aspect-1: 54%;
+  --card-media-aspect-2: 85%;
+}
+
+:root[data-density="spacious"] {
+  --card-padding: 18px 20px;
+  --card-avatar-size: 40px;
+  --card-font-size: 15.5px;
+  --card-line-height: 1.55;
+  --card-text-margin: 8px 0 12px 0;
+  --card-media-max-height: 380px;
+  --card-media-aspect-1: 62.5%;
+  --card-media-aspect-2: 105%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -457,9 +500,9 @@ body {
 }
 
 .bookmark-card {
-  padding: 16px;
+  padding: var(--card-padding, 10px 14px);
   border-bottom: 1px solid var(--border);
-  transition: background 0.15s;
+  transition: background 0.15s, padding 0.2s ease;
   cursor: pointer;
 }
 
@@ -475,7 +518,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .bm-author-info {
@@ -485,8 +528,8 @@ body {
 }
 
 .bm-avatar {
-  width: 38px;
-  height: 38px;
+  width: var(--card-avatar-size, 32px);
+  height: var(--card-avatar-size, 32px);
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), #9333ea);
   display: flex;
@@ -494,19 +537,20 @@ body {
   justify-content: center;
   color: white;
   font-weight: 700;
-  font-size: 14px;
+  font-size: calc(var(--card-avatar-size, 32px) * 0.42);
   flex-shrink: 0;
+  transition: width 0.2s ease, height 0.2s ease;
 }
 
 .bm-author-name {
   font-weight: 700;
-  font-size: 15px;
+  font-size: calc(var(--card-font-size, 14px) + 0.5px);
   color: var(--text);
   line-height: 1.2;
 }
 
 .bm-handle {
-  font-size: 14px;
+  font-size: calc(var(--card-font-size, 14px) - 0.5px);
   color: var(--text-muted);
 }
 
@@ -528,14 +572,14 @@ body {
 }
 
 .bm-selection-checkbox {
-  width: 38px;
-  height: 38px;
+  width: var(--card-avatar-size, 32px);
+  height: var(--card-avatar-size, 32px);
   margin: 0 2px 0 -4px;
   border-radius: var(--radius-full);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 38px;
+  flex: 0 0 var(--card-avatar-size, 32px);
   cursor: pointer;
   color: var(--text-subtle);
   transition: background 0.15s, color 0.15s, transform 0.15s;
@@ -609,12 +653,13 @@ body {
 }
 
 .bm-text {
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: var(--card-font-size, 14px);
+  line-height: var(--card-line-height, 1.4);
   color: var(--text);
-  margin: 4px 0 10px 0;
+  margin: var(--card-text-margin, 3px 0 6px 0);
   white-space: pre-wrap;
   word-break: break-word;
+  transition: font-size 0.2s ease, margin 0.2s ease;
 }
 
 .bm-footer {

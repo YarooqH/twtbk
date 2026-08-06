@@ -336,11 +336,13 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                 key={idx} 
                 style={{ 
                   position: 'relative', 
-                  paddingBottom: bookmark.media.length === 1 ? '62.5%' : (bookmark.media.length === 2 ? '120%' : '85%'),
+                  paddingBottom: bookmark.media.length === 1 ? 'var(--card-media-aspect-1, 45%)' : 'var(--card-media-aspect-2, 65%)',
+                  maxHeight: 'var(--card-media-max-height, 240px)',
                   height: 0, 
                   overflow: 'hidden',
                   background: 'var(--bg-secondary)',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'padding-bottom 0.2s ease, max-height 0.2s ease'
                 }}
                 title={isVideo ? (isDirectVideoUrl ? 'Play video in new tab' : 'Open tweet on X') : 'Open tweet on X'}
                 onClick={() => window.open(targetUrl, '_blank')}
