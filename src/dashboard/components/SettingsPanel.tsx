@@ -233,27 +233,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             exit={{ scale: 0, opacity: 0 }}
                             transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                             title="Pick custom color"
+                            className="custom-color-swatch"
                             style={{
-                              position: 'relative',
-                              width: '22px',
-                              height: '22px',
-                              borderRadius: 'var(--radius-sm)',
-                              background: 'conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1px solid var(--border-strong)',
-                              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                              marginLeft: '4px',
-                              transformOrigin: 'center center',
-                              overflow: 'hidden',
-                              boxSizing: 'border-box',
+                              border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1.5px solid var(--border-strong)',
                             }}
                           >
+                            <span className="custom-color-swatch-inner" />
                             <input
                               type="color"
-                              value={accentColor}
+                              defaultValue={accentColor}
+                              className="custom-color-native-input"
                               onInput={(e: React.FormEvent<HTMLInputElement>) => {
                                 const val = (e.target as HTMLInputElement).value;
                                 document.documentElement.style.setProperty('--accent', val);
@@ -262,17 +251,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 const val = e.target.value;
                                 setAccentColor(val);
                                 chrome.storage?.sync?.set({ accentColor: val });
-                              }}
-                              style={{
-                                position: 'absolute',
-                                inset: 0,
-                                opacity: 0,
-                                width: '100%',
-                                height: '100%',
-                                cursor: 'pointer',
-                                border: 'none',
-                                background: 'transparent',
-                                colorScheme: 'dark light',
                               }}
                             />
                           </motion.label>
