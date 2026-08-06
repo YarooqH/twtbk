@@ -216,10 +216,30 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             let targetUrl = bookmark.quotedTweet?.tweetUrl 
               || (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id 
                   ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}` 
-                  : undefined);
+                  : bookmark.quotedTweet?.authorHandle
+                    ? `https://x.com/${bookmark.quotedTweet.authorHandle}`
+                    : undefined);
             if (targetUrl) {
               targetUrl = targetUrl.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
               window.open(targetUrl, '_blank');
+            }
+          }}
+          onMouseDown={(e) => {
+            if (e.button === 1) e.stopPropagation();
+          }}
+          onAuxClick={(e) => {
+            if (e.button === 1) {
+              e.stopPropagation();
+              let targetUrl = bookmark.quotedTweet?.tweetUrl 
+                || (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id 
+                    ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}` 
+                    : bookmark.quotedTweet?.authorHandle
+                      ? `https://x.com/${bookmark.quotedTweet.authorHandle}`
+                      : undefined);
+              if (targetUrl) {
+                targetUrl = targetUrl.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
+                window.open(targetUrl, '_blank');
+              }
             }
           }}
           style={{
@@ -254,7 +274,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             )}
           </div>
           {bookmark.quotedTweet.text && (
-            <p style={{ margin: 0, fontSize: '14px', color: 'var(--text)', lineHeight: '1.45', whiteSpace: 'pre-line', wordBreak: 'break-word' }}>
+            <p style={{ margin: 0, fontSize: '14px', color: 'var(--text)', lineHeight: '1.45', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {renderFormattedTweetText(bookmark.quotedTweet.text)}
             </p>
           )}
