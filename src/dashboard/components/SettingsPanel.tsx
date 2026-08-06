@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
 import { SettingsIcon, svgIcons, SunIcon, MoonIcon, SystemIcon } from '../icons';
@@ -70,6 +70,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     setExperimentalColors(val);
     chrome.storage?.sync?.set({ experimentalColors: val });
   };
+
+  // Zero-rerender color drag: only update CSS var during drag, commit state on release
+  const colorInputRef = useRef<HTMLInputElement>(null);
+  const commitColor = useCallback(() => {
+    if (!colorInputRef.current) return;
+    const val = colorInputRef.current.value;
+    setAccentColor(val);
+    chrome.storage?.sync?.set({ accentColor: val });
+  }, [setAccentColor]);
 
   React.useEffect(() => {
     const media = window.matchMedia('(max-width: 1100px)');
@@ -240,18 +249,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                           >
                             <span className="custom-color-swatch-inner" />
                             <input
+                              ref={colorInputRef}
                               type="color"
                               defaultValue={accentColor}
                               className="custom-color-native-input"
                               onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                                const val = (e.target as HTMLInputElement).value;
-                                document.documentElement.style.setProperty('--accent', val);
+                                // Directly mutate CSS var — no React re-render
+                                document.documentElement.style.setProperty('--accent', (e.target as HTMLInputElement).value);
                               }}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setAccentColor(val);
-                                chrome.storage?.sync?.set({ accentColor: val });
-                              }}
+                              onBlur={commitColor}
+                              onMouseUp={commitColor}
                             />
                           </motion.label>
                         )}

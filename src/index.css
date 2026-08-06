@@ -285,29 +285,30 @@ body {
 /* Color Input Reset for Dark & Light Themes */
 input[type="color"] {
   -webkit-appearance: none;
+  appearance: none;
   border: none;
+  outline: none;
   background: transparent;
-  color-scheme: dark light;
+  padding: 0;
+  margin: 0;
 }
 input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0 !important;
-  margin: 0 !important;
   border: none !important;
   background: transparent !important;
 }
 input[type="color"]::-webkit-color-swatch {
   border: none !important;
-  border-radius: 0 !important;
   background: transparent !important;
-  padding: 0 !important;
 }
 
-/* Custom Color Swatch & Native Input Glass Styling */
+/* Custom Color Swatch - glass button that triggers native color picker */
 .custom-color-swatch {
   position: relative;
   width: 24px;
   height: 24px;
   border-radius: var(--radius-sm);
+  /* Glass backdrop matching the top bar */
   background: var(--bg-overlay);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
   backdrop-filter: blur(12px) saturate(160%);
@@ -316,58 +317,61 @@ input[type="color"]::-webkit-color-swatch {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* overflow hidden ensures rainbow inner respects radius */
   overflow: hidden;
   cursor: pointer;
   box-sizing: border-box;
   margin-left: 4px;
-  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, border-color 0.15s;
+  /* GPU compositing hint - no layout changes */
+  will-change: transform;
 }
 
 .custom-color-swatch:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
   border-color: var(--accent);
 }
 
+/* The visible rainbow ring inside the swatch */
 .custom-color-swatch-inner {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
+  /* inner-radius = outer radius - border-width */
   border-radius: calc(var(--radius-sm) - 1.5px);
   background: conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+  pointer-events: none;
 }
 
+/* The native <input type=color> is completely invisible but fully covers the swatch */
 .custom-color-native-input {
   position: absolute !important;
-  inset: -6px !important;
-  width: calc(100% + 12px) !important;
-  height: calc(100% + 12px) !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   opacity: 0 !important;
   cursor: pointer !important;
+  padding: 0 !important;
+  margin: 0 !important;
   border: none !important;
   outline: none !important;
   background: transparent !important;
   -webkit-appearance: none !important;
   appearance: none !important;
 }
-
 .custom-color-native-input::-webkit-color-swatch-wrapper {
   padding: 0 !important;
-  margin: 0 !important;
   border: none !important;
   background: transparent !important;
 }
-
 .custom-color-native-input::-webkit-color-swatch {
   border: none !important;
-  border-radius: 0 !important;
   background: transparent !important;
-  padding: 0 !important;
 }
-
 .custom-color-native-input::-moz-color-swatch {
   border: none !important;
-  border-radius: 0 !important;
   background: transparent !important;
 }
+
 
 /* color dot for categories */
 .cat-dot {
