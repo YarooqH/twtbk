@@ -56,6 +56,33 @@ export function extractCleanTweetText(tweetElement: Element): string {
   }).filter(Boolean).join('\n\n');
 }
 
+export function extractQuoteTweetText(quoteContainer: Element): string {
+  const qTextEls = Array.from(quoteContainer.querySelectorAll('[data-testid="tweetText"]'));
+  if (qTextEls.length > 0) {
+    return qTextEls.map(el => {
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll('img[alt]').forEach(img => {
+        const alt = img.getAttribute('alt');
+        if (alt) img.replaceWith(document.createTextNode(alt));
+      });
+      return (clone.innerText || clone.textContent || '').trim();
+    }).filter(Boolean).join('\n\n');
+  }
+
+  const clone = quoteContainer.cloneNode(true) as HTMLElement;
+  const userHeader = clone.querySelector('[data-testid="User-Name"]');
+  if (userHeader) userHeader.remove();
+
+  clone.querySelectorAll('img, video, svg, [data-testid="tweetPhoto"]').forEach(el => el.remove());
+
+  clone.querySelectorAll('img[alt]').forEach(img => {
+    const alt = img.getAttribute('alt');
+    if (alt) img.replaceWith(document.createTextNode(alt));
+  });
+
+  return (clone.innerText || clone.textContent || '').trim();
+}
+
 function findQuoteTweetContainer(tweetElement: Element): HTMLElement | null {
   const testIdQuote = tweetElement.querySelector('[data-testid="quoteTweet"]');
   if (testIdQuote) return testIdQuote as HTMLElement;
@@ -208,17 +235,7 @@ export function extractTweetData(tweetElement: Element) {
         qName = (qNameEl as HTMLElement).innerText.split('\n')[0] || '';
       }
 
-      let qText = extractCleanTweetText(quoteContainer);
-      if (!qText) {
-        const textParts: string[] = [];
-        quoteContainer.querySelectorAll('div[dir="auto"], span[dir="auto"]').forEach(el => {
-          const txt = (el as HTMLElement).innerText?.trim();
-          if (txt && !txt.startsWith('@') && txt !== qName && !textParts.includes(txt)) {
-            textParts.push(txt);
-          }
-        });
-        qText = textParts.join('\n');
-      }
+      const qText = extractQuoteTweetText(quoteContainer);
 
       // Extract Quoted Tweet status URL & ID
       let qHref = '';
