@@ -119,6 +119,86 @@ function renderFormattedTweetText(rawText: string | undefined) {
   });
 }
 
+const MAX_TIMELINE_CHARS = 280;
+const MAX_TIMELINE_LINES = 4;
+
+function truncateTextForTimeline(text: string): { truncated: string; isLong: boolean } {
+  if (!text) return { truncated: '', isLong: false };
+
+  let charCount = 0;
+  let lineCount = 0;
+  let cutIndex = text.length;
+  let isLong = false;
+
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '\n') {
+      lineCount++;
+    }
+    charCount++;
+
+    if (charCount >= MAX_TIMELINE_CHARS || lineCount >= MAX_TIMELINE_LINES) {
+      isLong = true;
+      cutIndex = i;
+      break;
+    }
+  }
+
+  if (!isLong) {
+    return { truncated: text, isLong: false };
+  }
+
+  let cutText = text.slice(0, cutIndex);
+  const lastSpace = cutText.lastIndexOf(' ');
+  if (lastSpace > cutIndex - 35 && lastSpace > 0) {
+    cutText = cutText.slice(0, lastSpace);
+  }
+
+  return { truncated: cutText.trimEnd() + '…', isLong: true };
+}
+
+interface ExpandableTweetTextProps {
+  text: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export const ExpandableTweetText: React.FC<ExpandableTweetTextProps> = ({ text, className, style }) => {
+  const [expanded, setExpanded] = React.useState(false);
+  const { truncated, isLong } = React.useMemo(() => truncateTextForTimeline(text), [text]);
+
+  if (!isLong) {
+    return (
+      <p className={className} style={style}>
+        {renderFormattedTweetText(text)}
+      </p>
+    );
+  }
+
+  return (
+    <p className={className} style={style}>
+      {renderFormattedTweetText(expanded ? text : truncated)}
+      <span
+        onClick={(e) => {
+          e.stopPropagation();
+          setExpanded(prev => !prev);
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+        style={{
+          color: 'var(--accent)',
+          cursor: 'pointer',
+          fontWeight: 600,
+          marginLeft: '6px',
+          display: 'inline-block',
+          userSelect: 'none',
+        }}
+        className="bm-show-more-link"
+      >
+        {expanded ? 'Show less' : 'Show more'}
+      </span>
+    </p>
+  );
+};
+
 export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   bookmark, categories, getCategoryName,
   editingNoteId, setEditingNoteId, tempNote, setTempNote,
@@ -206,7 +286,11 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
           />
       </div>
 
-      <p className="bm-text">{bookmark.text ? renderFormattedTweetText(bookmark.text) : <em style={{ color: 'var(--text-muted)' }}>(No text)</em>}</p>
+      {bookmark.text ? (
+        <ExpandableTweetText text={bookmark.text} className="bm-text" />
+      ) : (
+        <p className="bm-text"><em style={{ color: 'var(--text-muted)' }}>(No text)</em></p>
+      )}
 
       {/* Quoted Tweet Block */}
       {bookmark.quotedTweet && (
@@ -274,9 +358,10 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             )}
           </div>
           {bookmark.quotedTweet.text && (
-            <p style={{ margin: 0, fontSize: '14px', color: 'var(--text)', lineHeight: '1.45', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {renderFormattedTweetText(bookmark.quotedTweet.text)}
-            </p>
+            <ExpandableTweetText
+              text={bookmark.quotedTweet.text}
+              style={{ margin: 0, fontSize: '14px', color: 'var(--text)', lineHeight: '1.45', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+            />
           )}
           {bookmark.quotedTweet.media && bookmark.quotedTweet.media.length > 0 && (
             <div style={{ marginTop: '8px', borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: bookmark.quotedTweet.media.length === 1 ? '1fr' : '1fr 1fr', gap: '2px' }}>

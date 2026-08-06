@@ -812,7 +812,8 @@ input[type="color"]::-webkit-color-swatch {
   margin-left: auto;
 }
 
-.bm-link:hover {
+.bm-link:hover,
+.bm-show-more-link:hover {
   text-decoration: underline;
 }
 
