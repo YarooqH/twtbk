@@ -211,14 +211,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                           }}
                           title={color}
                           style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '50%',
+                            width: '22px',
+                            height: '22px',
+                            borderRadius: 'var(--radius-sm)',
                             background: color,
                             cursor: 'pointer',
-                            border: accentColor.toLowerCase() === color.toLowerCase() ? '2px solid var(--text)' : 'none',
-                            boxShadow: '0 0 4px rgba(0,0,0,0.1)',
-                            transition: 'transform 0.15s',
+                            border: accentColor.toLowerCase() === color.toLowerCase() ? '2px solid var(--text)' : '1px solid transparent',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                            transition: 'transform 0.15s, border-color 0.15s',
                           }}
                         />
                       ))}
@@ -237,16 +237,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                               position: 'relative',
                               width: '22px',
                               height: '22px',
-                              borderRadius: '50%',
+                              borderRadius: 'var(--radius-sm)',
                               background: 'conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
                               cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1px solid var(--border-strong)',
-                              boxShadow: '0 0 4px rgba(0,0,0,0.15)',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
                               marginLeft: '4px',
                               transformOrigin: 'center center',
+                              overflow: 'hidden',
+                              boxSizing: 'border-box',
                             }}
                           >
                             <input
@@ -254,7 +256,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                               value={accentColor}
                               onInput={(e: React.FormEvent<HTMLInputElement>) => {
                                 const val = (e.target as HTMLInputElement).value;
-                                setAccentColor(val);
+                                document.documentElement.style.setProperty('--accent', val);
                               }}
                               onChange={(e) => {
                                 const val = e.target.value;
@@ -263,10 +265,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                               }}
                               style={{
                                 position: 'absolute',
+                                inset: 0,
                                 opacity: 0,
                                 width: '100%',
                                 height: '100%',
                                 cursor: 'pointer',
+                                border: 'none',
+                                background: 'transparent',
+                                colorScheme: 'dark light',
                               }}
                             />
                           </motion.label>

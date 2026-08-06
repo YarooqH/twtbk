@@ -282,6 +282,23 @@ body {
   box-sizing: border-box;
 }
 
+/* Color Input Reset for Dark & Light Themes */
+input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  color-scheme: dark light;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+  background: transparent;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+}
+
 /* color dot for categories */
 .cat-dot {
   width: 10px;
