@@ -297,12 +297,11 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
         <div 
           onClick={(e) => {
             e.stopPropagation();
-            let targetUrl = bookmark.quotedTweet?.tweetUrl 
-              || (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id 
-                  ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}` 
-                  : bookmark.quotedTweet?.authorHandle
-                    ? `https://x.com/${bookmark.quotedTweet.authorHandle}`
-                    : undefined);
+            let targetUrl = (bookmark.quotedTweet?.tweetUrl && bookmark.quotedTweet.tweetUrl.includes('/status/'))
+              ? bookmark.quotedTweet.tweetUrl
+              : (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id)
+                ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}`
+                : bookmark.tweetUrl;
             if (targetUrl) {
               targetUrl = targetUrl.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
               window.open(targetUrl, '_blank');
@@ -314,12 +313,11 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
           onAuxClick={(e) => {
             if (e.button === 1) {
               e.stopPropagation();
-              let targetUrl = bookmark.quotedTweet?.tweetUrl 
-                || (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id 
-                    ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}` 
-                    : bookmark.quotedTweet?.authorHandle
-                      ? `https://x.com/${bookmark.quotedTweet.authorHandle}`
-                      : undefined);
+              let targetUrl = (bookmark.quotedTweet?.tweetUrl && bookmark.quotedTweet.tweetUrl.includes('/status/'))
+                ? bookmark.quotedTweet.tweetUrl
+                : (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id)
+                  ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}`
+                  : bookmark.tweetUrl;
               if (targetUrl) {
                 targetUrl = targetUrl.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
                 window.open(targetUrl, '_blank');
