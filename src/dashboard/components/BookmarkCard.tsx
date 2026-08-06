@@ -341,8 +341,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                   height: 0, 
                   overflow: 'hidden',
                   background: 'var(--bg-secondary)',
-                  cursor: 'pointer',
-                  transition: 'padding-bottom 0.2s ease, max-height 0.2s ease'
+                  cursor: 'pointer'
                 }}
                 title={isVideo ? (isDirectVideoUrl ? 'Play video in new tab' : 'Open tweet on X') : 'Open tweet on X'}
                 onClick={() => window.open(targetUrl, '_blank')}

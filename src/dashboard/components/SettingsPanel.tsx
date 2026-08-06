@@ -228,10 +228,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         {experimentalColors && (
                           <motion.label
                             key="custom-color-picker"
-                            initial={{ opacity: 0, scale: 0.6 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.6 }}
-                            transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                             title="Pick custom color"
                             style={{
                               position: 'relative',
@@ -245,12 +245,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                               justifyContent: 'center',
                               border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1px solid var(--border-strong)',
                               boxShadow: '0 0 4px rgba(0,0,0,0.15)',
-                              marginLeft: '2px',
+                              marginLeft: '4px',
+                              transformOrigin: 'center center',
                             }}
                           >
                             <input
                               type="color"
                               value={accentColor}
+                              onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                                const val = (e.target as HTMLInputElement).value;
+                                setAccentColor(val);
+                              }}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setAccentColor(val);
@@ -270,7 +275,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </div>
 
                     {/* Experimental Custom Color Switch */}
-                    <div className="toggle-row" style={{ marginTop: '8px', marginBottom: 0, paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                    <div className="toggle-row" style={{ marginTop: '12px', marginBottom: 0, paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
                       <span className="toggle-label" style={{ fontSize: '11.5px', display: 'flex', alignItems: 'center', color: 'var(--text-muted)' }}>
                         Experimental Custom Color
                         <InfoTooltip text="⚠️ Caution: Custom accent colors are experimental. Certain custom hex hues may degrade text contrast or legibility in some UI themes." />
@@ -286,7 +291,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </div>
 
                     {/* Card Density / Tweet Size Control */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
                       <span className="toggle-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>
                         TWEET DENSITY
                         <InfoTooltip text="Adjust vertical tweet height. Compact mode displays up to 2x more bookmarks per screen." />
@@ -311,7 +316,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 color: isActive ? '#ffffff' : 'var(--text-muted)',
                                 border: 'none',
                                 borderRadius: 'var(--radius-full)',
-                                padding: '5px 8px',
+                                padding: '5px 6px',
                                 fontSize: '11px',
                                 fontWeight: 600,
                                 cursor: 'pointer',

@@ -513,7 +513,7 @@ body {
 .bookmark-card {
   padding: var(--card-padding, 10px 14px);
   border-bottom: 1px solid var(--border);
-  transition: background 0.15s, padding 0.2s ease;
+  transition: background 0.15s;
   cursor: pointer;
 }
 
@@ -550,7 +550,6 @@ body {
   font-weight: 700;
   font-size: calc(var(--card-avatar-size, 32px) * 0.42);
   flex-shrink: 0;
-  transition: width 0.2s ease, height 0.2s ease;
 }
 
 .bm-author-name {
@@ -670,7 +669,6 @@ body {
   margin: var(--card-text-margin, 3px 0 6px 0);
   white-space: pre-wrap;
   word-break: break-word;
-  transition: font-size 0.2s ease, margin 0.2s ease;
 }
 
 .bm-footer {
@@ -1295,10 +1293,10 @@ body {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 14px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
