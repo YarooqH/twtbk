@@ -321,7 +321,6 @@ input[type="color"]::-webkit-color-swatch {
   overflow: hidden;
   cursor: pointer;
   box-sizing: border-box;
-  margin-left: 4px;
   transition: transform 0.15s, border-color 0.15s;
   /* GPU compositing hint - no layout changes */
   will-change: transform;

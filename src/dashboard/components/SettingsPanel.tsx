@@ -259,89 +259,86 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0, opacity: 0 }}
                             transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                            style={{ position: 'relative', marginLeft: '4px' }}
                           >
-                            {/* Swatch button - shows current custom color */}
+                            {/* Swatch button - restoring original iconic rainbow wheel graphic */}
                             <div
                               className="custom-color-swatch"
                               title="Pick custom color"
                               onClick={() => setColorPickerOpen(v => !v)}
                               style={{
-                                background: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? accentColor : 'var(--bg-overlay)',
-                                border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1.5px solid var(--border-strong)',
+                                border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--accent)' : '1.5px solid var(--border-strong)',
                               }}
                             >
-                              {categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) && (
-                                <span className="custom-color-swatch-inner" />
-                              )}
+                              <span className="custom-color-swatch-inner" />
                             </div>
-
-                            {/* react-colorful popover */}
-                            <AnimatePresence>
-                              {colorPickerOpen && (
-                                <motion.div
-                                  key="colorful-popover"
-                                  initial={{ opacity: 0, scale: 0.9, y: 6 }}
-                                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                                  exit={{ opacity: 0, scale: 0.9, y: 6 }}
-                                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                  style={{
-                                    position: 'absolute',
-                                    bottom: 'calc(100% + 8px)',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    zIndex: 999,
-                                    background: 'var(--bg-overlay)',
-                                    backdropFilter: 'blur(16px) saturate(180%)',
-                                    WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: '1px solid var(--border-strong)',
-                                    boxShadow: 'var(--shadow-lg)',
-                                    padding: '12px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '8px',
-                                    transformOrigin: 'bottom center',
-                                  }}
-                                >
-                                  <HexColorPicker
-                                    color={accentColor}
-                                    onChange={(color) => {
-                                      handleColorChange(color);
-                                      handleColorCommit(color);
-                                    }}
-                                  />
-                                  {/* Hex input */}
-                                  <input
-                                    type="text"
-                                    value={accentColor}
-                                    onChange={(e) => {
-                                      const v = e.target.value;
-                                      if (/^#[0-9a-fA-F]{6}$/.test(v)) {
-                                        handleColorChange(v);
-                                        handleColorCommit(v);
-                                      }
-                                    }}
-                                    style={{
-                                      width: '100%',
-                                      padding: '6px 10px',
-                                      borderRadius: 'var(--radius-sm)',
-                                      border: '1px solid var(--border-strong)',
-                                      background: 'var(--bg)',
-                                      color: 'var(--text)',
-                                      fontSize: '13px',
-                                      fontFamily: 'monospace',
-                                      outline: 'none',
-                                      boxSizing: 'border-box',
-                                    }}
-                                  />
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
+
+                    {/* Inline Color Picker Drawer - Smooth height animation, zero clipping! */}
+                    <AnimatePresence>
+                      {experimentalColors && colorPickerOpen && (
+                        <motion.div
+                          key="colorful-inline-drawer"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                          style={{
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginTop: '8px',
+                              padding: '12px',
+                              background: 'var(--bg-secondary)',
+                              borderRadius: 'var(--radius-md)',
+                              border: '1px solid var(--border-strong)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: '10px',
+                            }}
+                          >
+                            <HexColorPicker
+                              color={accentColor}
+                              onChange={(color) => {
+                                handleColorChange(color);
+                                handleColorCommit(color);
+                              }}
+                            />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '200px' }}>
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>HEX:</span>
+                              <input
+                                type="text"
+                                value={accentColor}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+                                    handleColorChange(v);
+                                    handleColorCommit(v);
+                                  }
+                                }}
+                                style={{
+                                  flex: 1,
+                                  padding: '5px 8px',
+                                  borderRadius: 'var(--radius-sm)',
+                                  border: '1px solid var(--border-strong)',
+                                  background: 'var(--bg)',
+                                  color: 'var(--text)',
+                                  fontSize: '12px',
+                                  fontFamily: 'monospace',
+                                  outline: 'none',
+                                  boxSizing: 'border-box',
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     {/* Experimental Custom Color Switch */}
                     <div className="toggle-row" style={{ marginTop: '12px', marginBottom: 0, paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
