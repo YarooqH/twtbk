@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
 import { SettingsIcon, svgIcons, SunIcon, MoonIcon, SystemIcon } from '../icons';
@@ -8,6 +8,7 @@ import { AICard } from './AICard';
 import { InfoTooltip } from './InfoTooltip';
 import { useThemeMode, type ThemeMode } from '../hooks/useThemeMode';
 import { type CardDensity } from '../hooks/useCardDensity';
+import { HexColorPicker } from 'react-colorful';
 
 interface SettingsPanelProps {
   settingsExpanded: boolean;
@@ -56,9 +57,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const panelTransition = getMotionTransition(Boolean(reducedMotion));
   const [isMobileViewport, setIsMobileViewport] = React.useState(false);
 
-  const [experimentalColors, setExperimentalColors] = React.useState<boolean>(false);
+  const [experimentalColors, setExperimentalColors] = useState<boolean>(false);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     chrome.storage?.sync?.get(['experimentalColors'], (res) => {
       if (res && res.experimentalColors !== undefined) {
         setExperimentalColors(Boolean(res.experimentalColors));
@@ -68,16 +71,29 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   const handleToggleExperimental = (val: boolean) => {
     setExperimentalColors(val);
+    if (!val) setColorPickerOpen(false);
     chrome.storage?.sync?.set({ experimentalColors: val });
   };
 
-  // Zero-rerender color drag: only update CSS var during drag, commit state on release
-  const colorInputRef = useRef<HTMLInputElement>(null);
-  const commitColor = useCallback(() => {
-    if (!colorInputRef.current) return;
-    const val = colorInputRef.current.value;
-    setAccentColor(val);
-    chrome.storage?.sync?.set({ accentColor: val });
+  // Close color picker when clicking outside
+  useEffect(() => {
+    if (!colorPickerOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(e.target as Node)) {
+        setColorPickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [colorPickerOpen]);
+
+  const handleColorChange = useCallback((color: string) => {
+    document.documentElement.style.setProperty('--accent', color);
+  }, []);
+
+  const handleColorCommit = useCallback((color: string) => {
+    setAccentColor(color);
+    chrome.storage?.sync?.set({ accentColor: color });
   }, [setAccentColor]);
 
   React.useEffect(() => {
@@ -210,12 +226,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       ACCENT COLOR
                       <InfoTooltip text="Select a preset accent color for your XMarks dashboard interface." />
                     </span>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
                       {categoryColors.map(color => (
                         <span
                           key={color}
                           onClick={() => {
                             setAccentColor(color);
+                            setColorPickerOpen(false);
                             chrome.storage?.sync?.set({ accentColor: color });
                           }}
                           title={color}
@@ -231,36 +248,97 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                           }}
                         />
                       ))}
-                      
+
                       {/* Custom Color Selector Swatch (Only when Experimental mode is ON) */}
                       <AnimatePresence>
                         {experimentalColors && (
-                          <motion.label
-                            key="custom-color-picker"
+                          <motion.div
+                            key="custom-color-picker-wrap"
+                            ref={colorPickerRef}
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0, opacity: 0 }}
                             transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                            title="Pick custom color"
-                            className="custom-color-swatch"
-                            style={{
-                              border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1.5px solid var(--border-strong)',
-                            }}
+                            style={{ position: 'relative', marginLeft: '4px' }}
                           >
-                            <span className="custom-color-swatch-inner" />
-                            <input
-                              ref={colorInputRef}
-                              type="color"
-                              defaultValue={accentColor}
-                              className="custom-color-native-input"
-                              onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                                // Directly mutate CSS var — no React re-render
-                                document.documentElement.style.setProperty('--accent', (e.target as HTMLInputElement).value);
+                            {/* Swatch button - shows current custom color */}
+                            <div
+                              className="custom-color-swatch"
+                              title="Pick custom color"
+                              onClick={() => setColorPickerOpen(v => !v)}
+                              style={{
+                                background: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? accentColor : 'var(--bg-overlay)',
+                                border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1.5px solid var(--border-strong)',
                               }}
-                              onBlur={commitColor}
-                              onMouseUp={commitColor}
-                            />
-                          </motion.label>
+                            >
+                              {categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) && (
+                                <span className="custom-color-swatch-inner" />
+                              )}
+                            </div>
+
+                            {/* react-colorful popover */}
+                            <AnimatePresence>
+                              {colorPickerOpen && (
+                                <motion.div
+                                  key="colorful-popover"
+                                  initial={{ opacity: 0, scale: 0.9, y: 6 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.9, y: 6 }}
+                                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                  style={{
+                                    position: 'absolute',
+                                    bottom: 'calc(100% + 8px)',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    zIndex: 999,
+                                    background: 'var(--bg-overlay)',
+                                    backdropFilter: 'blur(16px) saturate(180%)',
+                                    WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                                    borderRadius: 'var(--radius-md)',
+                                    border: '1px solid var(--border-strong)',
+                                    boxShadow: 'var(--shadow-lg)',
+                                    padding: '12px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '8px',
+                                    transformOrigin: 'bottom center',
+                                  }}
+                                >
+                                  <HexColorPicker
+                                    color={accentColor}
+                                    onChange={(color) => {
+                                      handleColorChange(color);
+                                      handleColorCommit(color);
+                                    }}
+                                  />
+                                  {/* Hex input */}
+                                  <input
+                                    type="text"
+                                    value={accentColor}
+                                    onChange={(e) => {
+                                      const v = e.target.value;
+                                      if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+                                        handleColorChange(v);
+                                        handleColorCommit(v);
+                                      }
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      padding: '6px 10px',
+                                      borderRadius: 'var(--radius-sm)',
+                                      border: '1px solid var(--border-strong)',
+                                      background: 'var(--bg)',
+                                      color: 'var(--text)',
+                                      fontSize: '13px',
+                                      fontFamily: 'monospace',
+                                      outline: 'none',
+                                      boxSizing: 'border-box',
+                                    }}
+                                  />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </motion.div>
                         )}
                       </AnimatePresence>
                     </div>

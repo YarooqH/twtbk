@@ -372,6 +372,27 @@ input[type="color"]::-webkit-color-swatch {
   background: transparent !important;
 }
 
+/* react-colorful overrides — match our glass theme */
+.react-colorful {
+  width: 180px !important;
+  border-radius: var(--radius-sm) !important;
+  gap: 10px !important;
+}
+.react-colorful__saturation {
+  border-radius: var(--radius-sm) !important;
+  border-bottom: none !important;
+}
+.react-colorful__hue {
+  border-radius: 999px !important;
+  height: 12px !important;
+}
+.react-colorful__saturation-pointer,
+.react-colorful__hue-pointer {
+  width: 18px !important;
+  height: 18px !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4) !important;
+}
 
 /* color dot for categories */
 .cat-dot {
