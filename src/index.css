@@ -41,6 +41,17 @@
   -webkit-font-smoothing: antialiased;
 }
 
+:root[data-density="ultra"] {
+  --card-padding: 6px 10px;
+  --card-avatar-size: 26px;
+  --card-font-size: 13px;
+  --card-line-height: 1.3;
+  --card-text-margin: 2px 0 4px 0;
+  --card-media-max-height: 160px;
+  --card-media-aspect-1: 35%;
+  --card-media-aspect-2: 50%;
+}
+
 :root[data-density="compact"] {
   --card-padding: 10px 14px;
   --card-avatar-size: 32px;
@@ -1257,7 +1268,7 @@ body {
 
 /* ── SETTINGS SIDEBAR (RIGHT COLUMN) ────────────────── */
 .settings-sidebar {
-  width: 290px;
+  width: 340px;
   flex-shrink: 0;
   border-left: 1px solid var(--border);
   padding: 0 14px 14px;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type CardDensity = 'compact' | 'comfortable' | 'spacious';
+export type CardDensity = 'ultra' | 'compact' | 'comfortable' | 'spacious';
 
 export function useCardDensity() {
   const [cardDensity, setCardDensityState] = useState<CardDensity>('compact');

@@ -293,6 +293,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       </span>
                       <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', padding: '2px', border: '1px solid var(--border)', position: 'relative' }}>
                         {[
+                          { id: 'ultra', label: 'Ultra' },
                           { id: 'compact', label: 'Compact' },
                           { id: 'comfortable', label: 'Default' },
                           { id: 'spacious', label: 'Spacious' },
