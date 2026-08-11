@@ -32,6 +32,25 @@ export function setSettingNativeOverrideAction(val: typeof settingNativeOverride
   settingNativeOverrideAction = val;
 }
 
+import { getContrastTextColor, isDarkModeActive } from '../shared/colors';
+
+export function applyContentAccent(accentColor: string) {
+  if (typeof document === 'undefined' || !document.documentElement) return;
+
+  const isDark = isDarkModeActive();
+  const contrast = getContrastTextColor(accentColor, isDark);
+
+  if (accentColor === 'monochrome') {
+    document.documentElement.style.setProperty('--twtbk-accent', 'var(--twtbk-text, currentColor)');
+    document.documentElement.style.setProperty('--twtbk-accent-hover', 'var(--twtbk-text, currentColor)');
+    document.documentElement.style.setProperty('--twtbk-accent-contrast', isDark ? '#000000' : '#ffffff');
+  } else {
+    document.documentElement.style.setProperty('--twtbk-accent', accentColor);
+    document.documentElement.style.setProperty('--twtbk-accent-hover', accentColor + 'CC');
+    document.documentElement.style.setProperty('--twtbk-accent-contrast', contrast);
+  }
+}
+
 if (typeof chrome !== 'undefined' && chrome.storage) {
   chrome.storage.sync.get(['saveMode', 'injectedPosition', 'nativeOverrideAction', 'accentColor', 'buttonAlignment'], (result) => {
     if (result.saveMode) {
@@ -45,15 +64,7 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
     }
     if (result.accentColor) {
       currentAccentColor = result.accentColor as string;
-      if (typeof document !== 'undefined' && document.documentElement) {
-        if (currentAccentColor === 'monochrome') {
-          document.documentElement.style.setProperty('--twtbk-accent', 'var(--text, currentColor)');
-          document.documentElement.style.setProperty('--twtbk-accent-hover', 'var(--text, currentColor)');
-        } else {
-          document.documentElement.style.setProperty('--twtbk-accent', currentAccentColor);
-          document.documentElement.style.setProperty('--twtbk-accent-hover', currentAccentColor + 'CC');
-        }
-      }
+      applyContentAccent(currentAccentColor);
     }
     if (result.buttonAlignment) {
       settingButtonAlignment = result.buttonAlignment as 'left' | 'center' | 'right';
@@ -77,15 +88,7 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
       }
       if (changes.accentColor) {
         currentAccentColor = changes.accentColor.newValue as string;
-        if (typeof document !== 'undefined' && document.documentElement) {
-          if (currentAccentColor === 'monochrome') {
-            document.documentElement.style.setProperty('--twtbk-accent', 'var(--text, currentColor)');
-            document.documentElement.style.setProperty('--twtbk-accent-hover', 'var(--text, currentColor)');
-          } else {
-            document.documentElement.style.setProperty('--twtbk-accent', currentAccentColor);
-            document.documentElement.style.setProperty('--twtbk-accent-hover', currentAccentColor + 'CC');
-          }
-        }
+        applyContentAccent(currentAccentColor);
       }
     }
   });

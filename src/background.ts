@@ -1,4 +1,5 @@
-import { db, Bookmark } from './db';
+import { db, type Bookmark } from './db';
+import { bookmarkRepository } from './bookmarks/repository';
 import { MSG, type ActionMessage } from './messages';
 
 chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendResponse) => {
@@ -10,14 +11,14 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
   }
 
   if (message.type === MSG.DELETE_BOOKMARK) {
-    db.bookmarks.delete(message.payload.id)
+    bookmarkRepository.delete(message.payload.id)
       .then(() => sendResponse({ success: true }))
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
   
   if (message.type === MSG.CHECK_TWEET_SAVED) {
-    db.bookmarks.get(message.payload.id)
+    bookmarkRepository.get(message.payload.id)
       .then(bookmark => sendResponse({ saved: !!bookmark }))
       .catch(err => sendResponse({ saved: false, error: err.message }));
     return true;
@@ -31,7 +32,7 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
   }
 
   if (message.type === MSG.GET_CATEGORIES) {
-    db.categories.toArray()
+    bookmarkRepository.listCategories()
       .then(categories => sendResponse(categories))
       .catch(() => sendResponse([]));
     return true;
@@ -44,7 +45,7 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
       createdAt: new Date(),
       sortOrder: Date.now()
     };
-    db.categories.add(newCat)
+    bookmarkRepository.createCategory(newCat)
       .then(() => sendResponse({ success: true, category: newCat }))
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
@@ -61,35 +62,10 @@ async function handleSaveTweet(payload: Partial<Bookmark>) {
   if (!payload.id) return { success: false, error: 'No tweet ID provided' };
   
   try {
-    const existing = await db.bookmarks.get(payload.id);
-    if (existing) {
-      const updates: Partial<Bookmark> = {};
-      if (payload.categoryIds) updates.categoryIds = payload.categoryIds;
-      if (payload.note !== undefined) updates.note = payload.note;
-      if (Object.keys(updates).length > 0) {
-        await db.bookmarks.update(payload.id, updates);
-      }
+    const result = await bookmarkRepository.save({ ...payload, id: payload.id });
+    if (!result.created) {
       return { success: true, message: 'Updated existing bookmark', id: payload.id };
     }
-
-    const newBookmark: Bookmark = {
-      id: payload.id,
-      tweetUrl: payload.tweetUrl || '',
-      authorHandle: payload.authorHandle || '',
-      authorName: payload.authorName,
-      text: payload.text,
-      createdAt: payload.createdAt,
-      savedAt: new Date(),
-      categoryIds: payload.categoryIds || [],
-      tags: payload.tags || [],
-      media: payload.media || [],
-      quotedTweet: payload.quotedTweet,
-      articles: payload.articles,
-      source: payload.source || 'extension',
-      authorAvatarUrl: payload.authorAvatarUrl
-    };
-
-    await db.bookmarks.add(newBookmark);
     chrome.storage?.local?.get('xmarks_onboarding', result => {
       const state = result?.xmarks_onboarding || { version: 1 };
       chrome.storage?.local?.set({
@@ -105,52 +81,19 @@ async function handleSaveTweet(payload: Partial<Bookmark>) {
 
 async function handleImportBatch(payload: Partial<Bookmark>[]) {
   try {
-    // Ensure "Imported from X" category exists
-    const allCats = await db.categories.toArray();
-    let importCategory = allCats.find(c => c.name === 'Imported from X');
-    if (!importCategory) {
-      importCategory = {
-        id: 'cat_imported',
-        name: 'Imported from X',
-        createdAt: new Date(),
-        sortOrder: 999
-      };
-      await db.categories.add(importCategory);
-    }
+    const result = await bookmarkRepository.importBatch(
+      payload.filter((bookmark): bookmark is Partial<Bookmark> & Pick<Bookmark, 'id'> => Boolean(bookmark.id))
+    );
 
-    const newBookmarks: Bookmark[] = [];
-    for (const b of payload) {
-      if (!b.id) continue;
-      const existing = await db.bookmarks.get(b.id);
-      if (!existing) {
-        newBookmarks.push({
-          id: b.id,
-          tweetUrl: b.tweetUrl || '',
-          authorHandle: b.authorHandle || '',
-          authorName: b.authorName,
-          text: b.text,
-          savedAt: new Date(),
-          categoryIds: b.categoryIds || [importCategory.id],
-          tags: b.tags || [],
-          media: b.media || [],
-          quotedTweet: b.quotedTweet,
-          articles: b.articles,
-          source: 'x-bookmark-import',
-          authorAvatarUrl: b.authorAvatarUrl
-        });
-      }
-    }
-    
-    if (newBookmarks.length > 0) {
-      await db.bookmarks.bulkAdd(newBookmarks);
-      chrome.storage?.local?.get('xmarks_onboarding', result => {
-        const state = result?.xmarks_onboarding || { version: 1 };
+    if (result.count > 0) {
+      chrome.storage?.local?.get('xmarks_onboarding', stored => {
+        const state = stored?.xmarks_onboarding || { version: 1 };
         chrome.storage?.local?.set({
           xmarks_onboarding: { ...state, firstSyncCompleted: true, firstSyncCompletedAt: new Date().toISOString() }
         });
       });
     }
-    return { success: true, count: newBookmarks.length };
+    return { success: true, count: result.count };
   } catch (error: any) {
     console.error('Error importing batch:', error);
     return { success: false, error: error.message };
