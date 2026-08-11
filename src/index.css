@@ -782,6 +782,74 @@ input[type="color"]::-webkit-color-swatch {
   word-break: break-word;
 }
 
+/* Quoted Tweet Block (Compact & Density Responsive) */
+.bm-quoted-tweet {
+  margin: var(--card-text-margin, 6px 0);
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.bm-quoted-tweet:hover {
+  background: var(--bg-hover);
+}
+
+.bm-quoted-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+  flex-wrap: wrap;
+}
+
+.bm-quoted-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.bm-quoted-author-name {
+  font-weight: 700;
+  font-size: calc(var(--card-font-size, 14px) - 0.5px);
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.bm-quoted-handle {
+  font-size: calc(var(--card-font-size, 14px) - 1.5px);
+  color: var(--text-muted);
+}
+
+.bm-quoted-text {
+  margin: 0;
+  font-size: calc(var(--card-font-size, 14px) - 0.5px);
+  color: var(--text);
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bm-quoted-media-grid {
+  margin-top: 5px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: grid;
+  gap: 2px;
+}
+
+.bm-quoted-media-img {
+  width: 100%;
+  max-height: calc(var(--card-media-max-height, 240px) * 0.55);
+  object-fit: cover;
+  display: block;
+}
+
 .bm-footer {
   display: flex;
   align-items: center;

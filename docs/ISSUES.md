@@ -294,6 +294,38 @@
 - **Details**: Single RAF debounce can race with rapid MutationObserver DOM batches.
 - **Plan**: Add short timer buffer to MutationObserver callback.
 
+### 5.6 Terra Performance Audit (2026-08-06)
+
+#### 5.6T.1 `[Open]` Import Batch Deduplication Performs Serial IndexedDB Reads
+- **Location**: `src/background.ts` (`handleImportBatch`)
+- **Details**: Every imported bookmark awaits `db.bookmarks.get()` in a loop, and every batch loads all categories before locating the import category. This turns a large sync into many sequential IndexedDB round trips and repeats category work per batch.
+- **Plan**: Resolve the import category with a keyed query once per import session and use `bulkGet()` for batch IDs, followed by `bulkAdd()` for the missing records.
+
+#### 5.6T.2 `[Open]` Auto-Categorization Recomputes Category Embeddings for Every Bookmark
+- **Location**: `src/utils/classifier.ts` (`classifyTweet`), `src/dashboard/hooks/useAutoCategorize.ts` (`runAutoCategorizeJobs`)
+- **Details**: For each eligible bookmark, the classifier embeds the tweet and then embeds every category name again. Jobs therefore perform `bookmarks x categories` model inferences, run one bookmark at a time, and issue one IndexedDB update per match.
+- **Plan**: Cache normalized embeddings by category ID/name for the duration of the job, process a small bounded batch at a time, and commit category updates with `bulkUpdate()` or a single transaction.
+
+#### 5.6T.3 `[Open]` Dashboard State Changes Re-render Every Bookmark Card
+- **Location**: `src/dashboard/Dashboard.tsx`, `src/dashboard/components/BookmarkList.tsx`, `src/dashboard/components/BookmarkCard.tsx`
+- **Details**: `BookmarkCard` is not memoized, while `Dashboard` creates new `getCategoryName` and `toggleBookmarkSelection` functions on each render. Typing, opening settings, or changing selection can consequently re-render every mounted card and repeat text tokenization/formatting even when most bookmark data is unchanged.
+- **Plan**: Stabilize callbacks with `useCallback`, pass precomputed category data, and memoize cards (or virtualize the list) with a comparator keyed to the bookmark and card-specific UI state.
+
+#### 5.6T.4 `[Open]` Category Work Is Repeated Per Render and Per Card
+- **Location**: `src/dashboard/components/BookmarkList.tsx`, `src/dashboard/components/BookmarkCard.tsx`
+- **Details**: The mobile category strip filters the entire bookmark array once for Uncategorized and once per category. Each card also runs `categories.find()` up to three times for its category styling. The combined work grows with both library size and category count.
+- **Plan**: Derive one memoized category-count map and category-ID lookup map in the dashboard, then pass them to the mobile strip and cards.
+
+#### 5.6T.5 `[Open]` Content Injection Fans Out One Runtime Message Per New Tweet
+- **Location**: `src/content/inject.ts` (`injectSaveButtons`), `src/background.ts` (`CHECK_TWEET_SAVED`)
+- **Details**: Each newly injected action sends an individual `CHECK_TWEET_SAVED` message and IndexedDB lookup. The injection pass also scans and validates every currently mounted tweet after relevant DOM changes. Fast scrolling through a dense timeline can create a burst of cross-context messages and DOM work.
+- **Plan**: Add a batch saved-state message that accepts visible tweet IDs, cache responses for the page lifetime, and restrict injection work to mutation-added tweet roots where possible.
+
+#### 5.6T.6 `[Open]` Dashboard Media Loads Eagerly for All Mounted Cards
+- **Location**: `src/dashboard/components/BookmarkCard.tsx`
+- **Details**: Avatar, quoted-media, article-thumbnail, and bookmark-media `<img>` elements have no lazy-loading or async-decoding hints. Because the list mounts every filtered card, opening a media-heavy library can trigger unnecessary image requests, decode work, and memory use before those cards are visible.
+- **Plan**: Virtualize the list and add `loading="lazy"` plus `decoding="async"` to non-critical media, retaining eager loading only for above-the-fold content where warranted.
+
 ---
 
 ## 6. Accessibility & Visual System
