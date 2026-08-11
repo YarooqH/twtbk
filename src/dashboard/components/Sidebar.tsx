@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { db } from '../../db';
 import { getCategoryColor, categoryColors } from '../helpers';
+import { getContrastTextColor } from '../../shared/colors';
 import { AllIcon } from '../icons';
 import { AICard } from './AICard';
 import { InfoTooltip } from './InfoTooltip';
@@ -193,7 +194,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                       </button>
-                      <span className="sidebar-item-badge" style={{ background: getCategoryColor(cat.id, cat.color), flexShrink: 0 }}>{count}</span>
+                      <span
+                        className="sidebar-item-badge"
+                        style={{
+                          background: getCategoryColor(cat.id, cat.color),
+                          color: getContrastTextColor(getCategoryColor(cat.id, cat.color)),
+                          flexShrink: 0,
+                        }}
+                      >
+                        {count}
+                      </span>
                     </>
                   )}
 

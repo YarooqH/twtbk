@@ -78,4 +78,5 @@ export function applyAccentVariables(color: string) {
   }
 
   document.documentElement.style.setProperty('--accent-contrast', contrast);
+  document.documentElement.style.setProperty('--logo-filter', contrast === '#000000' ? 'brightness(0)' : 'none');
 }
