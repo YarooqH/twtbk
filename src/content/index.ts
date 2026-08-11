@@ -5,7 +5,7 @@ import { injectSaveButtons, resolveInjectMode } from './inject';
 import { extractTweetData } from './extract';
 import { showCategoryPopover } from './popover';
 import { showToast } from './toast';
-import { SELECTOR_CONFIG } from './xDomAdapter';
+import { findBookmarkActionForElement, findTweetForElement } from './xDomAdapter';
 
 // Re-inject buttons when relevant settings change
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -24,19 +24,17 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 document.addEventListener('click', (e) => {
   try {
     const target = e.target as HTMLElement;
-    const bookmarkSelector = SELECTOR_CONFIG.bookmark.testIds
-      .map(t => `[data-testid="${t.value}"]`)
-      .join(', ');
-    const bookmarkBtn = target.closest(bookmarkSelector);
-    if (bookmarkBtn) {
+    const bookmarkResult = findBookmarkActionForElement(target);
+    const bookmarkBtn = bookmarkResult.element;
+    if (bookmarkResult.found && bookmarkBtn) {
       if (!chrome.runtime?.id) {
         console.warn("XMarks: Context invalidated. Please refresh the page.");
         return;
       }
 
-      const tweetElement = bookmarkBtn.closest('[data-testid="tweet"]');
-      if (!tweetElement) return;
-      const data = extractTweetData(tweetElement);
+      const tweetResult = findTweetForElement(bookmarkBtn);
+      if (!tweetResult.found || !tweetResult.element) return;
+      const data = extractTweetData(tweetResult.element);
       if (!data) return;
 
       const mode = resolveInjectMode();

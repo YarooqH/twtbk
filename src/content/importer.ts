@@ -1,6 +1,7 @@
 import { MSG } from '../messages';
 import { extractTweetData } from './extract';
 import { showToast } from './toast';
+import { findAllTweets, findImporterAnchor, isBookmarkPage } from './xDomAdapter';
 
 export let isImporting = false;
 export let totalImported = 0;
@@ -21,8 +22,7 @@ let retryCount = 0;
 
 // Check for bookmark import page
 export function checkBookmarkPage() {
-  const isBookmarkPage = window.location.pathname.includes('/i/bookmarks');
-  if (isBookmarkPage) {
+  if (isBookmarkPage()) {
     if (document.getElementById('twtbk-sidebar-importer-container')) {
       retryCount = 0;
       if (sidebarRetryTimer) window.clearTimeout(sidebarRetryTimer);
@@ -80,13 +80,10 @@ function getXTheme() {
 function injectImporterSidebarUI(): boolean {
   if (document.getElementById('twtbk-sidebar-importer-container')) return true;
 
-  const postBtn = document.querySelector('[data-testid="SideNav_NewTweet_Button"]')
-    || document.querySelector('a[href="/compose/post"]')
-    || document.querySelector('a[href="/i/bookmarks"]')
-    || document.querySelector('[data-testid="AppTabBar_DirectMessage_Link"]')
-    || document.querySelector('nav[role="navigation"]');
+  const anchorResult = findImporterAnchor(document);
+  const postBtn = anchorResult.element;
 
-  if (!postBtn) {
+  if (!anchorResult.found || !postBtn) {
     return false;
   }
 
@@ -348,7 +345,7 @@ const runImportLoop = async () => {
     return;
   }
   
-  const tweets = document.querySelectorAll('[data-testid="tweet"]');
+  const tweets = findAllTweets();
   const batch: any[] = [];
 
   tweets.forEach(tweet => {

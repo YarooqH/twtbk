@@ -103,9 +103,59 @@ export const SELECTOR_CONFIG: Record<ActionType, ActionSelectorConfig> = {
 
 /** Find a single tweet element starting from an optional root. */
 export function findTweet(root: Element = document.documentElement): AdapterResult<Element> {
+  if (root.matches?.('[data-testid="tweet"]')) {
+    return { found: true, element: root, confidence: 'high' };
+  }
   const el = root.querySelector('[data-testid="tweet"]');
   if (el) return { found: true, element: el, confidence: 'high' };
   return { found: false, confidence: 'low' };
+}
+
+/** Resolve a tweet from an arbitrary event target without exposing selectors to callers. */
+export function findTweetForElement(element: Element | null): AdapterResult<Element> {
+  if (!element) return { found: false, confidence: 'low' };
+  const tweet = element.closest('[data-testid="tweet"]');
+  if (tweet) return { found: true, element: tweet, confidence: 'high' };
+  return findTweet(element);
+}
+
+/** Find the native bookmark control associated with an event target. */
+export function findBookmarkActionForElement(element: Element | null): AdapterResult<Element> {
+  if (!element) return { found: false, confidence: 'low' };
+  const config = SELECTOR_CONFIG.bookmark;
+  const selector = config.testIds.map(entry => `[data-testid="${entry.value}"]`).join(', ');
+  const button = element.closest(selector);
+  if (button) return { found: true, element: button, confidence: 'high' };
+  return { found: false, confidence: 'low' };
+}
+
+/** Resolve the primary navigation anchor used by the bookmark importer. */
+export function findImporterAnchor(root: Document = document): AdapterResult<Element> {
+  const selectors = [
+    '[data-testid="SideNav_NewTweet_Button"]',
+    'a[href="/compose/post"]',
+    'a[href="/i/bookmarks"]',
+    '[data-testid="AppTabBar_DirectMessage_Link"]',
+    'nav[role="navigation"]',
+  ];
+  for (const selector of selectors) {
+    const element = root.querySelector(selector);
+    if (element) return { found: true, element, confidence: selector.includes('SideNav') ? 'high' : 'medium' };
+  }
+  return { found: false, confidence: 'low' };
+}
+
+export function isBookmarkPage(pathname = window.location.pathname): boolean {
+  return pathname.includes('/i/bookmarks');
+}
+
+export function isActionBar(element: Element): boolean {
+  return element.matches('[role="group"]') && findTweetForElement(element).found;
+}
+
+export function containsTweetOrAction(element: Element): boolean {
+  return element.matches('[data-testid="tweet"], [role="group"]')
+    || Boolean(element.querySelector('[data-testid="tweet"], [role="group"]'));
 }
 
 /** Find all tweet elements starting from an optional root. */

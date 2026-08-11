@@ -1,6 +1,7 @@
 import { debouncedInjectSaveButtons } from './inject';
 import { checkBookmarkPage } from './importer';
 import { settingsReady } from './settings';
+import { containsTweetOrAction, isActionBar, isBookmarkPage } from './xDomAdapter';
 
 let lastPathname = window.location.pathname;
 const checkNavigation = () => {
@@ -18,14 +19,10 @@ const observer = new MutationObserver((mutations) => {
   let shouldInject = false;
   for (const mutation of mutations) {
     const target = mutation.target as Element;
-    const targetIsActionBar = target.nodeType === 1
-      && target.matches('[role="group"]')
-      && !!target.closest('[data-testid="tweet"]');
+    const targetIsActionBar = target.nodeType === 1 && isActionBar(target);
     const addedActionBarOrTweet = Array.from(mutation.addedNodes).some((node) => {
       if (node.nodeType !== 1) return false;
-      const element = node as Element;
-      return element.matches('[data-testid="tweet"], [role="group"]')
-        || !!element.querySelector('[data-testid="tweet"], [role="group"]');
+      return containsTweetOrAction(node as Element);
     });
     if (targetIsActionBar || addedActionBarOrTweet) {
       shouldInject = true;
@@ -35,7 +32,7 @@ const observer = new MutationObserver((mutations) => {
   if (shouldInject) {
     debouncedInjectSaveButtons();
     checkNavigation();
-  } else if (window.location.pathname.includes('/i/bookmarks') && !document.getElementById('twtbk-sidebar-importer-container')) {
+  } else if (isBookmarkPage() && !document.getElementById('twtbk-sidebar-importer-container')) {
     checkBookmarkPage();
   }
 });
