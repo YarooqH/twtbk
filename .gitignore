@@ -10,6 +10,9 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+landing/node_modules
+landing/dist
+landing/.astro
 *.local
 
 # Editor directories and files

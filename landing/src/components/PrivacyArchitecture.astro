@@ -1,0 +1,116 @@
+---
+---
+
+<section id="privacy" class="privacy-section">
+  <div class="section-header">
+    <div class="badge-pill mb-3">
+      <span class="badge-pill-dot"></span>
+      <span>Zero Cloud • Zero Accounts</span>
+    </div>
+    <h2 class="section-title">Your Data Never Leaves Your Browser</h2>
+    <p class="section-subtitle">
+      XMarks is built local-first. All your bookmarks, notes, AI embeddings, and categories live in browser IndexedDB.
+    </p>
+  </div>
+
+  <div class="arch-box glass-panel">
+    <div class="arch-flow">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <h4>X.com DOM</h4>
+        <p>1-Click Bookmark Action</p>
+      </div>
+
+      <div class="flow-arrow">➔</div>
+
+      <div class="flow-step highlight">
+        <div class="step-num">2</div>
+        <h4>Local IndexedDB</h4>
+        <p>Browser Local Storage</p>
+      </div>
+
+      <div class="flow-arrow">➔</div>
+
+      <div class="flow-step highlight">
+        <div class="step-num">3</div>
+        <h4>On-Device AI Worker</h4>
+        <p>Transformers.js WASM</p>
+      </div>
+
+      <div class="flow-arrow">➔</div>
+
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <h4>Instant Search UI</h4>
+        <p>0ms Latency Dashboard</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .privacy-section {
+    padding: 80px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .arch-box {
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    box-shadow: var(--shadow-card);
+  }
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    flex: 1;
+    min-width: 180px;
+    text-align: center;
+  }
+  .flow-step.highlight {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .flow-step h4 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .flow-step p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  @media (max-width: 768px) {
+    .flow-arrow {
+      display: none;
+    }
+  }
+</style>

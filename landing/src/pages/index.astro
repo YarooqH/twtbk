@@ -1,0 +1,71 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import InteractiveDemo from '../components/InteractiveDemo.astro';
+import Features from '../components/Features.astro';
+import Comparison from '../components/Comparison.astro';
+import PrivacyArchitecture from '../components/PrivacyArchitecture.astro';
+import Faq from '../components/Faq.astro';
+import Footer from '../components/Footer.astro';
+
+const title = "XMarks — Privacy-First Second Brain for X (Twitter Bookmarks)";
+const description = "Transform X's chaotic bookmark list into an organized, instant-searchable library with local AI auto-categorization and offline sync.";
+const siteUrl = "https://yarooqh.github.io/twtbk/";
+
+const softwareSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "XMarks",
+  "operatingSystem": "Chrome / Chromium Browser",
+  "applicationCategory": "BrowserExtension",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "description": description
+};
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="generator" content={Astro.generator} />
+
+    <!-- SEO Meta Tags -->
+		<title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={siteUrl} />
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${siteUrl}icon-128.png`} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${siteUrl}icon-128.png`} />
+
+    <!-- Schema Markup for Search & AI Engines -->
+    <script type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />
+	</head>
+	<body>
+    <Header />
+    <main>
+      <Hero />
+      <InteractiveDemo />
+      <Features />
+      <Comparison />
+      <PrivacyArchitecture />
+      <Faq />
+    </main>
+    <Footer />
+	</body>
+</html>

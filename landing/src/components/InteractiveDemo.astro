@@ -1,0 +1,295 @@
+---
+---
+
+<section id="demo" class="demo-section">
+  <div class="section-header">
+    <div class="badge-pill mb-3">
+      <span class="badge-pill-dot"></span>
+      <span>Live Interactive Preview</span>
+    </div>
+    <h2 class="section-title">Experience the XMarks Dashboard</h2>
+    <p class="section-subtitle">
+      Test instant keyword search, color-coded categories, and thread expansion right now in your browser.
+    </p>
+  </div>
+
+  <div class="demo-window glass-panel">
+    <!-- Top Search & Filter Bar -->
+    <div class="demo-toolbar">
+      <div class="search-input-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="demo-search-input" placeholder="Search tweets, handles, #tags, or notes..." />
+      </div>
+
+      <div class="category-pills">
+        <button class="cat-pill active" data-category="all">All (3)</button>
+        <button class="cat-pill" data-category="tech" style="--cat-color: #ffd400;">Tech (1)</button>
+        <button class="cat-pill" data-category="design" style="--cat-color: #00c4b6;">Design (1)</button>
+        <button class="cat-pill" data-category="ai" style="--cat-color: #7856ff;">AI (1)</button>
+      </div>
+    </div>
+
+    <!-- Live Mock Bookmark Feed -->
+    <div class="demo-feed" id="demo-feed">
+      <!-- Card 1: Tech -->
+      <div class="demo-card" data-cat="tech" data-search="react vite typescript local first">
+        <div class="card-header">
+          <img src="https://unavatar.io/x/addyosmani" alt="Addy Osmani" class="avatar" />
+          <div class="user-info">
+            <span class="user-name">Addy Osmani</span>
+            <span class="user-handle">@addyosmani</span>
+          </div>
+          <span class="cat-badge" style="background: #ffd400; color: #000;">Tech</span>
+        </div>
+        <div class="card-body">
+          Local-first web apps using IndexedDB and WebAssembly are ridiculously fast. Zero latency, works offline, and keeps user data 100% private.
+        </div>
+        <div class="card-note">
+          📌 <strong>Note:</strong> Essential reference for client-side storage architecture.
+        </div>
+        <div class="card-footer">
+          <span>❤️ 1.8K Likes</span>
+          <span>🔄 342 Reposts</span>
+          <span>📅 Aug 2026</span>
+        </div>
+      </div>
+
+      <!-- Card 2: AI -->
+      <div class="demo-card" data-cat="ai" data-search="transformers.js local ai chrome mv3 hf">
+        <div class="card-header">
+          <img src="https://unavatar.io/x/huggingface" alt="Hugging Face" class="avatar" />
+          <div class="user-info">
+            <span class="user-name">Hugging Face</span>
+            <span class="user-handle">@huggingface</span>
+          </div>
+          <span class="cat-badge" style="background: #7856ff; color: #fff;">AI</span>
+        </div>
+        <div class="card-body">
+          Transformers.js v3 is here! You can now run text classification, embedding generation, and LLM inference 100% client-side in Chrome extension background workers.
+        </div>
+        <div class="card-note">
+          📌 <strong>Note:</strong> Used by XMarks for zero-latency local categorization.
+        </div>
+        <div class="card-footer">
+          <span>❤️ 4.2K Likes</span>
+          <span>🔄 890 Reposts</span>
+          <span>📅 Aug 2026</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Design -->
+      <div class="demo-card" data-cat="design" data-search="x dark mode ui design glassmorphic chirp typography">
+        <div class="card-header">
+          <img src="https://unavatar.io/x/design" alt="Design" class="avatar" />
+          <div class="user-info">
+            <span class="user-name">UI/UX Daily</span>
+            <span class="user-handle">@design</span>
+          </div>
+          <span class="cat-badge" style="background: #00c4b6; color: #fff;">Design</span>
+        </div>
+        <div class="card-body">
+          The best dark mode interfaces use high WCAG contrast, subtle glassmorphism overlay borders, and tactile micro-animations on interaction.
+        </div>
+        <div class="card-note">
+          📌 <strong>Note:</strong> Perfect UI guidelines for dark mode web apps.
+        </div>
+        <div class="card-footer">
+          <span>❤️ 2.9K Likes</span>
+          <span>🔄 610 Reposts</span>
+          <span>📅 Aug 2026</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Simple interactive filter logic for landing page preview
+  const searchInput = document.getElementById('demo-search-input') as HTMLInputElement;
+  const categoryPills = document.querySelectorAll('.cat-pill');
+  const cards = document.querySelectorAll('.demo-card');
+
+  let activeCat = 'all';
+
+  function filterCards() {
+    const query = (searchInput?.value || '').toLowerCase().trim();
+    cards.forEach(card => {
+      const element = card as HTMLElement;
+      const catMatch = activeCat === 'all' || element.dataset.cat === activeCat;
+      const searchMatch = !query || (element.dataset.search || '').toLowerCase().includes(query) || element.innerText.toLowerCase().includes(query);
+
+      if (catMatch && searchMatch) {
+        element.style.display = 'block';
+      } else {
+        element.style.display = 'none';
+      }
+    });
+  }
+
+  categoryPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      categoryPills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeCat = (pill as HTMLElement).dataset.category || 'all';
+      filterCards();
+    });
+  });
+
+  searchInput?.addEventListener('input', filterCards);
+</script>
+
+<style>
+  .demo-section {
+    padding: 80px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .section-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .mb-3 {
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 38px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+  .section-subtitle {
+    font-size: 17px;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .demo-window {
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+  }
+  .demo-toolbar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .search-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    border-radius: var(--radius-full);
+    flex: 1;
+    min-width: 260px;
+    color: var(--text-muted);
+  }
+  .search-input-wrap input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+  }
+  .category-pills {
+    display: flex;
+    gap: 8px;
+  }
+  .cat-pill {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cat-pill.active,
+  .cat-pill:hover {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .demo-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .demo-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .demo-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+  }
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .user-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .user-handle {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .cat-badge {
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .card-body {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .card-note {
+    background: var(--bg-tertiary);
+    border-left: 3px solid var(--accent);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .card-footer {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+</style>

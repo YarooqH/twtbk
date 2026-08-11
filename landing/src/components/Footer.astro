@@ -1,0 +1,99 @@
+---
+---
+
+<footer class="footer-container">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo-group">
+        <div class="logo-icon-bg">
+          <img src="/logo.svg" alt="XMarks Logo" width="16" height="16" />
+        </div>
+        <span class="logo-text">XMarks</span>
+      </div>
+      <p class="brand-copy">
+        The Privacy-First "Second Brain for X". Open-source under MIT License.
+      </p>
+    </div>
+
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#demo">Live Demo</a>
+      <a href="#privacy">Privacy</a>
+      <a href="https://github.com/YarooqH/twtbk" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="/llms.txt" target="_blank">llms.txt</a>
+    </div>
+
+    <div class="footer-copy">
+      © {new Date().getFullYear()} XMarks • Built for X Power Users
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer-container {
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    padding: 60px 24px 40px;
+  }
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    text-align: center;
+  }
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-icon-bg {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-icon-bg img {
+    filter: brightness(0);
+  }
+  .logo-text {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .brand-copy {
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 400px;
+  }
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .footer-links a {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: color 0.15s;
+  }
+  .footer-links a:hover {
+    color: var(--text);
+  }
+  .footer-copy {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+</style>

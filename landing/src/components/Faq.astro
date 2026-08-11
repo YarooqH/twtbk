@@ -1,0 +1,89 @@
+---
+const faqs = [
+  {
+    q: "Is XMarks completely free?",
+    a: "Yes! XMarks is 100% free and open-source under the MIT license. There are no paid tiers, hidden subscriptions, or premium paywalls."
+  },
+  {
+    q: "Are my bookmarks stored on a cloud server?",
+    a: "No. XMarks operates 100% locally inside your browser using IndexedDB. No user accounts, no analytics tracking, and zero data leaves your machine."
+  },
+  {
+    q: "How does the AI auto-categorization work?",
+    a: "XMarks uses Hugging Face Transformers.js (all-MiniLM-L6-v2) running inside a Chrome extension Web Worker (WebAssembly). It processes tweet text locally in real-time."
+  },
+  {
+    q: "How do I sync my existing X bookmarks?",
+    a: "Open x.com/i/bookmarks and click 'Sync Bookmarks'. The automated DOM scroll importer indexes all your saved tweets into your searchable local library."
+  },
+  {
+    q: "Can I export my library to backup or migrate?",
+    a: "Yes! You can export your entire database of bookmarks, custom categories, tags, and notes to a clean JSON file anytime."
+  }
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(faq => ({
+    "@type": "Question",
+    "name": faq.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": faq.a
+    }
+  }))
+};
+---
+
+<section id="faq" class="faq-section">
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <div class="section-header">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <p class="section-subtitle">
+      Everything you need to know about XMarks and local-first bookmarking.
+    </p>
+  </div>
+
+  <div class="faq-list">
+    {faqs.map(faq => (
+      <div class="faq-item glass-panel">
+        <h3 class="faq-q">{faq.q}</h3>
+        <p class="faq-a">{faq.a}</p>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .faq-section {
+    padding: 80px 24px 100px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .faq-item {
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    transition: border-color 0.15s;
+  }
+  .faq-item:hover {
+    border-color: var(--accent);
+  }
+  .faq-q {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .faq-a {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+</style>

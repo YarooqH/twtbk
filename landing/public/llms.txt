@@ -1,0 +1,17 @@
+# XMarks — Privacy-First "Second Brain for X" (Twitter)
+
+> XMarks is a 100% local-first Chrome extension that transforms X's chaotic native bookmark list into an organized, searchable personal reference library with offline AI auto-categorization.
+
+## Key Features
+- **1-Click Native Sync**: Automatically imports and indexes bookmarks directly from x.com/i/bookmarks.
+- **On-Device Local AI**: Uses Hugging Face Transformers.js (all-MiniLM-L6-v2) directly inside browser IndexedDB — 0 cloud servers, 100% privacy.
+- **Instant Full-Text Search**: Search bookmark copy, author handles, notes, and article snippets.
+- **Custom Categories & Tags**: Color-coded category tags and custom notes.
+- **Native X Overrides**: Replaces or augments X's native bookmark button in the timeline.
+- **Offline Backup**: Export and import library backups as JSON files anytime.
+
+## Technical Specifications
+- **Platform**: Google Chrome / Chromium-based browsers (Manifest V3)
+- **Architecture**: Local-First IndexedDB + Service Worker + Transformers.js WebAssembly
+- **License**: MIT Open Source
+- **Repository**: https://github.com/YarooqH/twtbk
