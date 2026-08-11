@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
-import { db } from '../db';
+import { bookmarkRepository } from '../bookmarks/repository';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useOutsideClick } from './hooks/useOutsideClick';
 import { useAccentColor } from './hooks/useAccentColor';
@@ -166,12 +166,12 @@ export const Dashboard: React.FC = () => {
       sortOrder: categories ? categories.length : 0
     };
 
-    await db.categories.add(newCat);
+    await bookmarkRepository.createCategory(newCat);
     setNewCatName('');
   };
 
-  const bookmarks = useLiveQuery(() => db.bookmarks.orderBy('savedAt').reverse().toArray());
-  const categories = useLiveQuery(() => db.categories.toArray());
+  const bookmarks = useLiveQuery(() => bookmarkRepository.list());
+  const categories = useLiveQuery(() => bookmarkRepository.listCategories());
 
   // Count uncategorized bookmarks
   const uncategorizedCount = useMemo(() => {
@@ -241,7 +241,7 @@ export const Dashboard: React.FC = () => {
   );
 
   const handleExport = async () => {
-    const allData = await db.bookmarks.toArray();
+    const allData = await bookmarkRepository.all();
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -254,7 +254,7 @@ export const Dashboard: React.FC = () => {
     setBulkAction('export');
     try {
       const ids = Array.from(selectedBookmarkIds);
-      const selected = await db.bookmarks.bulkGet(ids);
+      const selected = await bookmarkRepository.getMany(ids);
       const exportData = selected.filter((bookmark): bookmark is NonNullable<typeof bookmark> => Boolean(bookmark));
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -273,9 +273,7 @@ export const Dashboard: React.FC = () => {
     setBulkAction('categorize');
     const ids = Array.from(selectedBookmarkIds);
     try {
-      await db.transaction('rw', db.bookmarks, async () => {
-        await Promise.all(ids.map(id => db.bookmarks.update(id, { categoryIds: categoryId ? [categoryId] : [] })));
-      });
+      await bookmarkRepository.updateCategories(ids, categoryId);
       setSelectedBookmarkIds(new Set());
       setToastMessage(`Updated ${ids.length} bookmark${ids.length === 1 ? '' : 's'}`);
     } catch {
@@ -299,14 +297,14 @@ export const Dashboard: React.FC = () => {
       onConfirm: async () => {
         setBulkAction('delete');
         try {
-          const removed = (await db.bookmarks.bulkGet(ids)).filter((bookmark): bookmark is NonNullable<typeof bookmark> => Boolean(bookmark));
-          await db.bookmarks.bulkDelete(ids);
+          const removed = (await bookmarkRepository.getMany(ids)).filter((bookmark): bookmark is NonNullable<typeof bookmark> => Boolean(bookmark));
+          await bookmarkRepository.deleteMany(ids);
           setSelectedBookmarkIds(new Set());
           setModalConfig(null);
         setToastAction({
           label: 'Undo',
           onClick: async () => {
-            await db.bookmarks.bulkPut(removed);
+            await bookmarkRepository.putMany(removed);
             setToastMessage(`${removed.length} bookmark${removed.length === 1 ? '' : 's'} restored`);
             setToastAction(null);
           }
@@ -335,7 +333,7 @@ export const Dashboard: React.FC = () => {
             savedAt: b.savedAt ? new Date(b.savedAt) : new Date(),
             createdAt: b.createdAt ? new Date(b.createdAt) : undefined
           }));
-          await db.bookmarks.bulkPut(revived);
+          await bookmarkRepository.putMany(revived);
           setToastMessage(`Imported ${revived.length} bookmarks successfully!`);
         }
       } catch {
@@ -355,16 +353,16 @@ export const Dashboard: React.FC = () => {
     e?.stopPropagation?.();
     
     // Find the bookmark before deleting it so we can restore it
-    const bookmarkToRestore = await db.bookmarks.get(id);
+    const bookmarkToRestore = await bookmarkRepository.get(id);
     if (!bookmarkToRestore) return;
 
     // Optimistic deletion
-    await db.bookmarks.delete(id);
+    await bookmarkRepository.delete(id);
     
     setToastAction({
       label: 'Undo',
       onClick: async () => {
-        await db.bookmarks.put(bookmarkToRestore);
+        await bookmarkRepository.putMany([bookmarkToRestore]);
         setToastMessage('Bookmark restored');
         setToastAction(null);
       }

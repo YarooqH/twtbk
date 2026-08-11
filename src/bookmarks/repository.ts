@@ -82,6 +82,9 @@ export const bookmarkRepository = {
   save,
   importBatch,
   update: (id: string, patch: BookmarkPatch) => db.bookmarks.update(id, patch),
+  updateCategories: (ids: string[], categoryId: string | null) => db.transaction('rw', db.bookmarks, async () => {
+    await Promise.all(ids.map(id => db.bookmarks.update(id, { categoryIds: categoryId ? [categoryId] : [] })));
+  }),
   delete: (id: string) => db.bookmarks.delete(id),
   deleteMany: (ids: string[]) => db.bookmarks.bulkDelete(ids),
   putMany: (bookmarks: Bookmark[]) => db.bookmarks.bulkPut(bookmarks),
