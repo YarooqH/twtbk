@@ -307,8 +307,8 @@ input[type="color"]::-webkit-color-swatch {
 /* Custom Color Swatch - glass button that triggers native color picker */
 .custom-color-swatch {
   position: relative;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: var(--radius-sm);
   /* Glass backdrop matching the top bar */
   background: var(--bg-overlay);
@@ -1449,7 +1449,7 @@ input[type="color"]::-webkit-color-swatch {
 
 /* ── SETTINGS SIDEBAR (RIGHT COLUMN) ────────────────── */
 .settings-sidebar {
-  width: 340px;
+  width: 360px;
   flex-shrink: 0;
   border-left: 1px solid var(--border);
   padding: 0 14px 14px;
@@ -1476,7 +1476,7 @@ input[type="color"]::-webkit-color-swatch {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px 18px;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
   gap: 16px;

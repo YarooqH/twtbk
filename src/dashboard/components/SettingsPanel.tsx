@@ -234,7 +234,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       ACCENT COLOR
                       <InfoTooltip text="Select a preset accent color for your XMarks dashboard interface." />
                     </span>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'nowrap' }}>
                       {categoryColors.map(color => (
                         <span
                           key={color}
