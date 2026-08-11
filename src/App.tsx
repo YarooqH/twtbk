@@ -43,9 +43,15 @@ function App() {
     chrome.storage?.sync?.get(['accentColor', 'themeMode'], (result) => {
       if (result.accentColor) {
         const color = result.accentColor as string;
-        document.documentElement.style.setProperty('--accent', color);
-        document.documentElement.style.setProperty('--accent-hover', hoverMap[color] || color);
-        document.documentElement.style.setProperty('--accent-light', color + '14');
+        if (color === 'monochrome') {
+          document.documentElement.style.setProperty('--accent', 'var(--text)');
+          document.documentElement.style.setProperty('--accent-hover', 'var(--text)');
+          document.documentElement.style.setProperty('--accent-light', 'color-mix(in srgb, var(--text) 15%, transparent)');
+        } else {
+          document.documentElement.style.setProperty('--accent', color);
+          document.documentElement.style.setProperty('--accent-hover', hoverMap[color] || color);
+          document.documentElement.style.setProperty('--accent-light', color + '14');
+        }
       }
       if (result.themeMode) {
         if (result.themeMode === 'system') {

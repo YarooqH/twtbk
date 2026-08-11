@@ -46,8 +46,13 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
     if (result.accentColor) {
       currentAccentColor = result.accentColor as string;
       if (typeof document !== 'undefined' && document.documentElement) {
-        document.documentElement.style.setProperty('--twtbk-accent', currentAccentColor);
-        document.documentElement.style.setProperty('--twtbk-accent-hover', currentAccentColor + 'CC');
+        if (currentAccentColor === 'monochrome') {
+          document.documentElement.style.setProperty('--twtbk-accent', 'var(--text, currentColor)');
+          document.documentElement.style.setProperty('--twtbk-accent-hover', 'var(--text, currentColor)');
+        } else {
+          document.documentElement.style.setProperty('--twtbk-accent', currentAccentColor);
+          document.documentElement.style.setProperty('--twtbk-accent-hover', currentAccentColor + 'CC');
+        }
       }
     }
     if (result.buttonAlignment) {
@@ -73,8 +78,13 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
       if (changes.accentColor) {
         currentAccentColor = changes.accentColor.newValue as string;
         if (typeof document !== 'undefined' && document.documentElement) {
-          document.documentElement.style.setProperty('--twtbk-accent', currentAccentColor);
-          document.documentElement.style.setProperty('--twtbk-accent-hover', currentAccentColor + 'CC');
+          if (currentAccentColor === 'monochrome') {
+            document.documentElement.style.setProperty('--twtbk-accent', 'var(--text, currentColor)');
+            document.documentElement.style.setProperty('--twtbk-accent-hover', 'var(--text, currentColor)');
+          } else {
+            document.documentElement.style.setProperty('--twtbk-accent', currentAccentColor);
+            document.documentElement.style.setProperty('--twtbk-accent-hover', currentAccentColor + 'CC');
+          }
         }
       }
     }

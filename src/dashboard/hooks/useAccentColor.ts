@@ -17,7 +17,15 @@ export function useAccentColor() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--accent', accentColor);
+    if (accentColor === 'monochrome') {
+      document.documentElement.style.setProperty('--accent', 'var(--text)');
+      document.documentElement.style.setProperty('--accent-hover', 'var(--text)');
+      document.documentElement.style.setProperty('--accent-light', 'color-mix(in srgb, var(--text) 15%, transparent)');
+    } else {
+      document.documentElement.style.setProperty('--accent', accentColor);
+      document.documentElement.style.setProperty('--accent-hover', accentColor);
+      document.documentElement.style.setProperty('--accent-light', accentColor + '14');
+    }
   }, [accentColor]);
 
   return [accentColor, setAccentColor] as const;

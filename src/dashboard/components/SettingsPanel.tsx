@@ -255,6 +255,27 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                           }}
                         />
                       ))}
+                      {/* Theme-Adaptive Auto Black/White Swatch (Before Custom Color) */}
+                      <span
+                        onClick={() => {
+                          setAccentColor('monochrome');
+                          setColorPickerOpen(false);
+                          chrome.storage?.sync?.set({ accentColor: 'monochrome' });
+                        }}
+                        title="Auto Black/White (Black in Light Mode, White in Dark Mode)"
+                        style={{
+                          width: '22px',
+                          height: '22px',
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'linear-gradient(135deg, #000000 50%, #ffffff 50%)',
+                          cursor: 'pointer',
+                          border: accentColor === 'monochrome' ? '2px solid var(--text)' : '1.5px solid var(--border-strong)',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                          transition: 'transform 0.15s, border-color 0.15s',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+
                       {/* Custom Color Selector Swatch & Floating Popover (Only when Experimental mode is ON) */}
                       <AnimatePresence>
                         {experimentalColors && (
@@ -276,7 +297,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 setColorPickerOpen(v => !v);
                               }}
                               style={{
-                                border: !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase()) ? '2px solid var(--text)' : '1.5px solid var(--border-strong)',
+                                border: (accentColor !== 'monochrome' && !categoryColors.some(c => c.toLowerCase() === accentColor.toLowerCase())) ? '2px solid var(--text)' : '1.5px solid var(--border-strong)',
                               }}
                             >
                               <span className="custom-color-swatch-inner" />
