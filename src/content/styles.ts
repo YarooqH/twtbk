@@ -77,7 +77,7 @@ styleTag.textContent = `
   .twtbk-new-cat-row input::placeholder { color: var(--twtbk-text-muted); }
   .twtbk-add-btn {
     background: var(--twtbk-accent);
-    color: #fff;
+    color: var(--twtbk-accent-contrast, #ffffff);
     border: none;
     border-radius: 9999px;
     padding: 4px 14px;
@@ -160,7 +160,7 @@ styleTag.textContent = `
   }
   .twtbk-btn-primary {
     background-color: var(--twtbk-accent);
-    color: #ffffff;
+    color: var(--twtbk-accent-contrast, #ffffff);
   }
   .twtbk-btn-primary:hover {
     background-color: var(--twtbk-accent-hover);

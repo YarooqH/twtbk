@@ -1865,7 +1865,7 @@ input[type="color"]::-webkit-color-swatch {
 
 .driver-popover-btn {
   background-color: var(--accent) !important;
-  color: #ffffff !important;
+  color: var(--accent-contrast, #ffffff) !important;
   border-radius: var(--radius-full) !important;
   border: none !important;
   padding: 6px 14px !important;

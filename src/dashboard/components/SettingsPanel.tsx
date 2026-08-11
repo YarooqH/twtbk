@@ -193,7 +193,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             style={{
                               position: 'relative',
                               background: 'transparent',
-                              color: isActive ? '#ffffff' : 'var(--text-muted)',
+                              color: isActive ? 'var(--accent-contrast, #ffffff)' : 'var(--text-muted)',
                               border: 'none',
                               borderRadius: 'var(--radius-full)',
                               width: '26px',
@@ -413,7 +413,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 flex: 1,
                                 position: 'relative',
                                 background: 'transparent',
-                                color: isActive ? '#ffffff' : 'var(--text-muted)',
+                                color: isActive ? 'var(--accent-contrast, #ffffff)' : 'var(--text-muted)',
                                 border: 'none',
                                 borderRadius: 'var(--radius-full)',
                                 padding: '5px 6px',

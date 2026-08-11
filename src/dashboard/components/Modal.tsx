@@ -116,7 +116,7 @@ export const Modal: React.FC<ModalProps> = ({
               fontWeight: 700,
               borderRadius: 'var(--radius-full)',
               background: isDanger ? 'var(--danger)' : 'var(--accent)',
-              color: '#ffffff',
+              color: isDanger ? '#ffffff' : 'var(--accent-contrast, #ffffff)',
               border: 'none',
               cursor: isBusy ? 'wait' : 'pointer',
               opacity: isBusy ? 0.7 : 1

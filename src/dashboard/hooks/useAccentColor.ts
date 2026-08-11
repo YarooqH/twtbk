@@ -26,7 +26,15 @@ export function useAccentColor() {
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-    return () => observer.disconnect();
+    // Re-apply when system dark/light mode preference changes
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleMediaChange = () => applyAccentVariables(accentColor);
+    media.addEventListener?.('change', handleMediaChange);
+
+    return () => {
+      observer.disconnect();
+      media.removeEventListener?.('change', handleMediaChange);
+    };
   }, [accentColor]);
 
   return [accentColor, setAccentColor] as const;
