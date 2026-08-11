@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
 import { db } from '../../db';
 import { getCategoryColor, categoryColors } from '../helpers';
+import { getContrastTextColor } from '../../shared/colors';
 import { AllIcon } from '../icons';
 import { AICard } from './AICard';
+import { InfoTooltip } from './InfoTooltip';
 
 interface SidebarProps {
   bookmarks: any[] | undefined;
@@ -59,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [bookmarks]);
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" data-onboarding="desktop-categories">
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">
           <img src="/logo.svg" alt="XMarks Logo" width={16} height={16} />
@@ -70,7 +72,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      <div className="sidebar-section-label">Library</div>
+      <div className="sidebar-section-label" style={{ display: 'flex', alignItems: 'center' }}>
+        Library
+        <InfoTooltip text="Filter bookmarks by category or add custom color-coded categories." />
+      </div>
       <ul>
         <li
           className={`sidebar-item ${!selectedCategoryId ? 'active' : ''}`}
@@ -189,7 +194,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                       </button>
-                      <span className="sidebar-item-badge" style={{ background: getCategoryColor(cat.id, cat.color), flexShrink: 0 }}>{count}</span>
+                      <span
+                        className="sidebar-item-badge"
+                        style={{
+                          background: getCategoryColor(cat.id, cat.color),
+                          color: getContrastTextColor(getCategoryColor(cat.id, cat.color)),
+                          flexShrink: 0,
+                        }}
+                      >
+                        {count}
+                      </span>
                     </>
                   )}
 

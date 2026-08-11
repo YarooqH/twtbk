@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { getCategoryColor } from './shared/colors';
+import { getCategoryColor, applyAccentVariables } from './shared/colors';
 import { db } from './db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import './index.css';
@@ -31,21 +31,25 @@ const hoverMap: Record<string, string> = {
 function App() {
   const { markPopupSeen } = useOnboarding();
   const recentBookmarks = useLiveQuery(
-    () => db.bookmarks.orderBy('savedAt').reverse().limit(5).toArray()
+    () => db.bookmarks.orderBy('savedAt').reverse().limit(15).toArray()
   );
   const totalCount = useLiveQuery(() => db.bookmarks.count());
   const categories = useLiveQuery(() => db.categories.toArray());
 
 
-  // Apply accent color from storage so popup reflects user's choice
+  // Apply accent color and theme mode from storage so popup reflects user's choice
   useEffect(() => {
     markPopupSeen();
-    chrome.storage?.sync?.get(['accentColor'], (result) => {
+    chrome.storage?.sync?.get(['accentColor', 'themeMode'], (result) => {
       if (result.accentColor) {
-        const color = result.accentColor as string;
-        document.documentElement.style.setProperty('--accent', color);
-        document.documentElement.style.setProperty('--accent-hover', hoverMap[color] || color);
-        document.documentElement.style.setProperty('--accent-light', color + '14');
+        applyAccentVariables(result.accentColor as string);
+      }
+      if (result.themeMode) {
+        if (result.themeMode === 'system') {
+          document.documentElement.removeAttribute('data-theme');
+        } else {
+          document.documentElement.setAttribute('data-theme', result.themeMode as string);
+        }
       }
     });
   }, []);
@@ -127,16 +131,14 @@ function App() {
                           <span key={catId} style={{ 
                             display: 'inline-flex', 
                             alignItems: 'center', 
-                            gap: '4px', 
                             fontSize: '11px', 
-                            padding: '3px 6px', 
+                            padding: '3px 8px', 
                             borderRadius: '4px', 
                             background: `${catColor}18`,
                             color: catColor,
                             fontWeight: 600,
                             lineHeight: 1
                           }}>
-                            <div style={{ width: '6.5px', height: '6.5px', borderRadius: '50%', background: catColor }}></div>
                             {cat.name}
                           </span>
                         );

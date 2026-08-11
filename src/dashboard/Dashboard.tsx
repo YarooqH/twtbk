@@ -3,6 +3,7 @@ import { db } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useOutsideClick } from './hooks/useOutsideClick';
 import { useAccentColor } from './hooks/useAccentColor';
+import { useCardDensity, CardDensity } from './hooks/useCardDensity';
 import { useChromeStorage } from './hooks/useChromeStorage';
 import { useAutoCategorize } from './hooks/useAutoCategorize';
 import { Sidebar } from './components/Sidebar';
@@ -14,6 +15,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { MultiSelectActionBar } from './components/MultiSelectActionBar';
 import { useOnboarding } from '../onboarding/state';
+import { useTour } from '../onboarding/useTour';
 
 export type SortOption = 'newest' | 'oldest' | 'posted-newest' | 'posted-oldest' | 'author';
 
@@ -25,7 +27,15 @@ export const Dashboard: React.FC = () => {
   
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<'categorize' | 'export' | 'delete' | null>(null);
-  const { state: onboarding, isLoaded: onboardingLoaded, markDashboardSeen, dismissWelcome, markFirstAction } = useOnboarding();
+  const {
+    state: onboarding,
+    isLoaded: onboardingLoaded,
+    markDashboardSeen,
+    dismissWelcome,
+    markFirstAction,
+    markTourCompleted,
+    markTourDismissed,
+  } = useOnboarding();
   
   // In-App Toast & Modal Notifications (W4)
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -45,6 +55,14 @@ export const Dashboard: React.FC = () => {
   // Mobile Settings Drawer State (W3)
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
+
+  const { startTour } = useTour({
+    markTourCompleted,
+    markTourDismissed,
+    setSettingsExpanded,
+    setMobileSettingsOpen,
+    onToastMessage: (msg) => setToastMessage(msg),
+  });
 
   // Accent color customization
   const [accentColor, setAccentColor] = useAccentColor();
@@ -354,6 +372,8 @@ export const Dashboard: React.FC = () => {
     setToastMessage('Bookmark deleted');
   };
 
+  const [cardDensity, setCardDensity] = useCardDensity();
+
   const getCategoryName = (id: string) => categories?.find(c => c.id === id)?.name || id;
 
   return (
@@ -393,6 +413,7 @@ export const Dashboard: React.FC = () => {
         dismissWelcome={dismissWelcome}
         markFirstAction={markFirstAction}
         openXBookmarks={() => chrome.tabs.create({ url: 'https://x.com/i/bookmarks' })}
+        onStartTour={startTour}
         bookmarks={bookmarks}
         categories={categories}
         handleExport={handleExport}
@@ -433,6 +454,8 @@ export const Dashboard: React.FC = () => {
         setAlsoSaveNative={setAlsoSaveNative}
         accentColor={accentColor}
         setAccentColor={setAccentColor}
+        cardDensity={cardDensity}
+        setCardDensity={setCardDensity}
         autoCategorize={autoCategorize}
         toggleAutoCategorize={toggleAutoCategorize}
         isModelLoaded={isModelLoaded}

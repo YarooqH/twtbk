@@ -119,6 +119,87 @@ function renderFormattedTweetText(rawText: string | undefined) {
   });
 }
 
+function truncateTextForTimeline(text: string, maxChars = 480, maxLines = 7): { truncated: string; isLong: boolean } {
+  if (!text) return { truncated: '', isLong: false };
+
+  let charCount = 0;
+  let lineCount = 0;
+  let cutIndex = text.length;
+  let isLong = false;
+
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '\n') {
+      lineCount++;
+    }
+    charCount++;
+
+    if (charCount >= maxChars || lineCount >= maxLines) {
+      isLong = true;
+      cutIndex = i;
+      break;
+    }
+  }
+
+  if (!isLong) {
+    return { truncated: text, isLong: false };
+  }
+
+  let cutText = text.slice(0, cutIndex);
+  const lastSpace = cutText.lastIndexOf(' ');
+  if (lastSpace > cutIndex - 35 && lastSpace > 0) {
+    cutText = cutText.slice(0, lastSpace);
+  }
+
+  return { truncated: cutText.trimEnd() + '…', isLong: true };
+}
+
+interface ExpandableTweetTextProps {
+  text: string;
+  className?: string;
+  style?: React.CSSProperties;
+  maxChars?: number;
+  maxLines?: number;
+}
+
+export const ExpandableTweetText: React.FC<ExpandableTweetTextProps> = ({
+  text, className, style, maxChars = 480, maxLines = 7
+}) => {
+  const [expanded, setExpanded] = React.useState(false);
+  const { truncated, isLong } = React.useMemo(() => truncateTextForTimeline(text, maxChars, maxLines), [text, maxChars, maxLines]);
+
+  if (!isLong) {
+    return (
+      <p className={className} style={style}>
+        {renderFormattedTweetText(text)}
+      </p>
+    );
+  }
+
+  return (
+    <p className={className} style={style}>
+      {renderFormattedTweetText(expanded ? text : truncated)}
+      <span
+        onClick={(e) => {
+          e.stopPropagation();
+          setExpanded(prev => !prev);
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+        style={{
+          color: 'var(--accent)',
+          cursor: 'pointer',
+          fontWeight: 600,
+          marginLeft: '6px',
+          display: 'inline-block',
+          userSelect: 'none',
+        }}
+        className="bm-show-more-link"
+      >
+        {expanded ? 'Show less' : 'Show more'}
+      </span>
+    </p>
+  );
+};
+
 export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   bookmark, categories, getCategoryName,
   editingNoteId, setEditingNoteId, tempNote, setTempNote,
@@ -206,62 +287,78 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
           />
       </div>
 
-      <p className="bm-text">{bookmark.text ? renderFormattedTweetText(bookmark.text) : <em style={{ color: 'var(--text-muted)' }}>(No text)</em>}</p>
+      {bookmark.text ? (
+        <ExpandableTweetText text={bookmark.text} className="bm-text" />
+      ) : (
+        <p className="bm-text"><em style={{ color: 'var(--text-muted)' }}>(No text)</em></p>
+      )}
 
       {/* Quoted Tweet Block */}
       {bookmark.quotedTweet && (
         <div 
+          className="bm-quoted-tweet"
           onClick={(e) => {
             e.stopPropagation();
-            let targetUrl = bookmark.quotedTweet?.tweetUrl 
-              || (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id 
-                  ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}` 
-                  : undefined);
+            let targetUrl = (bookmark.quotedTweet?.tweetUrl && bookmark.quotedTweet.tweetUrl.includes('/status/'))
+              ? bookmark.quotedTweet.tweetUrl
+              : (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id)
+                ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}`
+                : bookmark.tweetUrl;
             if (targetUrl) {
               targetUrl = targetUrl.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
               window.open(targetUrl, '_blank');
             }
           }}
-          style={{
-            marginTop: '12px',
-            marginBottom: '12px',
-            padding: '12px',
-            borderRadius: '16px',
-            border: '1px solid var(--border)',
-            background: 'var(--bg-secondary)',
-            cursor: 'pointer',
-            transition: 'background 0.15s, border-color 0.15s',
-            boxSizing: 'border-box'
+          onMouseDown={(e) => {
+            if (e.button === 1) e.stopPropagation();
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-secondary)'; }}
+          onAuxClick={(e) => {
+            if (e.button === 1) {
+              e.stopPropagation();
+              let targetUrl = (bookmark.quotedTweet?.tweetUrl && bookmark.quotedTweet.tweetUrl.includes('/status/'))
+                ? bookmark.quotedTweet.tweetUrl
+                : (bookmark.quotedTweet?.authorHandle && bookmark.quotedTweet?.id)
+                  ? `https://x.com/${bookmark.quotedTweet.authorHandle}/status/${bookmark.quotedTweet.id}`
+                  : bookmark.tweetUrl;
+              if (targetUrl) {
+                targetUrl = targetUrl.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
+                window.open(targetUrl, '_blank');
+              }
+            }
+          }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
+          <div className="bm-quoted-header">
             {bookmark.quotedTweet.authorAvatarUrl && (
               <img 
                 src={bookmark.quotedTweet.authorAvatarUrl} 
                 alt={bookmark.quotedTweet.authorName || bookmark.quotedTweet.authorHandle} 
-                style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} 
+                className="bm-quoted-avatar"
               />
             )}
-            <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)' }}>
+            <span className="bm-quoted-author-name">
               {bookmark.quotedTweet.authorName || bookmark.quotedTweet.authorHandle}
             </span>
             {bookmark.quotedTweet.authorHandle && (
-              <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+              <span className="bm-quoted-handle">
                 @{bookmark.quotedTweet.authorHandle}
               </span>
             )}
           </div>
           {bookmark.quotedTweet.text && (
-            <p style={{ margin: 0, fontSize: '14px', color: 'var(--text)', lineHeight: '1.45', whiteSpace: 'pre-line', wordBreak: 'break-word' }}>
-              {renderFormattedTweetText(bookmark.quotedTweet.text)}
-            </p>
+            <ExpandableTweetText
+              text={bookmark.quotedTweet.text}
+              className="bm-quoted-text"
+              maxChars={240}
+              maxLines={3}
+            />
           )}
           {bookmark.quotedTweet.media && bookmark.quotedTweet.media.length > 0 && (
-            <div style={{ marginTop: '8px', borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: bookmark.quotedTweet.media.length === 1 ? '1fr' : '1fr 1fr', gap: '2px' }}>
+            <div 
+              className="bm-quoted-media-grid"
+              style={{ gridTemplateColumns: bookmark.quotedTweet.media.length === 1 ? '1fr' : '1fr 1fr' }}
+            >
               {bookmark.quotedTweet.media.map((m, idx) => (
-                <img key={idx} src={m.url} alt="" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
+                <img key={idx} src={m.url} alt="" className="bm-quoted-media-img" />
               ))}
             </div>
           )}
@@ -336,7 +433,8 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                 key={idx} 
                 style={{ 
                   position: 'relative', 
-                  paddingBottom: bookmark.media.length === 1 ? '62.5%' : (bookmark.media.length === 2 ? '120%' : '85%'),
+                  paddingBottom: bookmark.media.length === 1 ? 'var(--card-media-aspect-1, 45%)' : 'var(--card-media-aspect-2, 65%)',
+                  maxHeight: 'var(--card-media-max-height, 240px)',
                   height: 0, 
                   overflow: 'hidden',
                   background: 'var(--bg-secondary)',

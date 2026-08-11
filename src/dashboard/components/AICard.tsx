@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { getMotionTransition } from '../../motion/presets';
+import { InfoTooltip } from './InfoTooltip';
 
 interface AICardProps {
   autoCategorize: boolean;
@@ -15,6 +18,8 @@ export const AICard: React.FC<AICardProps> = ({
   isClassifying, classifyProgress, runAutoCategorizeJobs,
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const panelTransition = getMotionTransition(Boolean(reducedMotion));
 
   const classifyPercent = classifyProgress && classifyProgress.total > 0
     ? Math.round((classifyProgress.current / classifyProgress.total) * 100)
@@ -29,14 +34,23 @@ export const AICard: React.FC<AICardProps> = ({
         : null;
 
   return (
-    <div className="ai-card-wrapper" style={{ position: 'relative', width: '100%' }}>
+    <div className="ai-card-wrapper" data-onboarding="ai-assistant" style={{ position: 'relative', width: '100%' }}>
       <div className={`ai-card-body-wrapper ${expanded ? 'is-expanded' : 'is-collapsed'}`}>
         <div className="ai-card-body-inner">
-          <div className="accordion-slider">
+          <motion.div
+            className="accordion-slider"
+            initial={false}
+            animate={{ opacity: expanded ? 1 : 0, y: expanded ? 0 : 8 }}
+            transition={panelTransition}
+          >
             <div className="settings-card">
               <div className="toggle-row ai-toggle-row">
-                <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px' }}>
-                  AI Auto-Categorize <span className="ai-model-size">(45MB)</span>
+                <span className="toggle-label" style={{ fontWeight: 600, fontSize: '13px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    AI Auto-Categorize
+                    <InfoTooltip text="The model might be inaccurate at times, but it does its absolute best to auto-categorize!" />
+                  </span>
+                  <span className="ai-model-size" style={{ fontSize: '11px', fontWeight: 500 }}>(45MB)</span>
                 </span>
                 <label className="toggle-switch" onClick={e => e.stopPropagation()}>
                   <input type="checkbox" checked={autoCategorize} onChange={toggleAutoCategorize} />
@@ -93,7 +107,7 @@ export const AICard: React.FC<AICardProps> = ({
                 </button>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 

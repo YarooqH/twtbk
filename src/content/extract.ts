@@ -1,40 +1,86 @@
 export function extractCleanTweetText(tweetElement: Element): string {
-  const textEl = tweetElement.querySelector('[data-testid="tweetText"]');
-  if (!textEl) return '';
+  const allTextEls = Array.from(tweetElement.querySelectorAll('[data-testid="tweetText"]'));
+  if (allTextEls.length === 0) return '';
 
-  const clone = textEl.cloneNode(true) as HTMLElement;
+  // If this tweetElement contains a quoted tweet or card, filter out their tweetText elements
+  const mainQuoteEl = findQuoteTweetContainer(tweetElement);
+  const mainCardEl = tweetElement.querySelector('[data-testid="card.wrapper"], [data-testid="article-card"]');
 
-  // Preserve Twitter/X inline emojis (e.g. <img alt="🚨" ...>) before removing aria-hidden elements
+  const filteredTextEls = allTextEls.filter(el => {
+    if (mainQuoteEl && mainQuoteEl.contains(el)) return false;
+    if (mainCardEl && mainCardEl.contains(el)) return false;
+    return true;
+  });
+
+  const targetEls = filteredTextEls.length > 0 ? filteredTextEls : allTextEls;
+
+  return targetEls.map(textEl => {
+    const clone = textEl.cloneNode(true) as HTMLElement;
+
+    // 1. Preserve Twitter/X inline emojis (e.g. <img alt="🚨" ...>)
+    clone.querySelectorAll('img[alt]').forEach(img => {
+      const alt = img.getAttribute('alt');
+      if (alt) {
+        img.replaceWith(document.createTextNode(alt));
+      }
+    });
+
+    // 2. Remove ONLY hidden visual URL duplicate prefixes (e.g. hidden "https://" screenreader spans), NOT content text!
+    clone.querySelectorAll('span[style*="display: none"], span[style*="display:none"]').forEach(el => {
+      const txt = (el.textContent || '').trim();
+      if (txt === 'https://' || txt === 'http://' || txt === 'www.') {
+        el.remove();
+      }
+    });
+
+    let raw = clone.innerText || clone.textContent || '';
+
+    // 3. Join http:// or https:// separated from domain by newlines: "http://\ngithub.com" -> "http://github.com"
+    raw = raw.replace(/(https?:\/\/)\s*\n+\s*/gi, '$1');
+
+    // 4. Join URL paths split across newlines
+    raw = raw.replace(/((?:https?:\/\/|www\.|[a-z0-9-]+\.[a-z]{2,})\S*?)\n+(\S+)/gi, (match, p1, p2) => {
+      if (/^[a-zA-Z0-9_\-\.\/\?%\=\#]+$/.test(p2)) {
+        return p1 + p2;
+      }
+      return match;
+    });
+
+    // 5. Clean up accidental single newlines before/after mentions, hashtags, and apostrophes
+    const cleaned = raw
+      .replace(/([^\n])\n+(@[A-Za-z0-9_]+|#[A-Za-z0-9_]+)/gi, '$1 $2')
+      .replace(/(@[A-Za-z0-9_]+|#[A-Za-z0-9_]+)\n+([^\n])/gi, '$1 $2')
+      .replace(/([^\n])\n+(['’]s|['’]re|['’]ve|['’]t|['’]m|['’]d|['’]ll)/gi, '$1$2');
+
+    return cleaned.trim();
+  }).filter(Boolean).join('\n\n');
+}
+
+export function extractQuoteTweetText(quoteContainer: Element): string {
+  const qTextEls = Array.from(quoteContainer.querySelectorAll('[data-testid="tweetText"]'));
+  if (qTextEls.length > 0) {
+    return qTextEls.map(el => {
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll('img[alt]').forEach(img => {
+        const alt = img.getAttribute('alt');
+        if (alt) img.replaceWith(document.createTextNode(alt));
+      });
+      return (clone.innerText || clone.textContent || '').trim();
+    }).filter(Boolean).join('\n\n');
+  }
+
+  const clone = quoteContainer.cloneNode(true) as HTMLElement;
+  const userHeader = clone.querySelector('[data-testid="User-Name"]');
+  if (userHeader) userHeader.remove();
+
+  clone.querySelectorAll('img, video, svg, [data-testid="tweetPhoto"]').forEach(el => el.remove());
+
   clone.querySelectorAll('img[alt]').forEach(img => {
     const alt = img.getAttribute('alt');
-    if (alt) {
-      img.replaceWith(document.createTextNode(alt));
-    }
+    if (alt) img.replaceWith(document.createTextNode(alt));
   });
 
-  // Remove hidden aria-hidden spans (e.g. hidden http:// prefixes or visual hides)
-  clone.querySelectorAll('[aria-hidden="true"]').forEach(el => el.remove());
-
-  let raw = clone.innerText || clone.textContent || '';
-
-  // 1. Join http:// or https:// separated from domain by newlines: "http://\ngithub.com" -> "http://github.com"
-  raw = raw.replace(/(https?:\/\/)\s*\n+\s*/gi, '$1');
-
-  // 2. Join URL paths split across newlines: "github.com/elayadesign/re\ndesign-skill"
-  raw = raw.replace(/((?:https?:\/\/|www\.|[a-z0-9-]+\.[a-z]{2,})\S*?)\n+(\S+)/gi, (match, p1, p2) => {
-    if (/^[a-zA-Z0-9_\-\.\/\?%\=\#]+$/.test(p2)) {
-      return p1 + p2;
-    }
-    return match;
-  });
-
-  // 3. Clean up accidental single newlines before/after mentions, hashtags, and apostrophes
-  const cleaned = raw
-    .replace(/([^\n])\n+(@[A-Za-z0-9_]+|#[A-Za-z0-9_]+)/gi, '$1 $2')
-    .replace(/(@[A-Za-z0-9_]+|#[A-Za-z0-9_]+)\n+([^\n])/gi, '$1 $2')
-    .replace(/([^\n])\n+(['’]s|['’]re|['’]ve|['’]t|['’]m|['’]d|['’]ll)/gi, '$1$2');
-
-  return cleaned.trim();
+  return (clone.innerText || clone.textContent || '').trim();
 }
 
 function findQuoteTweetContainer(tweetElement: Element): HTMLElement | null {
@@ -189,24 +235,7 @@ export function extractTweetData(tweetElement: Element) {
         qName = (qNameEl as HTMLElement).innerText.split('\n')[0] || '';
       }
 
-      const qTextEls = quoteContainer.querySelectorAll('[data-testid="tweetText"]');
-      let qText = '';
-      if (qTextEls.length > 0) {
-        qText = Array.from(qTextEls)
-          .map(el => (el as HTMLElement).innerText?.trim())
-          .filter(Boolean)
-          .join('\n');
-      }
-      if (!qText) {
-        const textParts: string[] = [];
-        quoteContainer.querySelectorAll('div[dir="auto"], span[dir="auto"]').forEach(el => {
-          const txt = (el as HTMLElement).innerText?.trim();
-          if (txt && !txt.startsWith('@') && txt !== qName && !textParts.includes(txt)) {
-            textParts.push(txt);
-          }
-        });
-        qText = textParts.join('\n');
-      }
+      const qText = extractQuoteTweetText(quoteContainer);
 
       // Extract Quoted Tweet status URL & ID
       let qHref = '';
@@ -220,8 +249,11 @@ export function extractTweetData(tweetElement: Element) {
         }
       }
       if (!qHref || !qHref.includes('/status/')) {
-        // Look for any status link inside tweetElement that does NOT match the main tweet ID
-        const secondaryStatusLink = tweetElement.querySelector(`a[href*="/status/"]:not([href*="${id}"])`);
+        const allStatusLinks = Array.from(tweetElement.querySelectorAll('a[href*="/status/"]'));
+        const secondaryStatusLink = allStatusLinks.find(link => {
+          const href = link.getAttribute('href') || (link as HTMLAnchorElement).href || '';
+          return href.includes('/status/') && (!id || !href.includes(id));
+        });
         if (secondaryStatusLink) {
           qHref = secondaryStatusLink.getAttribute('href') || (secondaryStatusLink as HTMLAnchorElement).href || '';
         }
@@ -234,11 +266,18 @@ export function extractTweetData(tweetElement: Element) {
         const qMatch = fullHref.match(/\/status\/(\d+)/);
         if (qMatch) qId = qMatch[1];
 
+        const handleMatch = fullHref.match(/\.com\/([A-Za-z0-9_]+)\/status\//);
+        if (handleMatch && !qHandle) {
+          qHandle = handleMatch[1];
+        }
+
         // Clean URL to strip /photo/N or /video/N lightbox paths
         qUrl = fullHref.replace(/\/photo\/\d+.*$/i, '').replace(/\/video\/\d+.*$/i, '');
       }
-      if (qHandle && qId) {
+      if (!qUrl && qHandle && qId) {
         qUrl = `https://x.com/${qHandle}/status/${qId}`;
+      } else if (!qUrl && qHandle) {
+        qUrl = `https://x.com/${qHandle}`;
       }
 
       const qAvatarImg = quoteContainer.querySelector('img[src*="profile_images"]') as HTMLImageElement | null;
