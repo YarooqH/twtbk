@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
 import { SettingsIcon, svgIcons, SunIcon, MoonIcon, SystemIcon } from '../icons';
 import { categoryColors } from '../helpers';
+import { applyAccentVariables } from '../../shared/colors';
 import { SaveConfigCard } from './SaveConfigCard';
 import { AICard } from './AICard';
 import { InfoTooltip } from './InfoTooltip';
@@ -93,7 +94,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   // Called on every HexColorPicker drag frame — ONLY mutates CSS var, zero re-renders
   const handleColorChange = useCallback((color: string) => {
     draftColorRef.current = color;
-    document.documentElement.style.setProperty('--accent', color);
+    applyAccentVariables(color);
   }, []);
 
   // Called once when drag ends (pointerUp) or on direct hex text input
@@ -220,7 +221,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 }}
                               />
                             )}
-                            <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center' }}>{mode.icon}</span>
+                            <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center', color: isActive ? 'var(--accent-contrast, #ffffff)' : 'var(--text-muted)' }}>{mode.icon}</span>
                           </button>
                         );
                       })}

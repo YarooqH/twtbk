@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { getCategoryColor } from './shared/colors';
+import { getCategoryColor, applyAccentVariables } from './shared/colors';
 import { db } from './db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import './index.css';
@@ -42,16 +42,7 @@ function App() {
     markPopupSeen();
     chrome.storage?.sync?.get(['accentColor', 'themeMode'], (result) => {
       if (result.accentColor) {
-        const color = result.accentColor as string;
-        if (color === 'monochrome') {
-          document.documentElement.style.setProperty('--accent', 'var(--text)');
-          document.documentElement.style.setProperty('--accent-hover', 'var(--text)');
-          document.documentElement.style.setProperty('--accent-light', 'color-mix(in srgb, var(--text) 15%, transparent)');
-        } else {
-          document.documentElement.style.setProperty('--accent', color);
-          document.documentElement.style.setProperty('--accent-hover', hoverMap[color] || color);
-          document.documentElement.style.setProperty('--accent-light', color + '14');
-        }
+        applyAccentVariables(result.accentColor as string);
       }
       if (result.themeMode) {
         if (result.themeMode === 'system') {

@@ -197,7 +197,8 @@ body {
 
 .sidebar-logo-icon svg,
 .sidebar-logo-icon img {
-  fill: white;
+  fill: var(--accent-contrast, #ffffff);
+  color: var(--accent-contrast, #ffffff);
   width: 16px;
   height: 16px;
   object-fit: contain;
@@ -548,7 +549,7 @@ input[type="color"]::-webkit-color-swatch {
 
 .btn-primary {
   background: var(--accent);
-  color: white;
+  color: var(--accent-contrast, #ffffff);
 }
 .btn-primary:hover {
   background: var(--accent-hover);
