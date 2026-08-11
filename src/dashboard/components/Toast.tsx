@@ -35,7 +35,7 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
         bottom: '24px',
         left: '50%',
         background: 'var(--accent)',
-        color: '#ffffff',
+        color: 'var(--accent-contrast, #ffffff)',
         padding: '12px 24px',
         borderRadius: 'var(--radius-full)',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
@@ -54,9 +54,9 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
         <button
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); action.onClick(); onClose(); }}
           style={{
-            background: 'rgba(255, 255, 255, 0.2)',
+            background: 'color-mix(in srgb, var(--accent-contrast, #ffffff) 20%, transparent)',
             border: 'none',
-            color: '#ffffff',
+            color: 'var(--accent-contrast, #ffffff)',
             cursor: 'pointer',
             padding: '4px 10px',
             borderRadius: '4px',
@@ -78,7 +78,7 @@ export const Toast: React.FC<ToastProps> = ({ message, action, onClose, duration
         style={{
           background: 'none',
           border: 'none',
-          color: '#ffffff',
+          color: 'var(--accent-contrast, #ffffff)',
           cursor: 'pointer',
           padding: '4px 8px',
           margin: '-4px -8px -4px 0',

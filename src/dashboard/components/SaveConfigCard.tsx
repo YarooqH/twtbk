@@ -41,7 +41,7 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
             style={{
               flex: 1,
               background: saveMode === 'injected' ? 'var(--accent)' : 'transparent',
-              color: saveMode === 'injected' ? '#fff' : 'var(--text-muted)',
+              color: saveMode === 'injected' ? 'var(--accent-contrast, #ffffff)' : 'var(--text-muted)',
               border: 'none',
               borderRadius: 'var(--radius-full)',
               padding: '6px',
@@ -62,7 +62,7 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
             style={{
               flex: 1,
               background: saveMode === 'native-override' ? 'var(--accent)' : 'transparent',
-              color: saveMode === 'native-override' ? '#fff' : 'var(--text-muted)',
+              color: saveMode === 'native-override' ? 'var(--accent-contrast, #ffffff)' : 'var(--text-muted)',
               border: 'none',
               borderRadius: 'var(--radius-full)',
               padding: '6px',
@@ -99,7 +99,7 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
               style={{
                 flex: 1,
                 background: nativeOverrideAction === 'replace' ? 'var(--accent)' : 'transparent',
-                color: nativeOverrideAction === 'replace' ? '#fff' : 'var(--text-muted)',
+                color: nativeOverrideAction === 'replace' ? 'var(--accent-contrast, #ffffff)' : 'var(--text-muted)',
                 border: 'none',
                 borderRadius: 'var(--radius-full)',
                 padding: '6px',
@@ -120,7 +120,7 @@ export const SaveConfigCard: React.FC<SaveConfigCardProps> = ({
               style={{
                 flex: 1,
                 background: nativeOverrideAction === 'arrow' ? 'var(--accent)' : 'transparent',
-                color: nativeOverrideAction === 'arrow' ? '#fff' : 'var(--text-muted)',
+                color: nativeOverrideAction === 'arrow' ? 'var(--accent-contrast, #ffffff)' : 'var(--text-muted)',
                 border: 'none',
                 borderRadius: 'var(--radius-full)',
                 padding: '6px',

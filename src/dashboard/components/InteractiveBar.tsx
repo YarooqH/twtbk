@@ -189,7 +189,7 @@ export const InteractiveBar: React.FC<InteractiveBarProps> = ({
           style={{
             width: '36px', height: '36px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: `${accentColor}20`,
+            background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
             border: `2px solid var(--accent)`,
             color: 'var(--accent)',
             borderRadius: '8px',
@@ -200,7 +200,7 @@ export const InteractiveBar: React.FC<InteractiveBarProps> = ({
           }}
           onMouseEnter={e => {
             (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)';
-            (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 5px ${accentColor}20`;
+            (e.currentTarget as HTMLElement).style.boxShadow = '0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent)';
           }}
           onMouseLeave={e => {
             (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
@@ -296,10 +296,10 @@ export const InteractiveBar: React.FC<InteractiveBarProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: `${accentColor}22`,
+                    background: 'color-mix(in srgb, var(--accent) 18%, transparent)',
                     border: `1.5px solid var(--accent)`,
                     color: 'var(--accent)',
-                    boxShadow: `0 0 6px ${accentColor}30`,
+                    boxShadow: '0 0 6px color-mix(in srgb, var(--accent) 25%, transparent)',
                   }}
                 >
                   {svgIcons.library}
@@ -314,7 +314,7 @@ export const InteractiveBar: React.FC<InteractiveBarProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: `${accentColor}14`,
+                    background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
                     border: `1.5px dashed var(--accent)`,
                     color: 'var(--accent)',
                     opacity: 0.75,
