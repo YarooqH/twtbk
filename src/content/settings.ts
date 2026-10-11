@@ -41,13 +41,30 @@ export function applyContentAccent(accentColor: string) {
   const contrast = getContrastTextColor(accentColor, isDark);
 
   if (accentColor === 'monochrome') {
-    document.documentElement.style.setProperty('--twtbk-accent', 'var(--twtbk-text, currentColor)');
-    document.documentElement.style.setProperty('--twtbk-accent-hover', 'var(--twtbk-text, currentColor)');
+    document.documentElement.style.setProperty('--twtbk-accent', isDark ? '#ffffff' : '#0f1419');
+    document.documentElement.style.setProperty('--twtbk-accent-hover', isDark ? '#e7e9ea' : '#1e2732');
     document.documentElement.style.setProperty('--twtbk-accent-contrast', isDark ? '#000000' : '#ffffff');
   } else {
     document.documentElement.style.setProperty('--twtbk-accent', accentColor);
     document.documentElement.style.setProperty('--twtbk-accent-hover', accentColor + 'CC');
     document.documentElement.style.setProperty('--twtbk-accent-contrast', contrast);
+  }
+}
+
+// Observe X theme changes on body (e.g. user toggles Lights out / Dim / Default on X)
+if (typeof document !== 'undefined') {
+  const watchXTheme = () => {
+    if (document.body) {
+      const themeObserver = new MutationObserver(() => {
+        applyContentAccent(currentAccentColor);
+      });
+      themeObserver.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+    }
+  };
+  if (document.body) {
+    watchXTheme();
+  } else {
+    document.addEventListener('DOMContentLoaded', watchXTheme);
   }
 }
 

@@ -436,6 +436,7 @@ export const Dashboard: React.FC = () => {
       />
 
       <SettingsPanel
+        bookmarks={bookmarks}
         settingsExpanded={settingsExpanded}
         setSettingsExpanded={setSettingsExpanded}
         mobileSettingsOpen={mobileSettingsOpen}

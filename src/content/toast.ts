@@ -1,4 +1,5 @@
 import { MSG } from '../messages';
+import { getContrastTextColor } from '../shared/colors';
 
 export function showToast(message: string, showViewBtn: boolean = true) {
   const existing = document.getElementById('twtbk-toast');
@@ -14,7 +15,7 @@ export function showToast(message: string, showViewBtn: boolean = true) {
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     background-color: var(--twtbk-accent, #1d9bf0);
-    color: #ffffff;
+    color: var(--twtbk-accent-contrast, #ffffff);
     padding: 12px 20px;
     border-radius: 9999px;
     font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -32,7 +33,7 @@ export function showToast(message: string, showViewBtn: boolean = true) {
 
   toast.innerHTML = `
     <span>${message}</span>
-    ${showViewBtn ? '<button style="background: none; border: none; color: #ffffff; text-decoration: underline; font-weight: 800; cursor: pointer; padding: 0; font-family: inherit; font-size: inherit;">View</button>' : ''}
+    ${showViewBtn ? '<button style="background: none; border: none; color: inherit; text-decoration: underline; font-weight: 800; cursor: pointer; padding: 0; font-family: inherit; font-size: inherit;">View</button>' : ''}
   `;
 
   if (showViewBtn) {
@@ -43,6 +44,21 @@ export function showToast(message: string, showViewBtn: boolean = true) {
   }
 
   document.body.appendChild(toast);
+
+  // Dynamic text color detection: inspect actual rendered background color to guarantee WCAG readability
+  try {
+    const compBg = window.getComputedStyle(toast).backgroundColor;
+    if (compBg && compBg !== 'transparent' && compBg !== 'rgba(0, 0, 0, 0)') {
+      const textColor = getContrastTextColor(compBg);
+      toast.style.color = textColor;
+      const viewBtn = toast.querySelector('button');
+      if (viewBtn) {
+        viewBtn.style.color = textColor;
+      }
+    }
+  } catch (err) {
+    // Graceful fallback to CSS variable
+  }
 
   // Trigger animation frame
   requestAnimationFrame(() => {

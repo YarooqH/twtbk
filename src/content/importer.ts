@@ -1,6 +1,8 @@
 import { MSG } from '../messages';
 import { extractTweetData } from './extract';
 import { showToast } from './toast';
+import { XMARKS_MARK_PATH, XMARKS_MARK_VIEWBOX } from '../shared/logo';
+import { isBookmarksView } from './bookmarksView';
 
 export let isImporting = false;
 export let totalImported = 0;
@@ -21,7 +23,7 @@ let retryCount = 0;
 
 // Check for bookmark import page
 export function checkBookmarkPage() {
-  const isBookmarkPage = window.location.pathname.includes('/i/bookmarks');
+  const isBookmarkPage = isBookmarksView();
   if (isBookmarkPage) {
     if (document.getElementById('twtbk-sidebar-importer-container')) {
       retryCount = 0;
@@ -83,6 +85,7 @@ function injectImporterSidebarUI(): boolean {
   const postBtn = document.querySelector('[data-testid="SideNav_NewTweet_Button"]')
     || document.querySelector('a[href="/compose/post"]')
     || document.querySelector('a[href="/i/bookmarks"]')
+    || document.querySelector('a[href="/i/history"]')
     || document.querySelector('[data-testid="AppTabBar_DirectMessage_Link"]')
     || document.querySelector('nav[role="navigation"]');
 
@@ -120,7 +123,7 @@ function injectImporterSidebarUI(): boolean {
   btn.id = 'twtbk-sidebar-importer-btn';
   btn.innerHTML = `
     <div class="twtbk-sidebar-icon" style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex: 0 0 24px;">
-      <img src="${chrome.runtime.getURL('XMarks-logos/Xmarks-logo-only-square.svg')}" alt="" width="24" height="24" style="display: block; width: 24px; height: 24px; object-fit: contain;" />
+      <svg viewBox="${XMARKS_MARK_VIEWBOX}" width="22" height="22" aria-hidden="true" style="display: block;"><path fill="${theme.text}" d="${XMARKS_MARK_PATH}"></path></svg>
     </div>
     <span class="twtbk-sidebar-label" style="margin-left: 16px; font-weight: 700; font-size: 17px; color: ${theme.text}; white-space: nowrap;">Sync Bookmarks</span>
   `;
@@ -217,14 +220,20 @@ function updatePanelUI() {
   } else if (importPaused) {
     if (title) title.textContent = "Sync paused";
     if (desc) desc.textContent = `${totalImported} new bookmarks saved so far. Resume when you are ready.`;
-    if (startBtn) startBtn.textContent = "Resume Sync";
+    if (startBtn) {
+      startBtn.textContent = "Resume Sync";
+      startBtn.style.backgroundColor = "var(--twtbk-accent, #1d9bf0)";
+    }
     progress?.classList.remove('is-active');
     if (progressLabel) progressLabel.textContent = `${totalImported} new bookmarks saved`;
     if (dashboardBtn) dashboardBtn.style.display = 'none';
   } else {
     if (title) title.textContent = "Sync your X bookmarks";
     if (desc) desc.textContent = "XMarks will scan your bookmarks, skip duplicates, and keep a local searchable copy.";
-    if (startBtn) startBtn.textContent = "Start Sync";
+    if (startBtn) {
+      startBtn.textContent = "Start Sync";
+      startBtn.style.backgroundColor = "var(--twtbk-accent, #1d9bf0)";
+    }
     progress?.classList.remove('is-active', 'is-complete');
     if (progressLabel) progressLabel.textContent = "Ready to start";
     if (dashboardBtn) dashboardBtn.style.display = 'none';
@@ -265,7 +274,7 @@ function toggleImporterPanel(btn: HTMLElement) {
     <p style="font-size: 13px; color: ${theme.textMuted}; margin-bottom: 12px; line-height: 1.4;"></p>
     <div style="display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; font-size:11px; color:${theme.textMuted};"><span id="twtbk-import-progress-label">Ready to start</span><span>Local only</span></div>
     <div class="twtbk-import-progress-track" role="progressbar" aria-label="Bookmark sync progress" aria-valuemin="0" aria-valuenow="0"><div id="twtbk-import-progress" class="twtbk-import-progress-fill"></div></div>
-    <button id="twtbk-start-import-btn" style="width:100%; margin-top:12px; color: white; border: none; border-radius: 9999px; padding: 10px 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; font-family: inherit; transition: background-color 0.2s;"></button>
+    <button id="twtbk-start-import-btn" style="width:100%; margin-top:12px; color: var(--twtbk-accent-contrast, #ffffff); border: none; border-radius: 9999px; padding: 10px 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; font-family: inherit; transition: background-color 0.2s;"></button>
     <button id="twtbk-open-dashboard-btn" style="display:none; width:100%; margin-top:8px; color:${theme.text}; background:transparent; border:1px solid ${theme.border}; border-radius:9999px; padding:9px 16px; font-weight:700; cursor:pointer; justify-content:center; font-family:inherit;">Open your library</button>
   `;
 
@@ -344,6 +353,16 @@ const processedImportIds = new Set<string>();
 
 const runImportLoop = async () => {
   if (!isImporting) {
+    updatePanelUI();
+    return;
+  }
+
+  // On X's History page the Likes tab shares the timeline markup; stop rather
+  // than import likes as bookmarks if the user leaves the Bookmarks view.
+  if (!isBookmarksView()) {
+    isImporting = false;
+    importPaused = true;
+    showToast('Sync paused. Go back to your Bookmarks to resume.', false);
     updatePanelUI();
     return;
   }

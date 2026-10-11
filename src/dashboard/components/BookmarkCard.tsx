@@ -1,6 +1,6 @@
 import React from 'react';
 import { db, Bookmark } from '../../db';
-import { getInitials, getCategoryColor, formatDate, formatRelativeTime } from '../helpers';
+import { getInitials, getCategoryColor, getAccessibleTextColor, formatDate, formatRelativeTime } from '../helpers';
 import { LinkIcon, TrashIcon, MoreHorizontalIcon } from '../icons';
 import { Dropdown } from './Dropdown';
 
@@ -667,7 +667,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             }
             triggerStyle={{
               background: bookmark.categoryIds[0] ? `${getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color)}15` : 'var(--bg-secondary)',
-              color: bookmark.categoryIds[0] ? getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color) : 'var(--text-muted)',
+              color: bookmark.categoryIds[0] ? getAccessibleTextColor(getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color)) : 'var(--text-muted)',
               border: '1px solid ' + (bookmark.categoryIds[0] ? `${getCategoryColor(bookmark.categoryIds[0], categories?.find((c: any) => c.id === bookmark.categoryIds[0])?.color)}40` : 'var(--border)'),
               borderRadius: 'var(--radius-full)',
               padding: '4px 12px',

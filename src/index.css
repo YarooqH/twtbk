@@ -9,6 +9,7 @@
   --border: #eff3f4;
   --border-strong: #cfd9de;
   --accent: #1d9bf0;
+  --accent-contrast: #ffffff;
   --accent-hover: color-mix(in srgb, var(--accent) 85%, #000);
   --accent-light: color-mix(in srgb, var(--accent) 12%, transparent);
   --scrollbar-thumb: color-mix(in srgb, var(--accent) 58%, var(--border-strong));
@@ -113,6 +114,7 @@
   --bg-overlay: rgba(255, 255, 255, 0.85);
   --border: #eff3f4;
   --border-strong: #cfd9de;
+  --accent-contrast: #ffffff;
   --accent-light: color-mix(in srgb, var(--accent) 12%, transparent);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
@@ -129,6 +131,7 @@
   --bg-overlay: rgba(0, 0, 0, 0.75);
   --border: #2f3336;
   --border-strong: #3f4447;
+  --accent-contrast: #ffffff;
   --accent-light: rgba(29, 155, 240, 0.15);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
@@ -184,34 +187,23 @@ body {
   margin-bottom: 24px;
 }
 
-.sidebar-logo-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--accent);
-  border-radius: var(--radius-full);
+.sidebar-logo-text {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 1px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.sidebar-logo-text svg {
   flex-shrink: 0;
 }
 
-.sidebar-logo-icon svg,
-.sidebar-logo-icon img {
-  fill: var(--accent-contrast, #ffffff);
-  color: var(--accent-contrast, #ffffff);
-  filter: var(--logo-filter, none);
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  display: block;
-  margin: auto;
-}
-
-.sidebar-logo-text {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.2;
+.sidebar-logo-sub {
+  margin-top: 2px;
 }
 .sidebar-logo-sub {
   font-size: 11px;
@@ -1153,31 +1145,18 @@ input[type="color"]::-webkit-color-swatch {
   border-bottom: 1px solid var(--border);
 }
 
-.popup-logo {
-  width: 30px;
-  height: 30px;
-  background: var(--accent);
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popup-logo svg,
-.popup-logo img {
-  fill: white;
-  width: 14px;
-  height: 14px;
-  object-fit: contain;
-  display: block;
-  margin: auto;
-}
-
 .popup-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text);
   margin: 0;
+}
+
+.popup-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 1px;
 }
 
 .popup-count {
