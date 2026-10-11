@@ -47,23 +47,10 @@ document.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopImmediatePropagation();
         showCategoryPopover(data, bookmarkBtn as HTMLElement);
-      } else if (mode === 'augment') {
-        // Augment mode: allow the native bookmark click through (no preventDefault)
-        // so X's bookmark toggle runs normally. Also save to XMarks in the background.
-        // TODO: capture anchor rectangle here before X rerenders for popover positioning.
-        if (bookmarkBtn.getAttribute('data-testid') === 'bookmark') {
-          chrome.storage.sync.get(['alsoSaveNativeBookmarks'], (result) => {
-            if (result.alsoSaveNativeBookmarks) {
-              chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (res) => {
-                if (res && res.success) {
-                  showToast("Saved to XMarks!");
-                }
-              });
-            }
-          });
-        }
       } else {
-        // Injected / Arrow: traditional passive save in background if enabled.
+        // Augment / Injected / Arrow: let the native click through so X's
+        // bookmark toggle runs normally, and save a copy to XMarks if enabled.
+        // TODO (augment): capture anchor rectangle here before X rerenders for popover positioning.
         if (bookmarkBtn.getAttribute('data-testid') === 'bookmark') {
           chrome.storage.sync.get(['alsoSaveNativeBookmarks'], (result) => {
             if (result.alsoSaveNativeBookmarks) {

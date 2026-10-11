@@ -85,13 +85,13 @@ export function useAutoCategorize(
       return;
     }
 
-    // A bookmark is eligible if it has no categories, or if its only category is the default 'Imported from X'
+    // Auto-categorize strictly processes ONLY uncategorized bookmarks (categoryIds is empty)
     const uncategorized = await db.bookmarks
-      .filter((b: { categoryIds: string[] }) => b.categoryIds.length === 0 || (b.categoryIds.length === 1 && b.categoryIds[0] === 'cat_imported'))
+      .filter((b: { categoryIds: string[] }) => !b.categoryIds || b.categoryIds.length === 0)
       .toArray();
 
     if (uncategorized.length === 0) {
-      const msg = "No bookmarks require categorization (all have specific categories assigned)!";
+      const msg = "No uncategorized bookmarks found (all bookmarks already have categories assigned)!";
       if (notify) notify(msg);
       return;
     }
@@ -102,23 +102,24 @@ export function useAutoCategorize(
     let categorizedCount = 0;
     try {
       // Lazy load model if needed
-      const { initClassifier, classifyTweet } = await import('../../utils/classifier');
+      const { initClassifier, embedCategories, classifyTweet } = await import('../../utils/classifier');
       await initClassifier(() => {});
-      
+      const categoryEmbeddings = await embedCategories(targetCats);
+
       for (let i = 0; i < uncategorized.length; i++) {
         const bookmark = uncategorized[i];
         setClassifyProgress({ current: i + 1, total: uncategorized.length });
         
         if (!bookmark.text) continue;
-        const matchedCatId = await classifyTweet(bookmark.text, targetCats);
+        const matchedCatId = await classifyTweet(bookmark.text, categoryEmbeddings);
         if (matchedCatId) {
           await db.bookmarks.update(bookmark.id, {
-            categoryIds: [matchedCatId] // Replace default with the new semantic category
+            categoryIds: [matchedCatId]
           });
           categorizedCount++;
         }
       }
-      const successMsg = `Auto-categorization complete! Categorized ${categorizedCount} bookmarks.`;
+      const successMsg = `Auto-categorization complete! Categorized ${categorizedCount} uncategorized bookmarks.`;
       if (notify) notify(successMsg);
     } catch (err) {
       console.error("Auto-categorization job failed", err);

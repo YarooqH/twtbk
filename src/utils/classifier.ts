@@ -41,21 +41,33 @@ export function cosineSimilarity(a: number[], b: number[]) {
   return dotProduct(a, b) / (magA * magB);
 }
 
-export async function classifyTweet(text: string, categories: { id: string; name: string }[]) {
+export type CategoryEmbedding = { id: string; embedding: number[] };
+
+async function embed(text: string) {
   if (!extractor) throw new Error('Classifier not initialized');
+  const output = await extractor(text, { pooling: 'mean', normalize: true });
+  return Array.from(output.data) as number[];
+}
+
+// Embed category names once per run, then reuse them for every tweet.
+export async function embedCategories(categories: { id: string; name: string }[]): Promise<CategoryEmbedding[]> {
+  const embedded: CategoryEmbedding[] = [];
+  for (const cat of categories) {
+    embedded.push({ id: cat.id, embedding: await embed(cat.name) });
+  }
+  return embedded;
+}
+
+export async function classifyTweet(text: string, categories: CategoryEmbedding[]) {
   if (categories.length === 0) return null;
 
-  // Generate embedding for the tweet text
-  const tweetOutput = await extractor(text, { pooling: 'mean', normalize: true });
-  const tweetEmbedding = Array.from(tweetOutput.data) as number[];
+  const tweetEmbedding = await embed(text);
 
   let bestCatId: string | null = null;
   let highestScore = -Infinity;
 
   for (const cat of categories) {
-    const catOutput = await extractor(cat.name, { pooling: 'mean', normalize: true });
-    const catEmbedding = Array.from(catOutput.data) as number[];
-    const score = cosineSimilarity(tweetEmbedding, catEmbedding);
+    const score = cosineSimilarity(tweetEmbedding, cat.embedding);
     if (score > highestScore) {
       highestScore = score;
       bestCatId = cat.id;
