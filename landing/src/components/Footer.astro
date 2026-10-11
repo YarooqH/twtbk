@@ -1,99 +1,100 @@
 ---
+import Logo from './Logo.astro';
+import { base, repoUrl, storeUrl } from '../site';
 ---
 
-<footer class="footer-container">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <div class="logo-group">
-        <div class="logo-icon-bg">
-          <img src="/logo.svg" alt="XMarks Logo" width="16" height="16" />
-        </div>
-        <span class="logo-text">XMarks</span>
-      </div>
-      <p class="brand-copy">
-        The Privacy-First "Second Brain for X". Open-source under MIT License.
-      </p>
-    </div>
-
-    <div class="footer-links">
-      <a href="#features">Features</a>
-      <a href="#demo">Live Demo</a>
-      <a href="#privacy">Privacy</a>
-      <a href="https://github.com/YarooqH/twtbk" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="/llms.txt" target="_blank">llms.txt</a>
-    </div>
-
-    <div class="footer-copy">
-      © {new Date().getFullYear()} XMarks • Built for X Power Users
-    </div>
+<footer class="site-footer">
+  <div class="container meta">
+    <span class="brand">
+      <Logo size={15} />
+      <span>Your bookmarks, kept in your browser · Not affiliated with X Corp.</span>
+    </span>
+    <span class="links">
+      <a href={`${base}privacy/`}>Privacy policy</a>
+      <a href={repoUrl} target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href={storeUrl} target="_blank" rel="noopener noreferrer">Chrome Web Store</a>
+    </span>
+  </div>
+  <div class="wordmark" aria-hidden="true">
+    <span class="wordmark-fallback">XMarks</span>
+    <canvas data-wordmark></canvas>
   </div>
 </footer>
 
+<script>
+  import { startDotField } from '../scripts/dotfield';
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-wordmark]');
+  if (canvas) {
+    startDotField(canvas, { mode: 'wordmark', cell: 9, text: 'XMarks', fontFamily: '"Schibsted Grotesk Variable", system-ui, sans-serif' });
+  }
+</script>
+
 <style>
-  .footer-container {
+  .site-footer {
     border-top: 1px solid var(--border);
-    background: var(--bg);
-    padding: 60px 24px 40px;
+    overflow: hidden;
   }
-  .footer-inner {
-    max-width: 1200px;
-    margin: 0 auto;
+
+  .meta {
+    padding-top: 28px;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    gap: 32px;
-    text-align: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--muted);
   }
-  .footer-brand {
+
+  .brand {
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: 12px;
   }
-  .logo-group {
+
+  .links {
     display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .logo-icon-bg {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .logo-icon-bg img {
-    filter: brightness(0);
-  }
-  .logo-text {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--text);
-  }
-  .brand-copy {
-    font-size: 14px;
-    color: var(--text-muted);
-    max-width: 400px;
-  }
-  .footer-links {
-    display: flex;
-    gap: 24px;
     flex-wrap: wrap;
-    justify-content: center;
+    column-gap: 24px;
   }
-  .footer-links a {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-muted);
-    transition: color 0.15s;
+
+  /* Tall enough to tap (44px) without changing how the row looks. */
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
-  .footer-links a:hover {
+
+  .links a:hover {
     color: var(--text);
   }
-  .footer-copy {
-    font-size: 13px;
-    color: var(--text-dim);
+
+  .wordmark {
+    position: relative;
+    margin: 40px 12px 0;
+    aspect-ratio: 4.3 / 1;
+  }
+
+  /* Shown only if WebGL is unavailable; the canvas paints over it otherwise. */
+  .wordmark-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 22.6vw;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.74;
+    color: var(--border);
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 </style>

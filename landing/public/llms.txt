@@ -1,17 +1,18 @@
-# XMarks — Privacy-First "Second Brain for X" (Twitter)
+# XMarks: a searchable library for your X (Twitter) bookmarks
 
-> XMarks is a 100% local-first Chrome extension that transforms X's chaotic native bookmark list into an organized, searchable personal reference library with offline AI auto-categorization.
+> XMarks is a free, open-source Chrome extension that turns your X bookmarks into a library you can search, sort into categories, tag and add notes to. Everything is stored in your browser. There is no XMarks account and no XMarks server.
 
-## Key Features
-- **1-Click Native Sync**: Automatically imports and indexes bookmarks directly from x.com/i/bookmarks.
-- **On-Device Local AI**: Uses Hugging Face Transformers.js (all-MiniLM-L6-v2) directly inside browser IndexedDB — 0 cloud servers, 100% privacy.
-- **Instant Full-Text Search**: Search bookmark copy, author handles, notes, and article snippets.
-- **Custom Categories & Tags**: Color-coded category tags and custom notes.
-- **Native X Overrides**: Replaces or augments X's native bookmark button in the timeline.
-- **Offline Backup**: Export and import library backups as JSON files anytime.
+## Key features
+- **One-click sync**: Imports the bookmarks you already have from X (the Bookmarks page, or the Bookmarks tab in History). Pause and resume at any time; duplicates are skipped.
+- **Save as you scroll**: Adds a save button to each post's action bar, or saves a copy whenever you use X's own bookmark button.
+- **Search**: Searches post text, quoted posts, authors, tags and your notes.
+- **Categories, tags and notes**: Color-coded categories, tags and private notes on every post.
+- **Optional auto-categorize**: Sorts posts into your categories with a small embedding model (all-MiniLM-L6-v2 via Transformers.js). The model is downloaded once from Hugging Face when you turn the feature on, then runs in your browser. Your bookmark text is never sent anywhere.
+- **Backup**: Export the whole library, or selected posts, to JSON and import it in another browser.
 
-## Technical Specifications
-- **Platform**: Google Chrome / Chromium-based browsers (Manifest V3)
-- **Architecture**: Local-First IndexedDB + Service Worker + Transformers.js WebAssembly
-- **License**: MIT Open Source
+## Technical details
+- **Platform**: Chrome and other Chromium browsers (Manifest V3)
+- **Storage**: IndexedDB in the browser; settings in Chrome extension storage
+- **License**: MIT
 - **Repository**: https://github.com/YarooqH/twtbk
+- **Privacy policy**: https://yarooqh.github.io/twtbk/privacy/

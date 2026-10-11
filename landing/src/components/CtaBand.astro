@@ -1,0 +1,37 @@
+---
+import { storeUrl } from '../site';
+---
+
+<section class="container cta-wrap">
+  <div class="cta">
+    <h2 class="section-title">Your bookmarks<br />are waiting.</h2>
+    <a class="btn cta-btn" href={storeUrl} target="_blank" rel="noopener noreferrer">Add to Chrome</a>
+  </div>
+</section>
+
+<style>
+  .cta-wrap {
+    margin-bottom: 72px;
+  }
+
+  .cta {
+    border-radius: 28px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    padding: clamp(36px, 6vw, 64px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .cta-btn {
+    height: 56px;
+    padding: 0 30px;
+    background: #ffffff;
+    color: #0f1419;
+    font-size: 17px;
+    font-weight: 800;
+  }
+</style>

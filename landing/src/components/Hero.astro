@@ -1,214 +1,372 @@
 ---
+import { storeUrl } from '../site';
+
+// Generic stroke icons for X's action bar (not X's own artwork).
+const nativeIcons = [
+  { key: 'reply', label: 'Reply', d: 'M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-5 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z' },
+  { key: 'repost', label: 'Repost', d: 'M17 3l3 3-3 3M4 11V9a3 3 0 0 1 3-3h13M7 21l-3-3 3-3M20 13v2a3 3 0 0 1-3 3H4' },
+  { key: 'like', label: 'Like', d: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z' },
+  { key: 'views', label: 'Views', d: 'M5 20V11M10 20V5M15 20v-7M20 20v-4' },
+  { key: 'bookmark', label: 'Bookmark', d: 'M6 3h12v18l-6-4.5L6 21z' },
+  { key: 'share', label: 'Share', d: 'M12 3v12M7 8l5-5 5 5M5 14v6h14v-6' },
+];
+const slotLabels = ['Before Reply', 'After Reply', 'After Repost', 'After Like', 'After Views', 'After Bookmark', 'After Share'];
+const bookPath =
+  'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253';
+const starPath = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z';
 ---
 
-<section class="hero-section">
-  <div class="hero-container">
-    <!-- Left Column: Giant XMarks Logo & Animated Aura -->
-    <div class="hero-visual">
-      <div class="glow-aura animate-glow"></div>
-      <div class="logo-box">
-        <div class="logo-circle">
-          <img src="/logo.svg" alt="XMarks Logo" width="100" height="100" />
-        </div>
+<section class="hero container" id="top">
+  <!-- Backdrop: an X timeline drawn in dots, extending up behind the header (see scripts/dotfield.ts). -->
+  <canvas class="feed-field" data-feed aria-hidden="true"></canvas>
+  <div class="hero-copy" data-hero-copy>
+    <h1>You said you’d read it later.<br /><span class="accent">Now you can find it.</span></h1>
+    <p class="lede">
+      XMarks turns your X bookmarks into a library you can search, sort into categories and add notes to. Bring in everything
+      you’ve already saved with one click. It all stays in your browser.
+    </p>
+  </div>
+
+  <div class="stage-card">
+    <div class="stage-head">
+      <div class="seg" role="group" aria-label="Save mode">
+        <button type="button" data-mode="injected" aria-pressed="true">Injected</button>
+        <button type="button" data-mode="native-override" aria-pressed="false">Override native</button>
       </div>
+      <p class="stage-help" data-help>Drag the book to any slot. Click it to save.</p>
     </div>
 
-    <!-- Right Column: High Impact Copy & CTAs -->
-    <div class="hero-content">
-      <div class="badge-pill mb-4">
-        <span class="badge-pill-dot"></span>
-        <span>Privacy-First • Local-First • On-Device AI</span>
-      </div>
+    <div class="stage" data-stage data-slot="5" data-mode="injected">
+      {
+        slotLabels.map((label, i) => (
+          <button type="button" class="zone" data-zone={i} aria-label={`Place the XMarks button: ${label}`} />
+        ))
+      }
+      {
+        nativeIcons.map((icon) => (
+          <span class="icon" data-icon={icon.key} aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d={icon.d} />
+            </svg>
+          </span>
+        ))
+      }
+      <button type="button" class="book" data-book aria-label="Save to XMarks. Arrow keys move it." title="Drag to move, click to save">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <defs><clipPath id="xm-book-clip"><path d={bookPath} /></clipPath></defs>
+          <path d={bookPath} stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <rect class="book-fill" clip-path="url(#xm-book-clip)" x="0" y="0" height="24" fill="currentColor" />
+        </svg>
+      </button>
+      <button type="button" class="star" data-star aria-label="Save to XMarks" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d={starPath} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
 
-      <h1 class="hero-headline">
-        Happening now<br />
-        <span class="text-gradient">for your saved threads.</span>
-      </h1>
-
-      <h2 class="hero-subheadline">
-        Your X Bookmarks, Organized.
-      </h2>
-
-      <p class="hero-description">
-        Transform X's single chaotic bookmark list into an instant-searchable personal reference library. Categorize threads with custom tags, add private notes, and run local AI auto-categorization without sending a single byte of data to cloud servers.
-      </p>
-
-      <div class="hero-ctas">
-        <a href="https://chromewebstore.google.com" target="_blank" rel="noopener noreferrer" class="btn-x-primary">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-          </svg>
-          Add to Chrome — It's Free
-        </a>
-        <a href="#demo" class="btn-x-outline">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          Try Live Demo
-        </a>
-      </div>
-
-      <!-- Key Highlights Bar -->
-      <div class="hero-metrics">
-        <div class="metric-item">
-          <span class="metric-val">100%</span>
-          <span class="metric-lbl">Local Privacy</span>
-        </div>
-        <div class="metric-divider"></div>
-        <div class="metric-item">
-          <span class="metric-val">0.0s</span>
-          <span class="metric-lbl">Search Latency</span>
-        </div>
-        <div class="metric-divider"></div>
-        <div class="metric-item">
-          <span class="metric-val">$0</span>
-          <span class="metric-lbl">Forever Free</span>
-        </div>
-      </div>
+    <div class="stage-foot">
+      <span data-placed>Placed: After Bookmark</span>
+      <span class="stage-foot-note">Same setting as in the XMarks dashboard</span>
     </div>
   </div>
+
+  <a class="btn btn-accent hero-cta" href={storeUrl} target="_blank" rel="noopener noreferrer">Add to Chrome, it’s free</a>
 </section>
 
+<div class="toast" data-toast role="status" aria-live="polite"></div>
+
+<script>
+  import { initActionBar } from '../scripts/actionbar';
+  import { startDotField } from '../scripts/dotfield';
+
+  initActionBar();
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-feed]');
+  if (canvas) {
+    startDotField(canvas, { mode: 'feed', cell: 12, clearTarget: document.querySelector<HTMLElement>('[data-hero-copy]') });
+  }
+</script>
+
 <style>
-  .hero-section {
-    position: relative;
-    padding: 80px 24px 100px;
-    max-width: 1280px;
-    margin: 0 auto;
-    overflow: hidden;
-  }
-  .hero-container {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 60px;
-    align-items: center;
-  }
-  .hero-visual {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-  }
-  .glow-aura {
-    position: absolute;
-    width: 320px;
-    height: 320px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(29, 155, 240, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
-    z-index: 0;
-  }
-  .logo-box {
+  .hero {
     position: relative;
     z-index: 1;
-  }
-  .logo-circle {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 60px rgba(255, 255, 255, 0.25), 0 20px 40px rgba(0, 0, 0, 0.6);
-    border: 4px solid rgba(255, 255, 255, 0.1);
-  }
-  .logo-circle img {
-    filter: brightness(0);
-    width: 100px;
-    height: 100px;
-  }
-  .hero-content {
+    padding-top: 88px;
+    padding-bottom: 150px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-  }
-  .mb-4 {
-    margin-bottom: 20px;
-  }
-  .hero-headline {
-    font-size: 56px;
-    font-weight: 900;
-    letter-spacing: -1.5px;
-    line-height: 1.08;
-    margin-bottom: 12px;
-  }
-  .hero-subheadline {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-    letter-spacing: -0.5px;
-  }
-  .hero-description {
-    font-size: 17px;
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin-bottom: 32px;
-    max-width: 540px;
-  }
-  .hero-ctas {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 44px;
-  }
-  .hero-metrics {
-    display: flex;
     align-items: center;
     gap: 28px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-    width: 100%;
-    max-width: 520px;
-  }
-  .metric-item {
-    display: flex;
-    flex-direction: column;
-  }
-  .metric-val {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--text);
-    line-height: 1.1;
-  }
-  .metric-lbl {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 4px;
-  }
-  .metric-divider {
-    width: 1px;
-    height: 28px;
-    background: var(--border);
+    text-align: center;
   }
 
-  @media (max-width: 992px) {
-    .hero-container {
-      grid-template-columns: 1fr;
-      gap: 40px;
-      text-align: center;
+  .feed-field {
+    position: absolute;
+    z-index: -1;
+    top: -80px;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    height: calc(100% + 80px);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(44px, 7.4vw, 84px);
+    line-height: 0.98;
+    font-weight: 800;
+    letter-spacing: var(--track-xl);
+    text-wrap: balance;
+  }
+
+  .accent {
+    color: var(--accent);
+  }
+
+  .lede {
+    margin: 0;
+    max-width: 680px;
+    font-size: clamp(17px, 2vw, 20px);
+    line-height: 1.5;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  .stage-card {
+    margin-top: 36px;
+    width: min(900px, 100%);
+    padding: 28px 30px 22px;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    background: var(--overlay);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .stage-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .seg {
+    display: flex;
+    padding: 2px;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background: var(--bg-2);
+  }
+
+  .seg button {
+    height: 36px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .seg button[aria-pressed='true'] {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .stage-help {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .stage {
+    --book: 88px;
+    --icon: 44px;
+    position: relative;
+    height: 120px;
+    touch-action: pan-y;
+  }
+
+  .zone {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: calc(100% / 7);
+    padding: 0;
+    border: none;
+    border-radius: 18px;
+    background: transparent;
+    cursor: pointer;
+    outline-offset: -2px;
+  }
+
+  .zone:hover {
+    background: rgba(128, 128, 128, 0.06);
+  }
+
+  .zone.is-target {
+    background: var(--accent-soft);
+    outline: 2px dashed var(--accent);
+  }
+
+  .stage[data-mode='native-override'] .zone {
+    display: none;
+  }
+
+  .icon,
+  .book,
+  .star {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: left 0.3s var(--spring), transform 0.2s, color 0.2s;
+  }
+
+  .icon {
+    width: var(--icon);
+    height: var(--icon);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .icon svg,
+  .book svg,
+  .star svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .book,
+  .star {
+    width: var(--book);
+    height: var(--book);
+    padding: calc(var(--book) * 0.24);
+    border: none;
+    border-radius: 9999px;
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px var(--accent);
+    z-index: 3;
+  }
+
+  .book {
+    color: var(--text);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .book.is-saved,
+  .star {
+    color: var(--accent);
+  }
+
+  .star {
+    cursor: pointer;
+  }
+
+  .star.is-saved path {
+    fill: currentColor;
+  }
+
+  .book.is-dragging {
+    cursor: grabbing;
+    transform: translate(-50%, -50%) scale(1.08);
+    box-shadow: 0 0 0 1px var(--accent), 0 12px 32px rgba(0, 0, 0, 0.45);
+    transition: transform 0.15s, color 0.2s;
+  }
+
+  .book-fill {
+    width: 0;
+    transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .book.is-saved .book-fill {
+    width: 100%;
+  }
+
+  .stage-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .hero-cta {
+    height: 52px;
+    padding: 0 28px;
+    font-size: 17px;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 100;
+    transform: translate(-50%, 20px);
+    opacity: 0;
+    pointer-events: none;
+    padding: 12px 20px;
+    border-radius: 9999px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+
+  .toast.is-on {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding-top: 56px;
+      padding-bottom: 110px;
+      gap: 22px;
     }
-    .hero-content {
-      align-items: center;
+
+    .stage-card {
+      padding: 20px 16px 16px;
+      border-radius: 22px;
     }
-    .hero-headline {
-      font-size: 42px;
+
+    .stage {
+      --book: 56px;
+      --icon: 26px;
+      height: 84px;
     }
-    .hero-subheadline {
-      font-size: 22px;
+
+    .stage-help {
+      font-size: 13px;
     }
-    .hero-description {
-      text-align: center;
-    }
-    .hero-ctas {
-      justify-content: center;
-    }
-    .hero-metrics {
-      justify-content: center;
+
+    .stage-foot-note {
+      display: none;
     }
   }
 </style>

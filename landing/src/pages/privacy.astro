@@ -1,0 +1,190 @@
+---
+import Base from '../layouts/Base.astro';
+import { issuesUrl, repoUrl } from '../site';
+
+const title = 'Privacy policy · XMarks';
+const description = 'What the XMarks extension stores, where it keeps it, and the few times it touches the network.';
+const updated = '12 October 2026';
+---
+
+<Base title={title} description={description} path="privacy/">
+  <article class="policy container">
+    <header>
+      <h1 class="section-title">Privacy policy</h1>
+      <p class="updated">Last updated {updated}</p>
+    </header>
+
+    <p class="lede">
+      XMarks keeps your bookmarks in your browser. There is no XMarks account and no XMarks server, so we never receive
+      your bookmarks, notes or anything else about you. This page lists what the extension stores, where, and the few times it
+      uses the network.
+    </p>
+
+    <section>
+      <h2>What XMarks stores on your device</h2>
+      <p>Your library is kept in your browser’s IndexedDB storage, on your device only:</p>
+      <ul>
+        <li>
+          The posts you save: their text, the author’s name and handle, the date, links in the post, and the web addresses of
+          the author’s avatar and any images or videos. The images themselves are not copied.
+        </li>
+        <li>What you add: categories, tags and notes.</li>
+      </ul>
+      <p>
+        Your settings (save mode, where the save button sits, accent color, theme, card density, and whether auto-categorize is
+        on) are kept in Chrome’s extension storage. If you are signed in to Chrome with sync turned on, Chrome copies these
+        settings between your browsers through your Google account, as it does for any extension. Your bookmarks and notes are
+        not synced.
+      </p>
+      <p>XMarks also remembers which onboarding tips you have seen, on this device only.</p>
+    </section>
+
+    <section>
+      <h2>When XMarks uses the network</h2>
+      <ul>
+        <li>
+          <strong>Images from X.</strong> The dashboard shows avatars, images and videos by loading them from X’s servers,
+          the same way X does when you view the post. X can see that request, as it would if you opened the post on X.
+        </li>
+        <li>
+          <strong>The auto-categorize model.</strong> Auto-categorize is off until you turn it on. The first time you do, XMarks
+          downloads a model (about 45 MB) from Hugging Face (huggingface.co) and your browser caches it. That download
+          contains none of your bookmarks; Hugging Face sees an ordinary file request from your IP address. After that,
+          categorizing runs entirely on your device.
+        </li>
+        <li>
+          <strong>Links you open.</strong> “View tweet” and other links open the post on X in a new tab.
+        </li>
+      </ul>
+      <p>Nothing else is sent anywhere. XMarks has no analytics, no tracking, no ads and no crash reporting.</p>
+    </section>
+
+    <section>
+      <h2>What XMarks does on X</h2>
+      <p>
+        The extension only runs on x.com and twitter.com. There it adds the save button to posts, and reads a post’s content
+        from the page when you save it. When you click Sync Bookmarks, it scrolls your Bookmarks list on X and saves each post
+        it finds. It does not read your messages, change your account, or post anything for you.
+      </p>
+    </section>
+
+    <section>
+      <h2>Permissions</h2>
+      <dl>
+        <dt>storage, unlimitedStorage</dt>
+        <dd>To keep your library and settings in your browser, however large the library gets.</dd>
+        <dt>Access to x.com and twitter.com</dt>
+        <dd>To add the save button and Sync Bookmarks to X, and to read the posts you choose to save.</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2>Your control</h2>
+      <ul>
+        <li>Export your whole library, or selected posts, to a JSON file at any time from the dashboard.</li>
+        <li>Delete any post, category or note in the dashboard.</li>
+        <li>Removing the extension deletes everything it stored in your browser. Export first if you want to keep a copy.</li>
+      </ul>
+      <p>We don’t sell, share or transfer your data, because we never have it.</p>
+    </section>
+
+    <section>
+      <h2>This website</h2>
+      <p>
+        This site is hosted on GitHub Pages. It uses no cookies and no analytics. If you pick an accent color, your browser
+        remembers it for this site. GitHub may log visitors’ IP addresses for security; see
+        <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub’s privacy statement</a>.
+      </p>
+    </section>
+
+    <section>
+      <h2>Changes and contact</h2>
+      <p>
+        If this policy changes, the new version will be posted here with a new date. The extension is open source, so you can
+        check all of this in <a href={repoUrl} target="_blank" rel="noopener noreferrer">the code on GitHub</a>. Questions?
+        <a href={issuesUrl} target="_blank" rel="noopener noreferrer">Open an issue</a>.
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .policy {
+    max-width: 760px;
+    padding-top: 48px;
+    padding-bottom: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .updated {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .policy .lede {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: var(--track-m);
+  }
+
+  p,
+  ul,
+  dl {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  ul {
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  strong,
+  dt {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  dd {
+    margin: 2px 0 14px;
+  }
+
+  a {
+    color: var(--accent);
+    text-underline-offset: 3px;
+  }
+
+  @media (max-width: 720px) {
+    .policy {
+      padding-top: 24px;
+    }
+  }
+</style>

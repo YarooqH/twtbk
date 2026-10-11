@@ -1,0 +1,244 @@
+---
+const bookPath =
+  'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253';
+---
+
+<section id="how" class="how container">
+  <h2 class="section-title">How it works</h2>
+  <ol class="steps">
+    <li class="step">
+      <div class="art" aria-hidden="true">
+        <div class="post-btn">Post</div>
+        <div class="sync-row">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v4h-4"></path></svg>
+          Sync Bookmarks
+        </div>
+        <div class="track"><div class="track-fill"></div></div>
+      </div>
+      <h3>1. Sync what you already saved</h3>
+      <p>Open your Bookmarks on X and click Sync Bookmarks. XMarks scrolls the list, keeps a local copy and skips duplicates. Pause and resume any time.</p>
+    </li>
+
+    <li class="step">
+      <div class="art art-end" aria-hidden="true">
+        <div class="mini-bar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"></path></svg>
+          <svg class="mini-book" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d={bookPath}></path></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"></path></svg>
+        </div>
+        <div class="popover">
+          <div class="pop-new"><span>New category...</span><span class="pop-add">Add</span></div>
+          <div class="pop-row"><span class="dot" style="background:#1d9bf0"></span>Engineering</div>
+          <div class="pop-row"><span class="dot" style="background:#f91880"></span>Design</div>
+          <div class="pop-note">Add a note...</div>
+        </div>
+      </div>
+      <h3>2. Save new posts as you scroll</h3>
+      <p>A book icon sits in every post’s action bar. Click it, pick a category, add a note. Or let X’s own bookmark button save to XMarks.</p>
+    </li>
+
+    <li class="step">
+      <div class="art" aria-hidden="true">
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+          rust
+        </div>
+        <div class="result">Writing a tiny database in <mark>Rust</mark>: pages, B-trees and a WAL.</div>
+        <div class="result"><mark>Rust</mark> in production, one year later.</div>
+      </div>
+      <h3>3. Search everything</h3>
+      <p>Search inside post text, quoted posts, authors, tags and your notes. Sort into categories by hand, or let the local model do it.</p>
+    </li>
+  </ol>
+</section>
+
+<style>
+  .how {
+    padding-top: 96px;
+    padding-bottom: 96px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .step {
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: var(--track-m);
+  }
+
+  p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .art {
+    height: 200px;
+    border-radius: 14px;
+    background: var(--bg-2);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .art-end {
+    align-items: flex-end;
+  }
+
+  .post-btn {
+    height: 44px;
+    border-radius: 9999px;
+    background: var(--text);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .sync-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-radius: 9999px;
+    background: var(--accent-soft);
+    font-weight: 700;
+  }
+
+  .track {
+    height: 6px;
+    margin-top: 8px;
+    border-radius: 9999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .track-fill {
+    width: 45%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+    animation: indeterminate 1.25s ease-in-out infinite;
+  }
+
+  @keyframes indeterminate {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(220%); }
+  }
+
+  .mini-bar {
+    display: flex;
+    gap: 22px;
+    align-items: center;
+    color: var(--muted);
+  }
+
+  .mini-book {
+    color: var(--accent);
+  }
+
+  .popover {
+    width: 220px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    box-shadow: var(--shadow);
+    font-size: 13px;
+  }
+
+  .pop-new {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .pop-add {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-radius: 9999px;
+    padding: 1px 10px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .pop-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .pop-note {
+    padding: 7px 12px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .search {
+    height: 38px;
+    border-radius: 9999px;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
+
+  .result {
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 8px 4px;
+  }
+
+  .result + .result {
+    border-top: 1px solid var(--border);
+  }
+
+  mark {
+    background: var(--accent-soft);
+    color: var(--text);
+    padding: 0 2px;
+    border-radius: 3px;
+  }
+
+  @media (max-width: 900px) {
+    .steps {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

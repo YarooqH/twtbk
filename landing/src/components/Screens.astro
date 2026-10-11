@@ -1,0 +1,78 @@
+---
+import { base } from '../site';
+
+// Real screenshots of the extension, captured by store-assets/capture.mjs with
+// its fictional demo library. Regenerate with store-assets/marketing.mjs.
+const shots = [
+  {
+    src: 'screens/dashboard',
+    alt: 'The XMarks dashboard: categories in the left column, saved posts with notes and tags in the middle, settings on the right.',
+    caption: 'The dashboard. Categories on the left, your saved posts with notes and tags in the middle.',
+  },
+  {
+    src: 'screens/timeline-popover',
+    alt: 'A post on the X timeline with the XMarks book button in its action bar, and a menu open to pick a category and add a note.',
+    caption: 'On X. Click the book in a post’s action bar, pick a category, add a note.',
+  },
+];
+---
+
+<section class="screens container" aria-labelledby="screens-title">
+  <h2 class="section-title" id="screens-title">What it looks like</h2>
+  <div class="grid">
+    {
+      shots.map((s, i) => (
+        <figure class={i === 0 ? 'shot shot-main' : 'shot'}>
+          <img
+            src={`${base}${s.src}.jpg`}
+            srcset={`${base}${s.src}.jpg 1280w, ${base}${s.src}@2x.webp 2560w`}
+            sizes="(max-width: 900px) 100vw, 1136px"
+            width="1280"
+            height="800"
+            alt={s.alt}
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>{s.caption}</figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .screens {
+    padding-top: 24px;
+    padding-bottom: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg-2);
+  }
+
+  figcaption {
+    color: var(--muted);
+    font-size: 15px;
+  }
+</style>
