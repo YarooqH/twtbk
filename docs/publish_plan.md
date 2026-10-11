@@ -34,7 +34,7 @@ You will need to provide metadata and promotional assets for your store page.
 
 ### A. Copy & Descriptions
 
-*   **Extension Title**: `XMarks - Twitter Bookmark Manager`
+*   **Extension Title**: `XMarks: Bookmark Manager for X`
 *   **Short Description** (max 132 characters):
     `A privacy-first, local-first Chrome extension to search, tag, and organize your X bookmarks.`
 *   **Detailed Description**:

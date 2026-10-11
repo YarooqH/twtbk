@@ -9,7 +9,7 @@ Everything to paste into the [Developer Dashboard](https://chrome.google.com/web
 
 ## Store listing tab
 
-**Name** (from the manifest): `XMarks - Twitter Bookmark Manager`
+**Name** (from the manifest): `XMarks: Bookmark Manager for X`
 
 **Summary** (from the manifest, 113/132 characters):
 `Search, sort and add notes to your X (Twitter) bookmarks. Free, no account, and everything stays in your browser.`
