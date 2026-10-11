@@ -1,5 +1,6 @@
 import { debouncedInjectSaveButtons } from './inject';
 import { checkBookmarkPage } from './importer';
+import { isBookmarksOrHistoryPage, isBookmarksView } from './bookmarksView';
 import { settingsReady } from './settings';
 
 let lastPathname = window.location.pathname;
@@ -8,6 +9,15 @@ const checkNavigation = () => {
     lastPathname = window.location.pathname;
     checkBookmarkPage();
   }
+};
+
+// X's History page can switch between its Bookmarks and Likes tabs without a
+// URL change, so re-check whenever the Sync entry's visibility and the current
+// view disagree.
+const syncImporterWithView = () => {
+  if (!isBookmarksOrHistoryPage()) return;
+  const shown = !!document.getElementById('twtbk-sidebar-importer-container');
+  if (isBookmarksView() !== shown) checkBookmarkPage();
 };
 
 const observer = new MutationObserver((mutations) => {
@@ -35,9 +45,8 @@ const observer = new MutationObserver((mutations) => {
   if (shouldInject) {
     debouncedInjectSaveButtons();
     checkNavigation();
-  } else if (window.location.pathname.includes('/i/bookmarks') && !document.getElementById('twtbk-sidebar-importer-container')) {
-    checkBookmarkPage();
   }
+  syncImporterWithView();
 });
 
 // Start observing

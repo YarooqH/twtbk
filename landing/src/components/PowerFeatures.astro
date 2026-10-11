@@ -1,0 +1,569 @@
+---
+import { ACCENTS } from '../scripts/accent';
+
+// Six smaller features, drawn in the same card style as How it works: a small
+// piece of the real XMarks interface on top, a short heading and a line of
+// copy below. Accounts are the fictional demo cast used in the store shots.
+const shortcuts = [
+  { keys: ['/'], label: 'Search' },
+  { keys: ['E'], label: 'Edit a note' },
+  { keys: ['C'], label: 'New category' },
+  { keys: ['G', 'A'], label: 'All bookmarks' },
+  { keys: ['?'], label: 'All shortcuts' },
+];
+---
+
+<section id="features" class="features container" aria-labelledby="features-title">
+  <div class="head">
+    <h2 class="section-title" id="features-title">Made for people who save a lot</h2>
+    <p>The small things that make a big library easy to live with.</p>
+  </div>
+
+  <div class="grid">
+    <article class="card">
+      <div class="art art-export" aria-hidden="true">
+        <div class="file">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"></path><path d="M14 3v5h5"></path></svg>
+          <span class="file-name">xmarks-backup.json</span>
+          <span class="file-meta">16 posts</span>
+        </div>
+        <div class="row-buttons">
+          <span class="pill pill-ghost">Import</span>
+          <span class="pill pill-accent">Export all</span>
+        </div>
+        <span class="hint">or export just the posts you’ve selected</span>
+      </div>
+      <h3>Back up and move</h3>
+      <p>Export your whole library, or only selected posts, to one JSON file with categories, tags and notes. Import it into another browser.</p>
+    </article>
+
+    <article class="card">
+      <div class="art art-bulk" aria-hidden="true">
+        <div class="brow is-on"><span class="check">✓</span><b>Kofi</b><span class="snip">nobody: me at 2am: *bookmarks a 47-part…</span></div>
+        <div class="brow is-on"><span class="check">✓</span><b>Dee Makes Charts</b><span class="snip">made a chart of my relationship with…</span></div>
+        <div class="brow"><span class="check"></span><b>soup posting</b><span class="snip">it’s always soup season if you…</span></div>
+        <div class="bar">
+          <span class="bar-count">2 selected</span>
+          <span class="bar-actions"><span class="pill pill-ghost">Move</span><span class="pill pill-ghost">Export</span><span class="pill pill-danger">Delete</span></span>
+        </div>
+      </div>
+      <h3>Tidy up in bulk</h3>
+      <p>Tick a few posts, or every post in view, then move them to a category, export them or delete them in one go.</p>
+    </article>
+
+    <article class="card">
+      <div class="art art-keys" aria-hidden="true">
+        {
+          shortcuts.map((s) => (
+            <div class="krow">
+              <span class="keys">{s.keys.map((k) => <kbd>{k}</kbd>)}</span>
+              <span>{s.label}</span>
+            </div>
+          ))
+        }
+      </div>
+      <h3>Keyboard shortcuts</h3>
+      <p>Jump to search, write a note or start a category without reaching for the mouse. Press ? in the dashboard to see them all.</p>
+    </article>
+
+    <article class="card">
+      <div class="art art-density" data-density-box>
+        <div class="seg" role="group" aria-label="Card density">
+          <button type="button" data-density="ultra" aria-pressed="false">Ultra</button>
+          <button type="button" data-density="compact" aria-pressed="true">Compact</button>
+          <button type="button" data-density="comfortable" aria-pressed="false">Default</button>
+          <button type="button" data-density="spacious" aria-pressed="false">Spacious</button>
+        </div>
+        <div class="rows" data-mode="compact" aria-hidden="true">
+          <div class="drow"><span class="av" style="background:#ffd400"></span><span class="lines"><i></i><i></i></span></div>
+          <div class="drow"><span class="av" style="background:#7856ff"></span><span class="lines"><i></i><i></i></span></div>
+          <div class="drow"><span class="av" style="background:#ff7a00"></span><span class="lines"><i></i><i></i></span></div>
+          <div class="drow"><span class="av" style="background:#00ba7c"></span><span class="lines"><i></i><i></i></span></div>
+        </div>
+      </div>
+      <h3>Four densities</h3>
+      <p>Scan hundreds of posts in Ultra, or give long threads room in Spacious. Try it above.</p>
+    </article>
+
+    <article class="card">
+      <div class="art art-deleted" aria-hidden="true">
+        <div class="tomb">This post is unavailable.</div>
+        <div class="kept">
+          <span class="kept-head"><span class="av" style="background:#00ba7c"></span><b>your streak</b><span class="muted">@streak_is_watching</span></span>
+          <span class="kept-text">you missed your lesson again. we’re not mad, just disappointed. see you tomorrow. or else.</span>
+          <span class="kept-note">Note: evidence, in case they delete this</span>
+        </div>
+      </div>
+      <h3>Still there if it’s deleted</h3>
+      <p>XMarks keeps its own copy of the text and your notes, so a saved post stays readable after it’s deleted or made private on X.</p>
+    </article>
+
+    <article class="card">
+      <div class="art art-storage">
+        <div class="stat" aria-hidden="true">
+          <span class="stat-count">16 saved</span>
+          <span class="stat-pop"><b>762 KB</b> on this device · 100% local</span>
+        </div>
+        <div class="swatches" role="group" aria-label="Accent color for this page" data-accent-picker>
+          {
+            ACCENTS.map((a, i) => (
+              <button type="button" class="sw-btn" data-accent={a.value} aria-label={a.name} aria-pressed={i === 0 ? 'true' : 'false'}>
+                <span class={a.value === 'monochrome' ? 'sw sw-mono' : 'sw'} style={a.value === 'monochrome' ? undefined : `background:${a.value}`}></span>
+              </button>
+            ))
+          }
+        </div>
+        <span class="sw-hint">Try one. The whole page follows.</span>
+      </div>
+      <h3>See the size, pick the color</h3>
+      <p>Hover your saved count to see how much space your library takes. Choose an accent color and a light, dark or system theme.</p>
+    </article>
+  </div>
+</section>
+
+<script>
+  import { applyAccent, currentAccent } from '../scripts/accent';
+
+  // Accent picker: recolors the whole page, like the dashboard's setting.
+  const picker = document.querySelector<HTMLElement>('[data-accent-picker]');
+  const pickerButtons = Array.from(picker?.querySelectorAll<HTMLButtonElement>('[data-accent]') ?? []);
+  const markPressed = (value: string) => pickerButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.accent === value)));
+  markPressed(currentAccent());
+  pickerButtons.forEach((b) => b.addEventListener('click', () => {
+    applyAccent(b.dataset.accent!);
+    markPressed(b.dataset.accent!);
+  }));
+
+  const box = document.querySelector<HTMLElement>('[data-density-box]');
+  const rows = box?.querySelector<HTMLElement>('.rows');
+  box?.querySelectorAll<HTMLButtonElement>('[data-density]').forEach((btn, _i, all) => {
+    btn.addEventListener('click', () => {
+      all.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      rows?.setAttribute('data-mode', btn.dataset.density ?? 'compact');
+    });
+  });
+</script>
+
+<style>
+  .features {
+    padding-top: 96px;
+    padding-bottom: 96px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .head p {
+    margin: 0;
+    font-size: 17px;
+    color: var(--muted);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: var(--track-m);
+  }
+
+  .card > p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .art {
+    height: 200px;
+    border-radius: 14px;
+    background: var(--bg-2);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+
+  .muted {
+    color: var(--muted);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .pill-ghost {
+    border: 1px solid var(--border-strong);
+  }
+
+  .pill-accent {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .pill-danger {
+    border: 1px solid var(--border-strong);
+    color: #f4212e;
+  }
+
+  .av {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* back up */
+  .file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+
+  .file-name {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .file-meta {
+    margin-left: auto;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .row-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .hint {
+    text-align: right;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  /* bulk */
+  .brow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .brow.is-on {
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: var(--accent-soft);
+  }
+
+  .check {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border-strong);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--accent-contrast);
+  }
+
+  .is-on .check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .snip {
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 6px 6px 14px;
+    border-radius: 9999px;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+  }
+
+  .bar-count {
+    font-weight: 700;
+  }
+
+  .bar-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .bar .pill {
+    height: 26px;
+    padding: 0 10px;
+  }
+
+  /* shortcuts */
+  .art-keys {
+    gap: 8px;
+  }
+
+  .krow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .keys {
+    display: flex;
+    gap: 4px;
+    width: 52px;
+  }
+
+  kbd {
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 2px 0 var(--border-strong);
+    font: 700 12px var(--font);
+  }
+
+  /* density */
+  .art-density {
+    justify-content: flex-start;
+  }
+
+  .seg {
+    display: flex;
+    padding: 2px;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .seg button {
+    flex: 1;
+    height: 36px;
+    border: none;
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .seg button[aria-pressed='true'] {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .rows {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .drow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    transition: padding 0.25s;
+  }
+
+  .lines {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .lines i {
+    display: block;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border-strong);
+  }
+
+  .lines i:first-child {
+    width: 40%;
+    background: var(--muted);
+  }
+
+  .rows[data-mode='ultra'] .drow { padding: 4px 12px; }
+  .rows[data-mode='comfortable'] .drow { padding: 12px 12px; }
+  .rows[data-mode='spacious'] .drow { padding: 16px 12px; }
+
+  /* deleted */
+  .art-deleted {
+    gap: 8px;
+    padding-block: 14px;
+  }
+
+  .tomb {
+    padding: 9px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--bg);
+  }
+
+  .kept {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    background: var(--bg);
+  }
+
+  .kept-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .kept-note {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* storage and color */
+  .art-storage {
+    gap: 18px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .stat-count {
+    font-size: 17px;
+    font-weight: 800;
+    border-bottom: 1px dashed var(--muted);
+  }
+
+  .stat-pop {
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .stat-pop b {
+    color: var(--text);
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 0 -4px;
+  }
+
+  .sw-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+
+  .sw {
+    display: block;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+
+  .sw-btn:hover .sw {
+    transform: scale(1.1);
+  }
+
+  .sw-btn[aria-pressed='true'] .sw {
+    box-shadow: 0 0 0 2px var(--bg-2), 0 0 0 4px var(--text);
+  }
+
+  .sw-hint {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .sw-mono {
+    background: linear-gradient(135deg, var(--text) 50%, var(--bg) 50%);
+    box-shadow: inset 0 0 0 1px var(--border-strong);
+  }
+
+  @media (max-width: 1100px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

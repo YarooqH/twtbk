@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Screens from '../components/Screens.astro';
+import PowerFeatures from '../components/PowerFeatures.astro';
+import Privacy from '../components/Privacy.astro';
+import Compare from '../components/Compare.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+
+const title = 'XMarks: a searchable library for your X bookmarks';
+const description =
+  'XMarks turns your X bookmarks into a library you can search, sort into categories and add notes to. It all stays in your browser. No account, no server.';
+
+const softwareSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'XMarks',
+  operatingSystem: 'Chrome / Chromium Browser',
+  applicationCategory: 'BrowserExtension',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  description,
+};
+---
+
+<Base title={title} description={description} jsonLd={softwareSchema}>
+  <Hero />
+  <HowItWorks />
+  <Screens />
+  <PowerFeatures />
+  <Privacy />
+  <Compare />
+  <Faq />
+  <CtaBand />
+</Base>

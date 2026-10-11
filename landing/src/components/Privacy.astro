@@ -1,0 +1,119 @@
+---
+const tiles = [
+  { label: '100% On-Device', title: 'Your personal vault', body: 'Every post, tag, note and category lives on your machine. None of it is sent anywhere.' },
+  { label: 'Private AI', title: 'Sorting on your device', body: 'Auto-categorize downloads a small model once (about 45 MB), then runs on your machine. Your bookmarks are never sent anywhere. It stays off until you turn it on.' },
+  { label: 'Open Data', title: 'Complete portability', body: 'Two-way JSON export and restore means your library is never trapped in a walled garden.' },
+];
+---
+
+<section id="privacy" class="privacy">
+  <div class="container inner">
+    <div class="copy">
+      <h2 class="section-title">Stored in your browser.<br />Nowhere else.</h2>
+      <p>Bookmarks, tags, notes and categories live in your browser. There’s no XMarks account, no tracking and no XMarks server to send them to.</p>
+    </div>
+    <ul class="tiles">
+      {
+        tiles.map((t) => (
+          <li class="tile">
+            <span class="label">{t.label}</span>
+            <span class="title">{t.title}</span>
+            <span class="body">{t.body}</span>
+          </li>
+        ))
+      }
+      <li class="tile tile-none">
+        <span class="label">Remote servers</span>
+        <span class="title"><s>Your data</s></span>
+        <span class="body">There isn’t one. No tracking, no accounts, no lock-in.</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .privacy {
+    background: var(--bg-2);
+    border-block: 1px solid var(--border);
+  }
+
+  .inner {
+    padding-top: 96px;
+    padding-bottom: 96px;
+    display: grid;
+    grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+    gap: 56px;
+    align-items: center;
+  }
+
+  .copy {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .copy p {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .tiles {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .tile {
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tile-none {
+    background: transparent;
+    border-style: dashed;
+    border-color: var(--border-strong);
+  }
+
+  .label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: var(--track-m);
+  }
+
+  .tile-none .title {
+    color: var(--muted);
+  }
+
+  .body {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 900px) {
+    .inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 36px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .tiles {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

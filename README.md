@@ -2,7 +2,7 @@
 
 > A privacy-first, local-first Chrome extension that lets you organize, search, and bulk-import your X (Twitter) bookmarks into a searchable reference library.
 
-X's native bookmark feature is highly limited—folders are locked behind the paid X Premium subscription, and even then, it completely lacks content search, tagging, notes, and offline backups. For free users, it's a single, chaotic chronological list. **XMarks** solves this for everyone by embedding directly into your X interface and building a powerful, local-first reference database.
+X's native bookmark feature is highly limited—folders are locked behind a paid X subscription, search only matches keywords in post text, and there are no tags, notes, or offline backups. For free users, it's a single, chaotic chronological list. **XMarks** solves this for everyone by embedding directly into your X interface and building a powerful, local-first reference database.
 
 ---
 
@@ -13,7 +13,7 @@ X's native bookmark feature is highly limited—folders are locked behind the pa
 * 🔒 **Local-First & Privacy-First**
   All your bookmark data, tags, categories, and notes are stored strictly inside your browser's `IndexedDB` database. There are no external databases, no cloud accounts, and no data leaks. Your data remains yours.
 * 🤖 **Local AI Auto-Categorizer**
-  Features a built-in semantic embedding model (~45MB, `all-MiniLM-L6-v2`) running locally via `Transformers.js` inside a background service worker. When enabled, it generates embeddings for each bookmark and cosine-matches them against your category names to auto-categorize your bookmarks on the fly, completely offline.
+  Uses a semantic embedding model (~45MB, `all-MiniLM-L6-v2`) that runs locally via `Transformers.js` in the dashboard page. When enabled, it generates embeddings for each bookmark and cosine-matches them against your category names to auto-categorize your bookmarks. The model is downloaded once from Hugging Face the first time you turn the feature on and cached in your browser; after that it works offline, and your bookmark text never leaves your device.
 * 🎨 **Clean 3-Column Dashboard**
   A full-page dashboard to search, browse, tag, and organize your bookmarks. Features a collapsible, X-style widget settings panel on the bottom-right for configuring save modes, accent colors, and AI settings.
 * ⚡ **Seamless X Integration**
@@ -76,3 +76,9 @@ X's native bookmark feature is highly limited—folders are locked behind the pa
 XMarks supports two different modes of operation:
 1. **Injected (Default):** Adds a dedicated XMarks save button beside native X actions on each tweet. Clicking it pops open a folder and tag picker to organize the bookmark on the spot.
 2. **Native Override:** Captures when you click X's native bookmark button to automatically save a copy in your local XMarks library.
+
+---
+
+## License
+
+[MIT](LICENSE)

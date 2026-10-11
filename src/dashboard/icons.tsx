@@ -1,4 +1,5 @@
 import React from 'react';
+import { XMARKS_MARK_PATH, XMARKS_MARK_VIEWBOX } from '../shared/logo';
 
 export const BookmarkIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -143,3 +144,10 @@ export const svgIcons = {
     </svg>
   ),
 };
+
+// The XMarks mark. In the wordmark it stands in for the "X" of XMarks.
+export const XMarksMark = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox={XMARKS_MARK_VIEWBOX} aria-hidden="true">
+    <path fill="currentColor" d={XMARKS_MARK_PATH} />
+  </svg>
+);

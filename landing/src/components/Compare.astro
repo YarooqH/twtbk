@@ -1,0 +1,105 @@
+---
+const rows = [
+  { label: 'Search saved posts', free: 'Keywords', premium: 'Keywords', xm: 'Posts, notes & tags' },
+  { label: 'Folders & categories', free: '—', premium: 'Folders', xm: 'Categories' },
+  { label: 'Personal notes & tag editor', free: '—', premium: '—', xm: 'Yes' },
+  { label: 'Auto-categorize', free: '—', premium: '—', xm: 'On your device' },
+  { label: 'Full JSON backup & 1-click restore', free: '—', premium: '—', xm: 'Two-way JSON' },
+  { label: 'Selective export (curated swipe files)', free: '—', premium: '—', xm: 'Yes' },
+  { label: 'Multi-select batch triage (move, export, delete)', free: '—', premium: '—', xm: 'Yes' },
+  { label: 'Keyboard shortcuts', free: '—', premium: '—', xm: 'Yes' },
+  { label: 'Four card densities', free: '—', premium: '—', xm: 'Yes' },
+  { label: 'Keeps posts that get deleted', free: '—', premium: '—', xm: 'Text & notes' },
+  { label: 'Shows how much space it uses', free: '—', premium: '—', xm: 'Yes' },
+];
+---
+
+<section id="compare" class="compare container" aria-labelledby="compare-title">
+  <h2 class="section-title" id="compare-title">Side by side</h2>
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col"><span class="visually-hidden">Feature</span></th>
+          <th scope="col">X</th>
+          <th scope="col">X Premium</th>
+          <th scope="col" class="xm">XMarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((r) => (
+            <tr>
+              <th scope="row">{r.label}</th>
+              <td class="dim">{r.free}</td>
+              <td class="dim">{r.premium}</td>
+              <td class="strong">{r.xm}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .compare {
+    padding-top: 96px;
+    padding-bottom: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .scroll {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 16px;
+  }
+
+  thead tr {
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 18px 12px 18px 0;
+  }
+
+  thead th {
+    padding-top: 0;
+    padding-bottom: 14px;
+    font-weight: 700;
+  }
+
+  thead th:first-child {
+    width: 40%;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody th {
+    font-weight: 400;
+  }
+
+  .xm {
+    color: var(--accent);
+    font-weight: 800;
+  }
+
+  .dim {
+    color: var(--muted);
+  }
+
+  .strong {
+    font-weight: 700;
+  }
+</style>

@@ -1,0 +1,18 @@
+# XMarks: a searchable library for your X (Twitter) bookmarks
+
+> XMarks is a free, open-source Chrome extension that turns your X bookmarks into a library you can search, sort into categories, tag and add notes to. Everything is stored in your browser. There is no XMarks account and no XMarks server.
+
+## Key features
+- **One-click sync**: Imports the bookmarks you already have from X (the Bookmarks page, or the Bookmarks tab in History). Pause and resume at any time; duplicates are skipped.
+- **Save as you scroll**: Adds a save button to each post's action bar, or saves a copy whenever you use X's own bookmark button.
+- **Search**: Searches post text, quoted posts, authors, tags and your notes.
+- **Categories, tags and notes**: Color-coded categories, tags and private notes on every post.
+- **Optional auto-categorize**: Sorts posts into your categories with a small embedding model (all-MiniLM-L6-v2 via Transformers.js). The model is downloaded once from Hugging Face when you turn the feature on, then runs in your browser. Your bookmark text is never sent anywhere.
+- **Backup**: Export the whole library, or selected posts, to JSON and import it in another browser.
+
+## Technical details
+- **Platform**: Chrome and other Chromium browsers (Manifest V3)
+- **Storage**: IndexedDB in the browser; settings in Chrome extension storage
+- **License**: MIT
+- **Repository**: https://github.com/YarooqH/twtbk
+- **Privacy policy**: https://yarooqh.github.io/twtbk/privacy/

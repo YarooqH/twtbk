@@ -1,8 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { db } from '../../db';
-import { getCategoryColor, categoryColors } from '../helpers';
+import { getCategoryColor, categoryColors, formatBytes, calculateBookmarksStorageSize } from '../helpers';
 import { getContrastTextColor } from '../../shared/colors';
-import { AllIcon } from '../icons';
+import { AllIcon, XMarksMark } from '../icons';
 import { AICard } from './AICard';
 import { InfoTooltip } from './InfoTooltip';
 
@@ -42,6 +44,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isClassifying, classifyProgress,
   runAutoCategorizeJobs,
 }) => {
+  const [isStorageHovered, setIsStorageHovered] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const logoRef = useRef<HTMLDivElement>(null);
+
+  const storageSize = useMemo(() => {
+    return calculateBookmarksStorageSize(bookmarks);
+  }, [bookmarks]);
+
+  const updatePosition = () => {
+    if (!logoRef.current) return;
+    const rect = logoRef.current.getBoundingClientRect();
+    setCoords({
+      top: rect.bottom + 6,
+      left: rect.left + 16,
+    });
+  };
+
+  const handleMouseEnter = () => {
+    updatePosition();
+    setIsStorageHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsStorageHovered(false);
+  };
+
+  useEffect(() => {
+    if (!isStorageHovered) return;
+    const handleScrollOrResize = () => updatePosition();
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [isStorageHovered]);
+
   const categoryCounts = useMemo(() => {
     const map: Record<string, number> = {};
     if (!bookmarks) return map;
@@ -62,15 +101,56 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className="sidebar" data-onboarding="desktop-categories">
-      <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">
-          <img src="/logo.svg" alt="XMarks Logo" width={16} height={16} />
-        </div>
+      <div
+        className="sidebar-logo"
+        ref={logoRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{ cursor: 'default' }}
+      >
         <div>
-          <div className="sidebar-logo-text">XMarks</div>
-          <div className="sidebar-logo-sub">{bookmarks?.length ?? 0} saved</div>
+          <div className="sidebar-logo-text" role="img" aria-label="XMarks">
+            <XMarksMark size={23} />
+            <span aria-hidden="true">Marks</span>
+          </div>
+          <div className="sidebar-logo-sub" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span>{bookmarks?.length ?? 0} saved</span>
+          </div>
         </div>
       </div>
+
+      {createPortal(
+        <AnimatePresence>
+          {isStorageHovered && (
+            <motion.div
+              className="info-tooltip-portal"
+              initial={{ opacity: 0, scale: 0.94, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: -4 }}
+              transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: 'fixed',
+                top: `${coords.top}px`,
+                left: `${coords.left}px`,
+                zIndex: 99999,
+                pointerEvents: 'none',
+              }}
+            >
+              <div className="info-tooltip-content" style={{ padding: '8px 12px', minWidth: '170px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '3px' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Storage Used</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent)' }}>{formatBytes(storageSize)}</span>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00ba7c' }} />
+                  100% Local IndexedDB
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <div className="sidebar-section-label" style={{ display: 'flex', alignItems: 'center' }}>
         Library

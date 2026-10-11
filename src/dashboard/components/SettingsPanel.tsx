@@ -1,8 +1,8 @@
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { getMotionTransition } from '../../motion/presets';
 import { SettingsIcon, svgIcons, SunIcon, MoonIcon, SystemIcon } from '../icons';
-import { categoryColors } from '../helpers';
+import { categoryColors, formatBytes, calculateBookmarksStorageSize } from '../helpers';
 import { applyAccentVariables } from '../../shared/colors';
 import { SaveConfigCard } from './SaveConfigCard';
 import { AICard } from './AICard';
@@ -12,6 +12,7 @@ import { type CardDensity } from '../hooks/useCardDensity';
 import { HexColorPicker } from 'react-colorful';
 
 interface SettingsPanelProps {
+  bookmarks?: any[];
   settingsExpanded: boolean;
   setSettingsExpanded: (val: boolean) => void;
   mobileSettingsOpen?: boolean;
@@ -40,6 +41,7 @@ interface SettingsPanelProps {
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
+  bookmarks,
   settingsExpanded, setSettingsExpanded,
   mobileSettingsOpen, setMobileSettingsOpen,
   saveMode, setSaveMode,
@@ -57,6 +59,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const reducedMotion = useReducedMotion();
   const panelTransition = getMotionTransition(Boolean(reducedMotion));
   const [isMobileViewport, setIsMobileViewport] = React.useState(false);
+
+  const storageSize = useMemo(() => {
+    return calculateBookmarksStorageSize(bookmarks);
+  }, [bookmarks]);
 
   const [experimentalColors, setExperimentalColors] = useState<boolean>(false);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -444,6 +450,26 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         })}
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Storage & Data Footprint */}
+                <div className="settings-card">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div className="settings-card-title" style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                      Storage
+                      <InfoTooltip text="Total on-device IndexedDB storage used by your saved tweets, notes, and metadata." />
+                    </div>
+                    <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 600, fontFamily: 'monospace' }}>
+                      {formatBytes(storageSize)}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                    <span>{bookmarks?.length ?? 0} saved {bookmarks?.length === 1 ? 'tweet' : 'tweets'}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '10.5px', color: 'var(--text-muted)' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00ba7c' }} />
+                      100% Local
+                    </span>
                   </div>
                 </div>
               </motion.div>

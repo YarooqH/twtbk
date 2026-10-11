@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { getCategoryColor, applyAccentVariables } from './shared/colors';
+import { getCategoryColor, applyAccentVariables, getAccessibleTextColor, isDarkModeActive } from './shared/colors';
 import { db } from './db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import './index.css';
+import { XMarksMark } from './dashboard/icons';
 import { useOnboarding } from './onboarding/state';
 
 const BookmarkIcon = () => (
@@ -37,22 +38,38 @@ function App() {
   const categories = useLiveQuery(() => db.categories.toArray());
 
 
-  // Apply accent color and theme mode from storage so popup reflects user's choice
+  // Apply theme mode first, then accent color from storage so popup reflects user's choice with correct contrast
   useEffect(() => {
     markPopupSeen();
-    chrome.storage?.sync?.get(['accentColor', 'themeMode'], (result) => {
-      if (result.accentColor) {
-        applyAccentVariables(result.accentColor as string);
-      }
-      if (result.themeMode) {
-        if (result.themeMode === 'system') {
+
+    const applyThemeAndAccent = (theme?: string, accent?: string) => {
+      if (theme) {
+        if (theme === 'system') {
           document.documentElement.removeAttribute('data-theme');
         } else {
-          document.documentElement.setAttribute('data-theme', result.themeMode as string);
+          document.documentElement.setAttribute('data-theme', theme);
         }
       }
+      applyAccentVariables(accent || '#1d9bf0');
+    };
+
+    chrome.storage?.sync?.get(['accentColor', 'themeMode'], (result) => {
+      applyThemeAndAccent(result?.themeMode as string | undefined, result?.accentColor as string | undefined);
     });
-  }, []);
+
+    const handleStorageChange = (changes: Record<string, chrome.storage.StorageChange>, namespace: string) => {
+      if (namespace === 'sync' && (changes.accentColor || changes.themeMode)) {
+        chrome.storage?.sync?.get(['accentColor', 'themeMode'], (result) => {
+          applyThemeAndAccent(result?.themeMode as string | undefined, result?.accentColor as string | undefined);
+        });
+      }
+    };
+
+    chrome.storage?.onChanged?.addListener(handleStorageChange);
+    return () => {
+      chrome.storage?.onChanged?.removeListener(handleStorageChange);
+    };
+  }, [markPopupSeen]);
 
   const openDashboard = () => {
     chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
@@ -68,10 +85,12 @@ function App() {
     <div className="popup-wrap" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Header */}
       <div className="popup-header">
-        <div className="popup-logo">
-          <img src="/logo.svg" alt="XMarks Logo" width={14} height={14} />
-        </div>
-        <h1 className="popup-title">XMarks</h1>
+        <h1 className="popup-title">
+          <span className="popup-wordmark" role="img" aria-label="XMarks">
+            <XMarksMark size={19} />
+            <span aria-hidden="true">Marks</span>
+          </span>
+        </h1>
         <span className="popup-count">
           {totalCount ?? 0} saved
         </span>
@@ -127,18 +146,22 @@ function App() {
                         const cat = categories.find(c => c.id === catId);
                         if (!cat) return null;
                         const catColor = getCategoryColor(catId, cat.color);
+                        const isDark = isDarkModeActive();
+                        const textColor = getAccessibleTextColor(catColor, isDark);
                         return (
                           <span key={catId} style={{ 
                             display: 'inline-flex', 
                             alignItems: 'center', 
+                            gap: '4px',
                             fontSize: '11px', 
-                            padding: '3px 8px', 
+                            padding: '3px 7px', 
                             borderRadius: '4px', 
                             background: `${catColor}18`,
-                            color: catColor,
+                            color: textColor,
                             fontWeight: 600,
                             lineHeight: 1
                           }}>
+                            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: catColor, flexShrink: 0 }} />
                             {cat.name}
                           </span>
                         );

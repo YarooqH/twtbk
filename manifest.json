@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "XMarks - Twitter Bookmark Manager",
+  "name": "XMarks: Bookmark Manager for X",
   "version": "1.0.0",
-  "description": "A privacy-first, local-first Chrome extension to search, tag, and organize your bookmarks.",
+  "description": "Search, sort and add notes to your X (Twitter) bookmarks. Free, no account, and everything stays in your browser.",
   "browser_specific_settings": {
     "gecko": {
       "id": "njihhmpheebijihkgehocbcfhpfhjnjk@xmarks"
@@ -24,7 +24,7 @@
   },
   "action": {
     "default_popup": "index.html",
-    "default_title": "XMarks - Twitter Bookmark Manager",
+    "default_title": "XMarks: Bookmark Manager for X",
     "default_icon": {
       "16": "icon-16.png",
       "32": "icon-32.png",

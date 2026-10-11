@@ -1,4 +1,4 @@
-import { categoryColors, getCategoryColor } from '../shared/colors';
+import { categoryColors, getCategoryColor, getAccessibleTextColor, getContrastTextColor } from '../shared/colors';
 
 const getInitials = (name: string) => name?.trim()?.charAt(0)?.toUpperCase() || '?';
 
@@ -26,6 +26,25 @@ const formatRelativeTime = (date: Date | string | undefined) => {
   return formatDate(d);
 };
 
+export function formatBytes(bytes: number, decimals = 1): string {
+  if (!bytes || bytes <= 0) return '0 B';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
+
+export function calculateBookmarksStorageSize(bookmarks?: any[]): number {
+  if (!bookmarks || bookmarks.length === 0) return 0;
+  try {
+    const jsonStr = JSON.stringify(bookmarks);
+    return new Blob([jsonStr]).size;
+  } catch {
+    return 0;
+  }
+}
+
 export type SlotId = 'leftmost' | 'after-reply' | 'after-retweet' | 'after-like' | 'after-views' | 'next-to-bookmark' | 'rightmost';
 
-export { getInitials, categoryColors, getCategoryColor, formatDate, formatRelativeTime };
+export { getInitials, categoryColors, getCategoryColor, getAccessibleTextColor, getContrastTextColor, formatDate, formatRelativeTime };

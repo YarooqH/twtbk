@@ -1,0 +1,154 @@
+---
+import Logo from './Logo.astro';
+import { base, repoUrl, storeUrl } from '../site';
+
+// Section links point at the home page so they also work from /privacy/.
+const sections = [
+  { href: `${base}#how`, label: 'How it works' },
+  { href: `${base}#features`, label: 'Features' },
+  { href: `${base}#privacy`, label: 'Privacy' },
+  { href: `${base}#compare`, label: 'Compare' },
+  { href: `${base}#faq`, label: 'FAQ' },
+];
+---
+
+<header class="site-header container">
+  <a class="brand" href={base} aria-label="XMarks home">
+    <Logo size={21} />
+  </a>
+  <nav aria-label="Primary">
+    {sections.map((s) => <a class="nav-link" href={s.href}>{s.label}</a>)}
+    <a class="nav-link" href={repoUrl} target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a class="btn btn-accent" href={storeUrl} target="_blank" rel="noopener noreferrer">Add to Chrome</a>
+    <button type="button" class="menu-btn" aria-expanded="false" aria-controls="mobile-menu" data-menu-btn>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path class="bars" d="M4 7h16M4 12h16M4 17h16" />
+        <path class="cross" d="M6 6l12 12M18 6L6 18" />
+      </svg>
+      <span class="visually-hidden">Menu</span>
+    </button>
+  </nav>
+  <div class="mobile-menu" id="mobile-menu" data-menu hidden>
+    {sections.map((s) => <a href={s.href}>{s.label}</a>)}
+    <a href={repoUrl} target="_blank" rel="noopener noreferrer">GitHub</a>
+  </div>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const setOpen = (open: boolean) => {
+    btn?.setAttribute('aria-expanded', String(open));
+    if (menu) menu.hidden = !open;
+  };
+  btn?.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  menu?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && btn?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      btn.focus();
+    }
+  });
+</script>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 2;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .nav-link {
+    text-decoration: none;
+  }
+
+  .nav-link:hover {
+    color: var(--accent);
+  }
+
+  .menu-btn,
+  .mobile-menu {
+    display: none;
+  }
+
+  @media (max-width: 720px) {
+    nav {
+      gap: 8px;
+    }
+
+    .nav-link {
+      display: none;
+    }
+
+    .menu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .menu-btn .cross,
+    .menu-btn[aria-expanded='true'] .bars {
+      display: none;
+    }
+
+    .menu-btn[aria-expanded='true'] .cross {
+      display: inline;
+    }
+
+    .mobile-menu:not([hidden]) {
+      position: absolute;
+      top: 72px;
+      left: var(--gutter);
+      right: var(--gutter);
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--bg);
+      box-shadow: var(--shadow);
+    }
+
+    .mobile-menu a {
+      display: flex;
+      align-items: center;
+      min-height: 48px;
+      padding: 0 14px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .mobile-menu a:hover {
+      background: var(--bg-2);
+    }
+  }
+</style>
