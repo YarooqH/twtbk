@@ -29,3 +29,7 @@ landing/.astro
 .docs
 .pi-subagents
 .agents
+
+store-assets
+# Chrome Web Store upload packages
+release/
