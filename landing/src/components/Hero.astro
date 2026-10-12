@@ -13,7 +13,6 @@ const nativeIcons = [
 const slotLabels = ['Before Reply', 'After Reply', 'After Repost', 'After Like', 'After Views', 'After Bookmark', 'After Share'];
 const bookPath =
   'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253';
-const starPath = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z';
 ---
 
 <section class="hero container" id="top">
@@ -58,9 +57,10 @@ const starPath = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63
           <rect class="book-fill" clip-path="url(#xm-book-clip)" x="0" y="0" height="24" fill="currentColor" />
         </svg>
       </button>
-      <button type="button" class="star" data-star aria-label="Save to XMarks" hidden>
+      <!-- Override native: X's own bookmark button, which now also saves to XMarks. -->
+      <button type="button" class="native-btn" data-native-btn aria-label="Save to XMarks" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d={starPath} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+          <path d={nativeIcons.find((i) => i.key === 'bookmark')!.d} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
     </div>
@@ -232,7 +232,7 @@ const starPath = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63
 
   .icon,
   .book,
-  .star {
+  .native-btn {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -249,14 +249,14 @@ const starPath = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63
 
   .icon svg,
   .book svg,
-  .star svg {
+  .native-btn svg {
     display: block;
     width: 100%;
     height: 100%;
   }
 
   .book,
-  .star {
+  .native-btn {
     width: var(--book);
     height: var(--book);
     padding: calc(var(--book) * 0.24);
@@ -276,15 +276,15 @@ const starPath = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63
   }
 
   .book.is-saved,
-  .star {
+  .native-btn {
     color: var(--accent);
   }
 
-  .star {
+  .native-btn {
     cursor: pointer;
   }
 
-  .star.is-saved path {
+  .native-btn.is-saved path {
     fill: currentColor;
   }
 

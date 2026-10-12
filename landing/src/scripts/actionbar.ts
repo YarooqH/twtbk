@@ -12,11 +12,11 @@ const DRAG_THRESHOLD = 5;
 export function initActionBar() {
   const stage = document.querySelector<HTMLElement>('[data-stage]');
   const book = document.querySelector<HTMLButtonElement>('[data-book]');
-  const star = document.querySelector<HTMLButtonElement>('[data-star]');
+  const nativeBtn = document.querySelector<HTMLButtonElement>('[data-native-btn]');
   const placed = document.querySelector<HTMLElement>('[data-placed]');
   const help = document.querySelector<HTMLElement>('[data-help]');
   const toast = document.querySelector<HTMLElement>('[data-toast]');
-  if (!stage || !book || !star || !placed || !help || !toast) return;
+  if (!stage || !book || !nativeBtn || !placed || !help || !toast) return;
 
   const icons = new Map<string, HTMLElement>();
   stage.querySelectorAll<HTMLElement>('[data-icon]').forEach((el) => icons.set(el.dataset.icon!, el));
@@ -51,7 +51,7 @@ export function initActionBar() {
       placed!.textContent = `Placed: ${SLOT_LABELS[at]}`;
     } else {
       NATIVE.forEach((key, i) => { icons.get(key)!.style.left = pct(i, 6); });
-      star!.style.left = pct(NATIVE.indexOf('bookmark'), 6);
+      nativeBtn!.style.left = pct(NATIVE.indexOf('bookmark'), 6);
       placed!.textContent = 'Mode: X’s bookmark button saves a copy into XMarks';
     }
   }
@@ -71,10 +71,10 @@ export function initActionBar() {
   function setSaved(next: boolean, from: HTMLElement) {
     saved = next;
     book!.classList.toggle('is-saved', saved);
-    star!.classList.toggle('is-saved', saved);
+    nativeBtn!.classList.toggle('is-saved', saved);
     const label = saved ? 'Saved to XMarks' : 'Save to XMarks';
     book!.setAttribute('aria-label', `${label}. Arrow keys move it.`);
-    star!.setAttribute('aria-label', label);
+    nativeBtn!.setAttribute('aria-label', label);
     if (saved) pulseFrom(from);
     showToast(saved ? 'Saved to XMarks!' : 'Removed from XMarks');
   }
@@ -84,7 +84,7 @@ export function initActionBar() {
     stage!.dataset.mode = mode;
     modeButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
     book!.hidden = mode !== 'injected';
-    star!.hidden = mode === 'injected';
+    nativeBtn!.hidden = mode === 'injected';
     icons.get('bookmark')!.hidden = mode !== 'injected';
     help!.textContent = mode === 'injected' ? 'Drag the book to any slot. Click it to save.' : 'Your X bookmark button now saves to XMarks. Click it.';
     layout();
@@ -154,7 +154,7 @@ export function initActionBar() {
     }
   });
 
-  star.addEventListener('click', () => setSaved(!saved, star));
+  nativeBtn.addEventListener('click', () => setSaved(!saved, nativeBtn));
   zones.forEach((z, i) => z.addEventListener('click', () => place(i)));
   modeButtons.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode as typeof mode)));
 
