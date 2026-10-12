@@ -91,4 +91,9 @@ export const bookmarkRepository = {
   all: () => db.bookmarks.toArray(),
   listCategories: () => db.categories.toArray(),
   createCategory: (category: Category) => db.categories.add(category),
+  /** Store an imported backup: categories first, so posts never point at a missing one. */
+  importBackup: (categories: Category[], bookmarks: Bookmark[]) => db.transaction('rw', db.bookmarks, db.categories, async () => {
+    if (categories.length) await db.categories.bulkPut(categories);
+    await db.bookmarks.bulkPut(bookmarks);
+  }),
 };

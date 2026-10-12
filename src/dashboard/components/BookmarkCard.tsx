@@ -211,6 +211,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   return (
     <div 
       className={`bookmark-card ${isSelected ? 'selected' : ''}`}
+      data-bookmark-id={bookmark.id}
       onClick={(e) => {
         if ((e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) return;
         window.open(bookmark.tweetUrl, '_blank');
@@ -486,6 +487,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
         {editingNoteId === bookmark.id ? (
           <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <textarea
+              autoFocus
               value={tempNote}
               onChange={e => setTempNote(e.target.value)}
               placeholder="Add a note to this bookmark..."

@@ -16,6 +16,7 @@ import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { MultiSelectActionBar } from './components/MultiSelectActionBar';
 import { useOnboarding } from '../onboarding/state';
 import { useTour } from '../onboarding/useTour';
+import { buildBackup, parseBackup } from './backup';
 
 export type SortOption = 'newest' | 'oldest' | 'posted-newest' | 'posted-oldest' | 'author';
 
@@ -134,6 +135,18 @@ export const Dashboard: React.FC = () => {
       document.querySelector<HTMLInputElement>('.new-cat-input')?.focus();
     } else if (action === 'go_all_bookmarks') {
       setSelectedCategoryId(null);
+    } else if (action === 'edit_note') {
+      // The ticked post if exactly one is ticked, otherwise the one under the pointer.
+      const id = selectedBookmarkIds.size === 1
+        ? [...selectedBookmarkIds][0]
+        : document.querySelector<HTMLElement>('.bookmark-card:hover')?.dataset.bookmarkId;
+      if (!id) {
+        setToastMessage('Point at a post, or tick one, then press E to edit its note');
+        return;
+      }
+      setTempNote(bookmarks?.find(b => b.id === id)?.note ?? '');
+      setEditingNoteId(id);
+      document.querySelector(`[data-bookmark-id="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'nearest' });
     }
   });
 
@@ -240,14 +253,18 @@ export const Dashboard: React.FC = () => {
     [selectedBookmarkIds, visibleBookmarkIds]
   );
 
-  const handleExport = async () => {
-    const allData = await bookmarkRepository.all();
-    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+  const downloadJson = (data: unknown, filename: string) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'twitter_bookmarks_export.json'; a.click();
+    a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
-    setToastMessage('Exported bookmarks file successfully!');
+  };
+
+  const handleExport = async () => {
+    const [allBookmarks, allCategories] = await Promise.all([bookmarkRepository.all(), bookmarkRepository.listCategories()]);
+    downloadJson(buildBackup(allBookmarks, allCategories), 'xmarks-backup.json');
+    setToastMessage(`Exported ${allBookmarks.length} bookmarks and ${allCategories.length} categories`);
   };
 
   const handleExportSelected = async () => {
@@ -256,11 +273,8 @@ export const Dashboard: React.FC = () => {
       const ids = Array.from(selectedBookmarkIds);
       const selected = await bookmarkRepository.getMany(ids);
       const exportData = selected.filter((bookmark): bookmark is NonNullable<typeof bookmark> => Boolean(bookmark));
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `twitter_bookmarks_${exportData.length}_selected.json`; a.click();
-      URL.revokeObjectURL(url);
+      const allCategories = await bookmarkRepository.listCategories();
+      downloadJson(buildBackup(exportData, allCategories, true), `xmarks-backup-${exportData.length}-selected.json`);
       setToastMessage(`Exported ${exportData.length} selected bookmark${exportData.length === 1 ? '' : 's'}`);
     } catch {
       setToastMessage('Could not export the selected bookmarks');
@@ -322,20 +336,21 @@ export const Dashboard: React.FC = () => {
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // Reset so choosing the same file again still fires a change.
+    e.target.value = '';
     if (!file) return;
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
-        if (Array.isArray(json)) {
-          const revived = json.map((b: any) => ({
-            ...b,
-            savedAt: b.savedAt ? new Date(b.savedAt) : new Date(),
-            createdAt: b.createdAt ? new Date(b.createdAt) : undefined
-          }));
-          await bookmarkRepository.putMany(revived);
-          setToastMessage(`Imported ${revived.length} bookmarks successfully!`);
-        }
+        const existing = await bookmarkRepository.listCategories();
+        const { bookmarks: imported, categories: importedCategories } = parseBackup(json, existing);
+        await bookmarkRepository.importBackup(importedCategories, imported);
+        setToastMessage(
+          importedCategories.length
+            ? `Imported ${imported.length} bookmarks and ${importedCategories.length} categories`
+            : `Imported ${imported.length} bookmarks`
+        );
       } catch {
         setModalConfig({
           isOpen: true,
