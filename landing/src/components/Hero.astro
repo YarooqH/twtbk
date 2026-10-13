@@ -19,7 +19,7 @@ const bookPath =
   <!-- Backdrop: an X timeline drawn in dots, extending up behind the header (see scripts/dotfield.ts). -->
   <canvas class="feed-field" data-feed aria-hidden="true"></canvas>
   <div class="hero-copy" data-hero-copy>
-    <h1>You said you’d read it later.<br /><span class="accent">Now you can find it.</span></h1>
+    <h1>Save it on X.<br /><span class="accent">Find it in XMarks.</span></h1>
     <p class="lede">
       XMarks turns your X bookmarks into a library you can search, sort into categories and add notes to. Bring in everything
       you’ve already saved with one click. It all stays in your browser.
@@ -344,6 +344,11 @@ const bookPath =
   }
 
   @media (max-width: 640px) {
+    /* Scales with the screen so each headline line stays whole down to 320px. */
+    h1 {
+      font-size: clamp(34px, 10.4vw, 66px);
+    }
+
     .hero {
       padding-top: 56px;
       padding-bottom: 110px;
