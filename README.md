@@ -1,5 +1,7 @@
 # XMarks
 
+**Save it on X. Find it in XMarks.**
+
 > A privacy-first, local-first Chrome extension that lets you organize, search, and bulk-import your X (Twitter) bookmarks into a searchable reference library.
 
 X's native bookmark feature is highly limited—folders are locked behind a paid X subscription, search only matches keywords in post text, and there are no tags, notes, or offline backups. For free users, it's a single, chaotic chronological list. **XMarks** solves this for everyone by embedding directly into your X interface and building a powerful, local-first reference database.

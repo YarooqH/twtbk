@@ -17,7 +17,7 @@ Everything to paste into the [Developer Dashboard](https://chrome.google.com/web
 **Description** (plain text; the store doesn't render Markdown):
 
 ```text
-You said you'd read it later. Now you can find it.
+Save it on X. Find it in XMarks.
 
 XMarks turns your X (Twitter) bookmarks into a library you can search, sort into categories and add notes to. It all stays in your browser: no account, no server, no tracking.
 
