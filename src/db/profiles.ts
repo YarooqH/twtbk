@@ -55,3 +55,45 @@ export function saveProfilesState(state: ProfilesState): Promise<void> {
     storage.set({ [PROFILES_KEY]: state }, () => resolve());
   });
 }
+
+export const MAX_PROFILE_LABEL = 40;
+
+const cleanLabel = (label: string) => label.trim().slice(0, MAX_PROFILE_LABEL);
+
+export function createProfile(state: ProfilesState, label: string, id = 'p_' + Date.now().toString(36)): ProfilesState {
+  const name = cleanLabel(label);
+  if (!name || state.profiles.some(p => p.id === id)) return state;
+  return {
+    profiles: [...state.profiles, { id, label: name }],
+    savingProfileId: state.savingProfileId,
+    viewingProfileId: id,
+  };
+}
+
+export function renameProfile(state: ProfilesState, id: string, label: string): ProfilesState {
+  const name = cleanLabel(label);
+  if (!name) return state;
+  return { ...state, profiles: state.profiles.map(p => (p.id === id ? { ...p, label: name } : p)) };
+}
+
+export function removeProfile(state: ProfilesState, id: string): ProfilesState {
+  if (id === DEFAULT_PROFILE_ID) return state;
+  const pick = (current: string) => (current === id ? DEFAULT_PROFILE_ID : current);
+  return {
+    profiles: state.profiles.filter(p => p.id !== id),
+    savingProfileId: pick(state.savingProfileId),
+    viewingProfileId: pick(state.viewingProfileId),
+  };
+}
+
+export function setViewingProfile(state: ProfilesState, id: string): ProfilesState {
+  if (!state.profiles.some(p => p.id === id)) return state;
+  return { ...state, viewingProfileId: id };
+}
+
+// The dashboard keeps following saves until the user has picked a different library to view.
+export function setSavingProfile(state: ProfilesState, id: string): ProfilesState {
+  if (!state.profiles.some(p => p.id === id)) return state;
+  const following = state.viewingProfileId === state.savingProfileId;
+  return { ...state, savingProfileId: id, viewingProfileId: following ? id : state.viewingProfileId };
+}

@@ -102,3 +102,10 @@ export let db = getProfileDb(DEFAULT_PROFILE_ID);
 export function setActiveProfile(profileId: string) {
   db = getProfileDb(profileId);
 }
+
+// Closes the profile's connection and removes its IndexedDB. Never call for the profile being viewed.
+export async function deleteProfileDb(profileId: string) {
+  const instance = profileDbs.get(profileId) ?? new TwitterBookmarkDatabase(dbNameForProfile(profileId));
+  profileDbs.delete(profileId);
+  await instance.delete();
+}

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PROFILE_ID, dbNameForProfile } from './index';
-import { defaultProfilesState, normalizeProfilesState } from './profiles';
+import {
+  createProfile, defaultProfilesState, normalizeProfilesState, removeProfile,
+  renameProfile, setSavingProfile, setViewingProfile,
+} from './profiles';
 
 describe('dbNameForProfile', () => {
   it('keeps the original database name for the default profile', () => {
@@ -36,5 +39,43 @@ describe('normalizeProfilesState', () => {
     });
     expect(state.savingProfileId).toBe(DEFAULT_PROFILE_ID);
     expect(state.viewingProfileId).toBe(DEFAULT_PROFILE_ID);
+  });
+});
+
+describe('profile transitions', () => {
+  const base = defaultProfilesState();
+
+  it('creating a profile views it but keeps saving where it was', () => {
+    const next = createProfile(base, '  Work  ', 'work');
+    expect(next.profiles.map(p => p.label)).toEqual(['Default', 'Work']);
+    expect(next.viewingProfileId).toBe('work');
+    expect(next.savingProfileId).toBe(DEFAULT_PROFILE_ID);
+  });
+
+  it('ignores blank names and duplicate ids', () => {
+    expect(createProfile(base, '   ', 'x')).toBe(base);
+    expect(createProfile(createProfile(base, 'A', 'a'), 'B', 'a').profiles).toHaveLength(2);
+  });
+
+  it('never removes the default profile and resets pointers on removal', () => {
+    const withWork = setSavingProfile(createProfile(base, 'Work', 'work'), 'work');
+    expect(removeProfile(withWork, DEFAULT_PROFILE_ID)).toBe(withWork);
+    const removed = removeProfile(withWork, 'work');
+    expect(removed.profiles).toHaveLength(1);
+    expect(removed.savingProfileId).toBe(DEFAULT_PROFILE_ID);
+    expect(removed.viewingProfileId).toBe(DEFAULT_PROFILE_ID);
+  });
+
+  it('viewing follows saving only until the user picks another library', () => {
+    const two = createProfile(base, 'Work', 'work');
+    expect(setSavingProfile(setViewingProfile(two, DEFAULT_PROFILE_ID), 'work').viewingProfileId).toBe('work');
+    const pinned = setSavingProfile(two, 'work');
+    expect(setSavingProfile(setViewingProfile(pinned, DEFAULT_PROFILE_ID), DEFAULT_PROFILE_ID).viewingProfileId).toBe(DEFAULT_PROFILE_ID);
+    const elsewhere = setViewingProfile(createProfile(createProfile(base, 'A', 'a'), 'B', 'b'), 'a');
+    expect(setSavingProfile(elsewhere, 'b').viewingProfileId).toBe('a');
+  });
+
+  it('renames a profile', () => {
+    expect(renameProfile(createProfile(base, 'Work', 'work'), 'work', 'Alt').profiles[1].label).toBe('Alt');
   });
 });
