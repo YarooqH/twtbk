@@ -1,4 +1,4 @@
-import { db, type Bookmark, type Category } from '../db';
+import { db as activeDb, type Bookmark, type Category, type TwitterBookmarkDatabase } from '../db';
 
 export type BookmarkSaveInput = Partial<Bookmark> & Pick<Bookmark, 'id'>;
 export type BookmarkPatch = Partial<Pick<Bookmark, 'categoryIds' | 'note' | 'tags'>>;
@@ -30,7 +30,7 @@ export function normalizeBookmark(input: BookmarkSaveInput, source: Bookmark['so
   };
 }
 
-async function save(input: BookmarkSaveInput) {
+async function save(db: TwitterBookmarkDatabase, input: BookmarkSaveInput) {
   const existing = await db.bookmarks.get(input.id);
   if (existing) {
     const patch: BookmarkPatch = {};
@@ -46,7 +46,7 @@ async function save(input: BookmarkSaveInput) {
   return { bookmark, created: true };
 }
 
-async function importBatch(inputs: BookmarkSaveInput[]) {
+async function importBatch(db: TwitterBookmarkDatabase, inputs: BookmarkSaveInput[]) {
   return db.transaction('rw', db.bookmarks, db.categories, async () => {
     let importCategory = await db.categories.get('cat_imported');
     if (!importCategory) {
@@ -75,20 +75,28 @@ async function importBatch(inputs: BookmarkSaveInput[]) {
   });
 }
 
-export const bookmarkRepository = {
-  list: () => db.bookmarks.orderBy('savedAt').reverse().toArray(),
-  get: (id: string) => db.bookmarks.get(id),
-  getMany: (ids: string[]) => db.bookmarks.bulkGet(ids),
-  save,
-  importBatch,
-  update: (id: string, patch: BookmarkPatch) => db.bookmarks.update(id, patch),
-  updateCategories: (ids: string[], categoryId: string | null) => db.transaction('rw', db.bookmarks, async () => {
-    await Promise.all(ids.map(id => db.bookmarks.update(id, { categoryIds: categoryId ? [categoryId] : [] })));
-  }),
-  delete: (id: string) => db.bookmarks.delete(id),
-  deleteMany: (ids: string[]) => db.bookmarks.bulkDelete(ids),
-  putMany: (bookmarks: Bookmark[]) => db.bookmarks.bulkPut(bookmarks),
-  all: () => db.bookmarks.toArray(),
-  listCategories: () => db.categories.toArray(),
-  createCategory: (category: Category) => db.categories.add(category),
-};
+export function createBookmarkRepository(getDb: () => TwitterBookmarkDatabase) {
+  return {
+    list: () => getDb().bookmarks.orderBy('savedAt').reverse().toArray(),
+    get: (id: string) => getDb().bookmarks.get(id),
+    getMany: (ids: string[]) => getDb().bookmarks.bulkGet(ids),
+    save: (input: BookmarkSaveInput) => save(getDb(), input),
+    importBatch: (inputs: BookmarkSaveInput[]) => importBatch(getDb(), inputs),
+    update: (id: string, patch: BookmarkPatch) => getDb().bookmarks.update(id, patch),
+    updateCategories: (ids: string[], categoryId: string | null) => {
+      const db = getDb();
+      return db.transaction('rw', db.bookmarks, async () => {
+        await Promise.all(ids.map(id => db.bookmarks.update(id, { categoryIds: categoryId ? [categoryId] : [] })));
+      });
+    },
+    delete: (id: string) => getDb().bookmarks.delete(id),
+    deleteMany: (ids: string[]) => getDb().bookmarks.bulkDelete(ids),
+    putMany: (bookmarks: Bookmark[]) => getDb().bookmarks.bulkPut(bookmarks),
+    all: () => getDb().bookmarks.toArray(),
+    listCategories: () => getDb().categories.toArray(),
+    createCategory: (category: Category) => getDb().categories.add(category),
+  };
+}
+
+// Follows the profile the current page is viewing (dashboard/popup).
+export const bookmarkRepository = createBookmarkRepository(() => activeDb);

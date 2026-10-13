@@ -12,6 +12,8 @@ X's native bookmark feature is highly limited—folders are locked behind a paid
   Open your native X Bookmarks page and click "Sync Bookmarks" in your sidebar. XMarks will automatically scroll through and index all your existing bookmarks in minutes, skipping duplicates. You can pause and resume the sync at any time.
 * 🔒 **Local-First & Privacy-First**
   All your bookmark data, tags, categories, and notes are stored strictly inside your browser's `IndexedDB` database. There are no external databases, no cloud accounts, and no data leaks. Your data remains yours.
+* 👤 **One Library Per Browser Profile**
+  Bookmarks are not saved on a per-X-account basis. Everything you save lives in a single library for the whole browser profile, so if you log into several X accounts in the same Chrome profile their bookmarks are merged. XMarks cannot hide one person's library from another person using the same browser profile; use separate Chrome profiles to keep them apart.
 * 🤖 **Local AI Auto-Categorizer**
   Uses a semantic embedding model (~45MB, `all-MiniLM-L6-v2`) that runs locally via `Transformers.js` in the dashboard page. When enabled, it generates embeddings for each bookmark and cosine-matches them against your category names to auto-categorize your bookmarks. The model is downloaded once from Hugging Face the first time you turn the feature on and cached in your browser; after that it works offline, and your bookmark text never leaves your device.
 * 🎨 **Clean 3-Column Dashboard**

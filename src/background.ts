@@ -1,6 +1,13 @@
-import { db, type Bookmark } from './db';
-import { bookmarkRepository } from './bookmarks/repository';
+import { getProfileDb, type Bookmark } from './db';
+import { loadProfilesState } from './db/profiles';
+import { createBookmarkRepository } from './bookmarks/repository';
 import { MSG, type ActionMessage } from './messages';
+
+// Saves from X go to the saving profile, resolved per call because the user can switch it at any time.
+async function savingRepository() {
+  const { savingProfileId } = await loadProfilesState();
+  return createBookmarkRepository(() => getProfileDb(savingProfileId));
+}
 
 chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendResponse) => {
   if (message.type === MSG.SAVE_TWEET) {
@@ -11,14 +18,14 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
   }
 
   if (message.type === MSG.DELETE_BOOKMARK) {
-    bookmarkRepository.delete(message.payload.id)
+    savingRepository().then(repo => repo.delete(message.payload.id))
       .then(() => sendResponse({ success: true }))
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
   
   if (message.type === MSG.CHECK_TWEET_SAVED) {
-    bookmarkRepository.get(message.payload.id)
+    savingRepository().then(repo => repo.get(message.payload.id))
       .then(bookmark => sendResponse({ saved: !!bookmark }))
       .catch(err => sendResponse({ saved: false, error: err.message }));
     return true;
@@ -32,7 +39,7 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
   }
 
   if (message.type === MSG.GET_CATEGORIES) {
-    bookmarkRepository.listCategories()
+    savingRepository().then(repo => repo.listCategories())
       .then(categories => sendResponse(categories))
       .catch(() => sendResponse([]));
     return true;
@@ -45,7 +52,7 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
       createdAt: new Date(),
       sortOrder: Date.now()
     };
-    bookmarkRepository.createCategory(newCat)
+    savingRepository().then(repo => repo.createCategory(newCat))
       .then(() => sendResponse({ success: true, category: newCat }))
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
@@ -62,7 +69,7 @@ async function handleSaveTweet(payload: Partial<Bookmark>) {
   if (!payload.id) return { success: false, error: 'No tweet ID provided' };
   
   try {
-    const result = await bookmarkRepository.save({ ...payload, id: payload.id });
+    const result = await (await savingRepository()).save({ ...payload, id: payload.id });
     if (!result.created) {
       return { success: true, message: 'Updated existing bookmark', id: payload.id };
     }
@@ -81,7 +88,7 @@ async function handleSaveTweet(payload: Partial<Bookmark>) {
 
 async function handleImportBatch(payload: Partial<Bookmark>[]) {
   try {
-    const result = await bookmarkRepository.importBatch(
+    const result = await (await savingRepository()).importBatch(
       payload.filter((bookmark): bookmark is Partial<Bookmark> & Pick<Bookmark, 'id'> => Boolean(bookmark.id))
     );
 
