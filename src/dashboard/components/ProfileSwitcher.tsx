@@ -5,7 +5,7 @@ import { useProfiles } from '../hooks/useProfiles';
 import { Modal } from './Modal';
 
 export const ProfileSwitcher: React.FC = () => {
-  const { profiles, savingProfileId, viewingProfileId, create, rename, view, saveTo, remove } = useProfiles();
+  const { mode, setMode, profiles, savingProfileId, viewingProfileId, create, rename, view, saveTo, remove } = useProfiles();
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
@@ -79,11 +79,12 @@ export const ProfileSwitcher: React.FC = () => {
                 ) : (
                   <button type="button" className="profile-row-name" onClick={() => view(p.id)}>
                     {p.label}
+                    {p.handle && p.label !== `@${p.handle}` && <span className="profile-handle">@{p.handle}</span>}
                     {p.id === savingProfileId && <span className="profile-badge">saving</span>}
                   </button>
                 )}
                 <span className="profile-row-actions">
-                  {p.id !== savingProfileId && (
+                  {mode === 'manual' && p.id !== savingProfileId && (
                     <button type="button" onClick={() => saveTo(p.id)} title="Save new bookmarks from X here">Save here</button>
                   )}
                   <button type="button" onClick={() => { setRenamingId(p.id); setRenameValue(p.label); }}>Rename</button>
@@ -111,6 +112,21 @@ export const ProfileSwitcher: React.FC = () => {
           ) : (
             <button type="button" className="profile-add-link" onClick={() => setAdding(true)}>+ Add a separate library</button>
           )}
+
+          <label className="profile-mode">
+            <input
+              type="checkbox"
+              checked={mode === 'auto'}
+              onChange={e => setMode(e.target.checked ? 'auto' : 'manual')}
+            />
+            <span>
+              Follow the X account I'm logged into
+              <small>
+                Each account gets its own library, created the first time XMarks sees it. Your existing library
+                is linked to the first account it detects. Off: new saves go to the library marked "saving".
+              </small>
+            </span>
+          </label>
 
           <p className="profile-note">
             Libraries are stored in this browser profile. Anyone who can open it can open every library.

@@ -1,4 +1,5 @@
 import { MSG } from '../messages';
+import { sendToBackground } from './account';
 import { showToast } from './toast';
 import { currentAccentColor } from './settings';
 import { markButtonAsSaved } from './inject';
@@ -26,7 +27,7 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
     container.style.left = left + 'px';
   };
 
-  chrome.runtime.sendMessage({ type: MSG.GET_CATEGORIES }, (categories: any[]) => {
+  sendToBackground({ type: MSG.GET_CATEGORIES }, (categories: any[]) => {
     const safeCats = categories || [];
 
     container.innerHTML = `
@@ -68,7 +69,7 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
       e.stopPropagation();
       const name = newCatInput.value.trim();
       if (!name) return;
-      chrome.runtime.sendMessage({ type: MSG.CREATE_CATEGORY, payload: { name } }, (res) => {
+      sendToBackground({ type: MSG.CREATE_CATEGORY, payload: { name } }, (res) => {
         if (res && res.success) {
           const item = document.createElement('div');
           item.className = 'twtbk-cat-item';
@@ -95,7 +96,7 @@ export function showCategoryPopover(data: any, anchorEl: HTMLElement) {
       const note = noteInput ? noteInput.value : '';
       data.note = note;
       data.categoryIds = catId ? [catId] : [];
-      chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (response) => {
+      sendToBackground({ type: MSG.SAVE_TWEET, payload: data }, (response) => {
         if (!response?.success) {
           showToast('Failed to save: ' + (response?.error || 'Unknown error'), false);
         } else {

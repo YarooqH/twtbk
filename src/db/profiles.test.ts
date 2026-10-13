@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_PROFILE_ID, dbNameForProfile } from './index';
 import {
   createProfile, defaultProfilesState, normalizeProfilesState, removeProfile,
-  renameProfile, setSavingProfile, setViewingProfile,
+  normalizeHandle, renameProfile, routeToAccount, setProfileMode, setSavingProfile, setViewingProfile,
 } from './profiles';
 
 describe('dbNameForProfile', () => {
@@ -77,5 +77,46 @@ describe('profile transitions', () => {
 
   it('renames a profile', () => {
     expect(renameProfile(createProfile(base, 'Work', 'work'), 'work', 'Alt').profiles[1].label).toBe('Alt');
+  });
+});
+
+describe('account routing (auto mode)', () => {
+  const auto = setProfileMode(defaultProfilesState(), 'auto');
+
+  it('does nothing in manual mode or without a valid handle', () => {
+    const manual = defaultProfilesState();
+    expect(routeToAccount(manual, 'alice')).toBe(manual);
+    expect(routeToAccount(auto, undefined)).toBe(auto);
+    expect(routeToAccount(auto, 'not a handle!')).toBe(auto);
+  });
+
+  it('normalizes handles', () => {
+    expect(normalizeHandle('@Alice_1')).toBe('alice_1');
+    expect(normalizeHandle('way_too_long_for_a_handle')).toBeNull();
+  });
+
+  it('lets the first handle claim the unlinked default library', () => {
+    const next = routeToAccount(auto, 'Alice');
+    expect(next.profiles).toHaveLength(1);
+    expect(next.profiles[0].handle).toBe('alice');
+    expect(next.savingProfileId).toBe(DEFAULT_PROFILE_ID);
+  });
+
+  it('gives each further account its own library and reuses it afterwards', () => {
+    const alice = routeToAccount(auto, 'alice');
+    const bob = routeToAccount(alice, 'bob');
+    expect(bob.profiles.map(p => p.id)).toEqual([DEFAULT_PROFILE_ID, 'acct_bob']);
+    expect(bob.savingProfileId).toBe('acct_bob');
+    const back = routeToAccount(bob, '@Alice');
+    expect(back.profiles).toHaveLength(2);
+    expect(back.savingProfileId).toBe(DEFAULT_PROFILE_ID);
+    expect(routeToAccount(back, 'alice')).toBe(back);
+  });
+
+  it('moves the dashboard along only while it was following saves', () => {
+    const alice = routeToAccount(auto, 'alice');
+    expect(routeToAccount(alice, 'bob').viewingProfileId).toBe('acct_bob');
+    const pinned = setViewingProfile(routeToAccount(alice, 'bob'), DEFAULT_PROFILE_ID);
+    expect(routeToAccount(pinned, 'alice').viewingProfileId).toBe(DEFAULT_PROFILE_ID);
   });
 });

@@ -1,5 +1,6 @@
 import Dexie from 'dexie';
 import type { Table } from 'dexie';
+import { DEFAULT_PROFILE_ID } from './profiles';
 
 export type MediaItem = {
   type: "image" | "video" | "gif";
@@ -62,7 +63,7 @@ export type Category = {
   syncStatus?: 'pending' | 'synced' | 'conflict';
 };
 
-export const DEFAULT_PROFILE_ID = 'default';
+export { DEFAULT_PROFILE_ID };
 
 // The default profile keeps the original database name so existing libraries are untouched.
 export const dbNameForProfile = (profileId: string) =>

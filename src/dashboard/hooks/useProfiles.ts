@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { deleteProfileDb } from '../../db';
 import {
   createProfile, defaultProfilesState, loadProfilesState, PROFILES_KEY, removeProfile,
-  renameProfile, saveProfilesState, setSavingProfile, setViewingProfile, type ProfilesState,
+  renameProfile, saveProfilesState, setProfileMode, setSavingProfile, setViewingProfile, type ProfileMode, type ProfilesState,
 } from '../../db/profiles';
 
 export function useProfiles() {
@@ -34,6 +34,7 @@ export function useProfiles() {
     ...state,
     create: (label: string) => update(s => createProfile(s, label)),
     rename: (id: string, label: string) => update(s => renameProfile(s, id, label)),
+    setMode: (mode: ProfileMode) => update(s => setProfileMode(s, mode)),
     view: (id: string) => update(s => setViewingProfile(s, id)),
     saveTo: (id: string) => update(s => setSavingProfile(s, id)),
     // Pointers move off the profile first so nothing is reading it when its database is deleted.

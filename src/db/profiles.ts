@@ -1,4 +1,5 @@
-import { DEFAULT_PROFILE_ID } from './index';
+// Must stay free of Dexie imports: the content script pulls this file in for handle matching.
+export const DEFAULT_PROFILE_ID = 'default';
 
 export type Profile = {
   id: string;
@@ -6,7 +7,12 @@ export type Profile = {
   handle?: string;
 };
 
+// manual: saves go to the chosen saving profile (the default; with one profile it is a single library).
+// auto: saves follow the X account detected in the page, one profile per account.
+export type ProfileMode = 'manual' | 'auto';
+
 export type ProfilesState = {
+  mode: ProfileMode;
   profiles: Profile[];
   // Where new saves from X go.
   savingProfileId: string;
@@ -17,6 +23,7 @@ export type ProfilesState = {
 export const PROFILES_KEY = 'xmarks_profiles';
 
 export const defaultProfilesState = (): ProfilesState => ({
+  mode: 'manual',
   profiles: [{ id: DEFAULT_PROFILE_ID, label: 'Default' }],
   savingProfileId: DEFAULT_PROFILE_ID,
   viewingProfileId: DEFAULT_PROFILE_ID,
@@ -34,6 +41,7 @@ export function normalizeProfilesState(raw: unknown): ProfilesState {
 
   const has = (id: unknown) => typeof id === 'string' && profiles.some(p => p.id === id);
   return {
+    mode: input.mode === 'auto' ? 'auto' : 'manual',
     profiles,
     savingProfileId: has(input.savingProfileId) ? input.savingProfileId! : DEFAULT_PROFILE_ID,
     viewingProfileId: has(input.viewingProfileId) ? input.viewingProfileId! : DEFAULT_PROFILE_ID,
@@ -64,6 +72,7 @@ export function createProfile(state: ProfilesState, label: string, id = 'p_' + D
   const name = cleanLabel(label);
   if (!name || state.profiles.some(p => p.id === id)) return state;
   return {
+    ...state,
     profiles: [...state.profiles, { id, label: name }],
     savingProfileId: state.savingProfileId,
     viewingProfileId: id,
@@ -80,6 +89,7 @@ export function removeProfile(state: ProfilesState, id: string): ProfilesState {
   if (id === DEFAULT_PROFILE_ID) return state;
   const pick = (current: string) => (current === id ? DEFAULT_PROFILE_ID : current);
   return {
+    ...state,
     profiles: state.profiles.filter(p => p.id !== id),
     savingProfileId: pick(state.savingProfileId),
     viewingProfileId: pick(state.viewingProfileId),
@@ -96,4 +106,39 @@ export function setSavingProfile(state: ProfilesState, id: string): ProfilesStat
   if (!state.profiles.some(p => p.id === id)) return state;
   const following = state.viewingProfileId === state.savingProfileId;
   return { ...state, savingProfileId: id, viewingProfileId: following ? id : state.viewingProfileId };
+}
+
+export const setProfileMode = (state: ProfilesState, mode: ProfileMode): ProfilesState =>
+  state.mode === mode ? state : { ...state, mode };
+
+const HANDLE_RE = /^[A-Za-z0-9_]{1,15}$/;
+
+export const normalizeHandle = (handle: unknown): string | null =>
+  typeof handle === 'string' && HANDLE_RE.test(handle.replace(/^@/, '')) ? handle.replace(/^@/, '').toLowerCase() : null;
+
+/**
+ * Auto mode: points saving at the profile that owns this X handle.
+ * - A profile already linked to the handle is used.
+ * - The first handle ever seen claims an unlinked Default profile, so an existing library stays usable.
+ * - Any other new handle gets its own profile.
+ * Returns the same object when nothing changes.
+ */
+export function routeToAccount(state: ProfilesState, rawHandle: unknown): ProfilesState {
+  const handle = normalizeHandle(rawHandle);
+  if (state.mode !== 'auto' || !handle) return state;
+
+  let next = state;
+  let target = state.profiles.find(p => p.handle === handle);
+  if (!target) {
+    const fallback = state.profiles.find(p => p.id === DEFAULT_PROFILE_ID)!;
+    if (!fallback.handle) {
+      target = { ...fallback, handle };
+      next = { ...next, profiles: next.profiles.map(p => (p.id === fallback.id ? target! : p)) };
+    } else {
+      target = { id: `acct_${handle}`, label: `@${handle}`, handle };
+      next = { ...next, profiles: [...next.profiles, target] };
+    }
+  }
+  if (next === state && state.savingProfileId === target.id) return state;
+  return setSavingProfile(next, target.id);
 }

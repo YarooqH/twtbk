@@ -28,11 +28,15 @@ export type ImportBatchPayload     = Partial<Bookmark>[];
 export type CreateCategoryPayload  = { name: string };
 
 // ── Discriminated union (background handler's single source of truth) ──────
-export type ActionMessage =
+export type ActionMessage = (
   | { type: typeof MSG.SAVE_TWEET;        payload: SaveTweetPayload }
   | { type: typeof MSG.DELETE_BOOKMARK;    payload: DeleteBookmarkPayload }
   | { type: typeof MSG.CHECK_TWEET_SAVED; payload: CheckTweetSavedPayload }
   | { type: typeof MSG.IMPORT_BATCH;      payload: ImportBatchPayload }
   | { type: typeof MSG.GET_CATEGORIES }
   | { type: typeof MSG.CREATE_CATEGORY;   payload: CreateCategoryPayload }
-  | { type: typeof MSG.OPEN_DASHBOARD };
+  | { type: typeof MSG.OPEN_DASHBOARD }
+) & {
+  // X handle the content script detected; the background uses it to pick a library in auto mode.
+  accountHandle?: string;
+};

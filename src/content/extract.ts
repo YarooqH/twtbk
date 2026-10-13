@@ -371,7 +371,7 @@ export function extractTweetData(tweetElement: Element) {
       quotedTweet,
       articles: articles.length > 0 ? articles : undefined,
       createdAt,
-      source: 'extension'
+      source: 'extension' as const
     };
   } catch (error) {
     console.error("Failed to extract tweet data", error);

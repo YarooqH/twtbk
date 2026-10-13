@@ -1,4 +1,5 @@
 import { MSG } from '../messages';
+import { sendToBackground } from './account';
 import { extractTweetData } from './extract';
 import { showToast } from './toast';
 import { XMARKS_MARK_PATH, XMARKS_MARK_VIEWBOX } from '../shared/logo';
@@ -411,7 +412,7 @@ const runImportLoop = async () => {
     return;
   }
 
-  chrome.runtime.sendMessage({ type: MSG.IMPORT_BATCH, payload: batch }, (res: any) => {
+  sendToBackground({ type: MSG.IMPORT_BATCH, payload: batch }, (res: any) => {
     if (res && res.success === false) {
       isImporting = false;
       showToast("Import Error: " + res.error);

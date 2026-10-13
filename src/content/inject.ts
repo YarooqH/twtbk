@@ -1,4 +1,5 @@
 import { MSG } from '../messages';
+import { sendToBackground } from './account';
 import {
   settingSaveMode,
   settingInjectedPosition,
@@ -456,7 +457,7 @@ export function injectSaveButtons() {
 
       if (btnContainer.dataset.saved === 'true') {
         // Toggle OFF: directly remove bookmark
-        chrome.runtime.sendMessage({ type: MSG.DELETE_BOOKMARK, payload: { id: tweetId } }, (res) => {
+        sendToBackground({ type: MSG.DELETE_BOOKMARK, payload: { id: tweetId } }, (res) => {
           if (chrome.runtime.lastError || !res?.success) {
             showToast("Failed to remove bookmark", false);
             return;
@@ -473,7 +474,7 @@ export function injectSaveButtons() {
     // Check if this tweet is already saved in XMarks DB (C1)
     if (tweetId && chrome.runtime?.id) {
       try {
-        chrome.runtime.sendMessage({ type: MSG.CHECK_TWEET_SAVED, payload: { id: tweetId } }, (res) => {
+        sendToBackground({ type: MSG.CHECK_TWEET_SAVED, payload: { id: tweetId } }, (res) => {
           if (chrome.runtime.lastError) return;
           if (res?.saved) {
             markButtonAsSaved(btnContainer);
