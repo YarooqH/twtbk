@@ -17,7 +17,7 @@ Everything to paste into the [Developer Dashboard](https://chrome.google.com/web
 **Description** (plain text; the store doesn't render Markdown):
 
 ```text
-You said you'd read it later. Now you can find it.
+Save it on X. Find it in XMarks.
 
 XMarks turns your X (Twitter) bookmarks into a library you can search, sort into categories and add notes to. It all stays in your browser: no account, no server, no tracking.
 
@@ -31,12 +31,12 @@ FIND ANYTHING
 • Search post text, quoted posts, authors, tags and your notes
 • Color-coded categories, tags and private notes
 • Tick several posts to move, export or delete them in one go
-• Keyboard shortcuts: / to search, E to edit a note, C for a new category, ? for the full list
+• Keyboard shortcuts: / to search, E to edit the note on the post under your pointer, C for a new category, ? for the full list
 • Four card densities, light and dark themes, and your choice of accent color
 
 KEEP IT
-• Saved posts stay readable even if the author deletes them or goes private (images still load from X)
-• Export your whole library, or just selected posts, to a JSON file and import it in another browser
+• Saved posts stay readable even if the author deletes them or goes private. Images load from X, so those can disappear
+• Export your whole library, or just selected posts, to a JSON file with categories, tags and notes, and import it in another browser
 
 OPTIONAL AUTO-CATEGORIZE
 Turn it on and XMarks sorts posts into your categories with a small AI model that runs in your browser. The model is downloaded once from Hugging Face when you switch it on; your bookmarks are never sent anywhere. It's off until you turn it on.
