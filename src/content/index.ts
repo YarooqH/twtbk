@@ -1,4 +1,5 @@
 import { MSG } from '../messages';
+import { sendToBackground, startAccountWatcher } from './account';
 import './styles';
 import './navigation';
 import { injectSaveButtons, resolveInjectMode } from './inject';
@@ -6,6 +7,8 @@ import { extractTweetData } from './extract';
 import { showCategoryPopover } from './popover';
 import { showToast } from './toast';
 import { SELECTOR_CONFIG } from './xDomAdapter';
+
+startAccountWatcher();
 
 // Re-inject buttons when relevant settings change
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -54,7 +57,7 @@ document.addEventListener('click', (e) => {
         if (bookmarkBtn.getAttribute('data-testid') === 'bookmark') {
           chrome.storage.sync.get(['alsoSaveNativeBookmarks'], (result) => {
             if (result.alsoSaveNativeBookmarks) {
-              chrome.runtime.sendMessage({ type: MSG.SAVE_TWEET, payload: data }, (res) => {
+              sendToBackground({ type: MSG.SAVE_TWEET, payload: data }, (res) => {
                 if (res && res.success) {
                   showToast("Saved to XMarks!");
                 }

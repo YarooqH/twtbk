@@ -4,7 +4,7 @@ import { issuesUrl, repoUrl } from '../site';
 
 const title = 'Privacy policy · XMarks';
 const description = 'What the XMarks extension stores, where it keeps it, and the few times it touches the network.';
-const updated = '12 October 2026';
+const updated = '20 October 2026';
 ---
 
 <Base title={title} description={description} path="privacy/">
@@ -36,6 +36,11 @@ const updated = '12 October 2026';
         settings between your browsers through your Google account, as it does for any extension. Your bookmarks and notes are
         not synced.
       </p>
+      <p>
+        If you add more than one library, their names and which one new saves go to are kept in extension storage on this
+        device only. With “Follow the X account I’m logged into” turned on, each library also stores the handle of the X
+        account it belongs to.
+      </p>
       <p>XMarks also remembers which onboarding tips you have seen, on this device only.</p>
     </section>
 
@@ -64,7 +69,8 @@ const updated = '12 October 2026';
       <p>
         The extension only runs on x.com and twitter.com. There it adds the save button to posts, and reads a post’s content
         from the page when you save it. When you click Sync Bookmarks, it scrolls your Bookmarks list on X and saves each post
-        it finds. It does not read your messages, change your account, or post anything for you.
+        it finds. It also reads the handle of the account you are logged into from X’s sidebar, so a save can go to that
+        account’s library. It does not read your messages, change your account, or post anything for you.
       </p>
     </section>
 

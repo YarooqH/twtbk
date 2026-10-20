@@ -7,6 +7,7 @@ import { getContrastTextColor } from '../../shared/colors';
 import { AllIcon, XMarksMark } from '../icons';
 import { AICard } from './AICard';
 import { InfoTooltip } from './InfoTooltip';
+import { ProfileSwitcher } from './ProfileSwitcher';
 
 interface SidebarProps {
   bookmarks: any[] | undefined;
@@ -151,6 +152,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </AnimatePresence>,
         document.body
       )}
+
+      <ProfileSwitcher />
 
       <div className="sidebar-section-label" style={{ display: 'flex', alignItems: 'center' }}>
         Library

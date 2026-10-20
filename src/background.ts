@@ -1,38 +1,48 @@
-import { db, type Bookmark } from './db';
-import { bookmarkRepository } from './bookmarks/repository';
+import { getProfileDb, type Bookmark } from './db';
+import { loadProfilesState, routeToAccount, saveProfilesState } from './db/profiles';
+import { createBookmarkRepository } from './bookmarks/repository';
 import { MSG, type ActionMessage } from './messages';
+
+// Saves from X go to the saving profile. In auto mode that is the library of the X account the page
+// reported, created on first sight. Resolved per call because the user can switch it at any time.
+async function savingRepository(accountHandle?: string) {
+  const state = await loadProfilesState();
+  const routed = routeToAccount(state, accountHandle);
+  if (routed !== state) await saveProfilesState(routed);
+  return createBookmarkRepository(() => getProfileDb(routed.savingProfileId));
+}
 
 chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendResponse) => {
   if (message.type === MSG.SAVE_TWEET) {
-    handleSaveTweet(message.payload)
+    handleSaveTweet(message.payload, message.accountHandle)
       .then(sendResponse)
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true; // Keep channel open for async response
   }
 
   if (message.type === MSG.DELETE_BOOKMARK) {
-    bookmarkRepository.delete(message.payload.id)
+    savingRepository(message.accountHandle).then(repo => repo.delete(message.payload.id))
       .then(() => sendResponse({ success: true }))
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
   
   if (message.type === MSG.CHECK_TWEET_SAVED) {
-    bookmarkRepository.get(message.payload.id)
+    savingRepository(message.accountHandle).then(repo => repo.get(message.payload.id))
       .then(bookmark => sendResponse({ saved: !!bookmark }))
       .catch(err => sendResponse({ saved: false, error: err.message }));
     return true;
   }
 
   if (message.type === MSG.IMPORT_BATCH) {
-    handleImportBatch(message.payload)
+    handleImportBatch(message.payload, message.accountHandle)
       .then(sendResponse)
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
 
   if (message.type === MSG.GET_CATEGORIES) {
-    bookmarkRepository.listCategories()
+    savingRepository(message.accountHandle).then(repo => repo.listCategories())
       .then(categories => sendResponse(categories))
       .catch(() => sendResponse([]));
     return true;
@@ -45,7 +55,7 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
       createdAt: new Date(),
       sortOrder: Date.now()
     };
-    bookmarkRepository.createCategory(newCat)
+    savingRepository(message.accountHandle).then(repo => repo.createCategory(newCat))
       .then(() => sendResponse({ success: true, category: newCat }))
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
@@ -58,11 +68,11 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
   }
 });
 
-async function handleSaveTweet(payload: Partial<Bookmark>) {
+async function handleSaveTweet(payload: Partial<Bookmark>, accountHandle?: string) {
   if (!payload.id) return { success: false, error: 'No tweet ID provided' };
   
   try {
-    const result = await bookmarkRepository.save({ ...payload, id: payload.id });
+    const result = await (await savingRepository(accountHandle)).save({ ...payload, id: payload.id });
     if (!result.created) {
       return { success: true, message: 'Updated existing bookmark', id: payload.id };
     }
@@ -79,9 +89,9 @@ async function handleSaveTweet(payload: Partial<Bookmark>) {
   }
 }
 
-async function handleImportBatch(payload: Partial<Bookmark>[]) {
+async function handleImportBatch(payload: Partial<Bookmark>[], accountHandle?: string) {
   try {
-    const result = await bookmarkRepository.importBatch(
+    const result = await (await savingRepository(accountHandle)).importBatch(
       payload.filter((bookmark): bookmark is Partial<Bookmark> & Pick<Bookmark, 'id'> => Boolean(bookmark.id))
     );
 

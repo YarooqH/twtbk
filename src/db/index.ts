@@ -1,5 +1,6 @@
 import Dexie from 'dexie';
 import type { Table } from 'dexie';
+import { DEFAULT_PROFILE_ID } from './profiles';
 
 export type MediaItem = {
   type: "image" | "video" | "gif";
@@ -62,12 +63,18 @@ export type Category = {
   syncStatus?: 'pending' | 'synced' | 'conflict';
 };
 
+export { DEFAULT_PROFILE_ID };
+
+// The default profile keeps the original database name so existing libraries are untouched.
+export const dbNameForProfile = (profileId: string) =>
+  profileId === DEFAULT_PROFILE_ID ? 'TwitterBookmarkDB' : `XMarks_${profileId}`;
+
 export class TwitterBookmarkDatabase extends Dexie {
   bookmarks!: Table<Bookmark, string>;
   categories!: Table<Category, string>;
 
-  constructor() {
-    super('TwitterBookmarkDB');
+  constructor(name = dbNameForProfile(DEFAULT_PROFILE_ID)) {
+    super(name);
     this.version(2).stores({
       bookmarks: 'id, savedAt, *categoryIds, *tags, source, syncStatus',
       categories: 'id, sortOrder, syncStatus'
@@ -75,4 +82,31 @@ export class TwitterBookmarkDatabase extends Dexie {
   }
 }
 
-export const db = new TwitterBookmarkDatabase();
+const profileDbs = new Map<string, TwitterBookmarkDatabase>();
+
+export function getProfileDb(profileId: string): TwitterBookmarkDatabase {
+  let instance = profileDbs.get(profileId);
+  if (!instance) {
+    instance = new TwitterBookmarkDatabase(dbNameForProfile(profileId));
+    profileDbs.set(profileId, instance);
+  }
+  return instance;
+}
+
+/**
+ * The database the current page (dashboard/popup) is viewing. Reassigned by setActiveProfile;
+ * ES live bindings mean every importer sees the new instance. The service worker does not use this:
+ * it resolves the saving profile per message through getProfileDb.
+ */
+export let db = getProfileDb(DEFAULT_PROFILE_ID);
+
+export function setActiveProfile(profileId: string) {
+  db = getProfileDb(profileId);
+}
+
+// Closes the profile's connection and removes its IndexedDB. Never call for the profile being viewed.
+export async function deleteProfileDb(profileId: string) {
+  const instance = profileDbs.get(profileId) ?? new TwitterBookmarkDatabase(dbNameForProfile(profileId));
+  profileDbs.delete(profileId);
+  await instance.delete();
+}
