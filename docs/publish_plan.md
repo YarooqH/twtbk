@@ -80,7 +80,7 @@ Fill out the data usage form accurately:
 
 ### Privacy Policy URL
 You must provide a link to a hosted privacy policy.
-*   **URL**: `https://yarooqh.github.io/twtbk/privacy/` (source: `landing/src/pages/privacy.astro`). It goes live once the landing site is deployed to GitHub Pages, so deploy before submitting.
+*   **URL**: `https://yarooqh.github.io/xmarks/privacy/` (source: `landing/src/pages/privacy.astro`). It goes live once the landing site is deployed to GitHub Pages, so deploy before submitting.
 
 ---
 
