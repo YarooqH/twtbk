@@ -133,7 +133,9 @@ Then copy the ones you want into `docs/images/`.
 
 ## Contributing
 
-Bug reports and pull requests are welcome. For anything bigger than a small fix, please open an issue first so we can agree on the approach. Run `npm test` and `npm run lint` before sending a PR.
+Bug reports and pull requests are welcome. For anything bigger than a small fix, please open an issue first so we can agree on the approach. [CONTRIBUTING.md](CONTRIBUTING.md) covers setup, tests and commit style, and everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
+
+Found a security problem? Please report it privately, as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
