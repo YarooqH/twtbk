@@ -42,7 +42,7 @@ OPTIONAL AUTO-CATEGORIZE
 Turn it on and XMarks sorts posts into your categories with a small AI model that runs in your browser. The model is downloaded once from Hugging Face when you switch it on; your bookmarks are never sent anywhere. It's off until you turn it on.
 
 PRIVATE BY DESIGN
-Your library lives in your browser's own storage. There is no XMarks account and no XMarks server, so we never see your bookmarks. Free and open source (MIT): https://github.com/YarooqH/twtbk
+Your library lives in your browser's own storage. There is no XMarks account and no XMarks server, so we never see your bookmarks. Free and open source (MIT): https://github.com/YarooqH/xmarks
 
 XMarks is not affiliated with X Corp.
 ```
@@ -66,8 +66,8 @@ XMarks is not affiliated with X Corp.
 
 Regenerate the screenshots with `npm run capture` and the promo tiles with `npm run marketing` (both in `store-assets/`).
 
-**Homepage URL:** `https://yarooqh.github.io/twtbk/`
-**Support URL:** `https://github.com/YarooqH/twtbk/issues`
+**Homepage URL:** `https://yarooqh.github.io/xmarks/`
+**Support URL:** `https://github.com/YarooqH/xmarks/issues`
 
 ## Privacy practices tab
 
@@ -106,7 +106,7 @@ All JavaScript and WebAssembly ships in the package, including the ONNX runtime 
 - I do not use or transfer user data for purposes that are unrelated to my item's single purpose
 - I do not use or transfer user data to determine creditworthiness or for lending purposes
 
-**Privacy policy URL:** `https://yarooqh.github.io/twtbk/privacy/` (deploy the landing site before submitting, so this page is live).
+**Privacy policy URL:** `https://yarooqh.github.io/xmarks/privacy/` (deploy the landing site before submitting, so this page is live).
 
 ## Distribution tab
 

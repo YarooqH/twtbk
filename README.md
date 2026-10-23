@@ -49,7 +49,7 @@ X's native bookmark feature is highly limited—folders are locked behind a paid
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd twtbk
+   cd xmarks
    ```
 
 2. **Install dependencies:**
