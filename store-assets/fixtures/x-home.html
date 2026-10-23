@@ -1,0 +1,154 @@
+<!doctype html>
+<!--
+  A stand-in for x.com's home timeline, used only for store screenshots.
+  capture.mjs serves it at https://x.com/home so the real XMarks content script
+  injects into it. It reproduces just the DOM hooks the extension relies on
+  (data-testid="tweet", User-Name, tweetText, a /status/<id> link, and a
+  role="group" action bar with reply/retweet/like/analytics/bookmark/share),
+  styled to resemble X's dark theme. Accounts and posts are fictional; icons
+  are generic line icons, not X's artwork; no X logo is shown.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home</title>
+<style>
+  :root { --bg:#000; --text:#e7e9ea; --muted:#71767b; --border:#2f3336; --hover:#16181c; --blue:#1d9bf0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.3125 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+  a { color: inherit; text-decoration: none; }
+  .app { display: flex; justify-content: center; min-height: 100vh; }
+
+  header[role="banner"] { width: 275px; display: flex; justify-content: flex-end; }
+  .nav-col { width: 259px; padding: 0 12px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+  .brand-space { height: 52px; }
+  nav[role="navigation"] { display: flex; flex-direction: column; }
+  .nav-item { display: flex; align-items: center; gap: 20px; padding: 12px; border-radius: 9999px; font-size: 20px; width: fit-content; }
+  .nav-item svg { width: 26px; height: 26px; }
+  .nav-item.active { font-weight: 700; }
+  .post-wrap { margin-top: 16px; width: 90%; }
+  .post-btn { width: 100%; height: 52px; border-radius: 9999px; background: var(--text); color: #0f1419; font-weight: 700; font-size: 17px; display: flex; align-items: center; justify-content: center; }
+
+  main[role="main"] { display: flex; gap: 30px; }
+  .timeline { width: 600px; border-left: 1px solid var(--border); border-right: 1px solid var(--border); min-height: 100vh; }
+  .tabs { position: sticky; top: 0; z-index: 2; display: flex; height: 53px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.65); backdrop-filter: blur(12px); }
+  .tab { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); font-weight: 500; position: relative; }
+  .tab.active { color: var(--text); font-weight: 700; }
+  .tab.no-underline::after { display: none; }
+  .tab.active::after { content: ''; position: absolute; bottom: 0; width: 56px; height: 4px; border-radius: 9999px; background: var(--blue); }
+
+  article[data-testid="tweet"] { display: flex; gap: 8px; padding: 12px 16px 4px; border-bottom: 1px solid var(--border); }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: block; object-fit: cover; }
+  .media { margin-top: 12px; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; position: relative; }
+  .media img, .media video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+  .play { position: absolute; left: 50%; top: 50%; width: 68px; height: 68px; margin: -34px 0 0 -34px; border-radius: 50%; background: var(--blue); border: 4px solid #fff; display: flex; align-items: center; justify-content: center; }
+  .play::after { content: ''; margin-left: 6px; border-left: 22px solid #fff; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
+  .duration { position: absolute; left: 12px; bottom: 12px; background: rgba(0,0,0,0.77); color: #fff; font-size: 13px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+  .quote .qav { width: 20px; height: 20px; border-radius: 50%; display: block; }
+  .quote .qtext { margin-top: 4px; }
+  .quote .media { margin-top: 10px; border-radius: 12px; }
+  .verified { width: 18px; height: 18px; color: var(--blue); align-self: center; }
+  .content { flex: 1; min-width: 0; }
+  [data-testid="User-Name"] { display: flex; gap: 4px; align-items: baseline; }
+  .name { font-weight: 700; }
+  .meta { color: var(--muted); }
+  [data-testid="tweetText"] { margin-top: 2px; white-space: pre-line; }
+  .quote { margin-top: 12px; border: 1px solid var(--border); border-radius: 16px; padding: 12px; }
+  .quote .qhead { display: flex; gap: 4px; align-items: center; font-size: 15px; }
+  .quote .qav { width: 20px; height: 20px; border-radius: 50%; }
+
+  [role="group"] { display: flex; justify-content: space-between; margin-top: 12px; max-width: 425px; height: 32px; }
+  [role="group"] > div { display: flex; align-items: center; }
+  [role="group"] > div:last-child { flex: none; }
+  .act { display: flex; align-items: center; background: none; border: 0; padding: 0; color: var(--muted); cursor: pointer; font: inherit; font-size: 13px; }
+  .act .circle { width: 34.75px; height: 34.75px; margin: -8px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; }
+  .act svg { width: 18.75px; height: 18.75px; }
+  .act span { padding: 0 12px 0 12px; }
+
+  .side { width: 350px; padding-top: 6px; position: sticky; top: 0; align-self: flex-start; }
+  .search { height: 42px; border-radius: 9999px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; padding: 0 16px; color: var(--muted); }
+  .box { margin-top: 16px; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .box h2 { margin: 0; padding: 12px 16px; font-size: 20px; font-weight: 800; }
+  .trend { padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+  .trend small { color: var(--muted); font-size: 13px; }
+  .trend strong { font-size: 15px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-reply" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-5 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></symbol>
+    <symbol id="i-repost" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M17 3l3 3-3 3M4 11V9a3 3 0 0 1 3-3h13M7 21l-3-3 3-3M20 13v2a3 3 0 0 1-3 3H4"/></symbol>
+    <symbol id="i-like" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+    <symbol id="i-views" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" d="M5 20V11M10 20V5M15 20v-7M20 20v-4"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" d="M6 3h12v18l-6-4.5L6 21z"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 3 10v11h6v-6h6v6h6V10z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></g></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" d="M6 17V11a6 6 0 1 1 12 0v6l2 2H4zM10 21h4"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></g></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header role="banner">
+    <div class="nav-col">
+      <div class="brand-space"></div>
+      <nav role="navigation" aria-label="Primary">
+        <a class="nav-item active" href="/home"><svg><use href="#i-home"/></svg>Home</a>
+        <a class="nav-item" href="/explore"><svg><use href="#i-search"/></svg>Explore</a>
+        <a class="nav-item" href="/notifications"><svg><use href="#i-bell"/></svg>Notifications</a>
+        <a class="nav-item" href="/messages"><svg><use href="#i-mail"/></svg>Messages</a>
+        <a class="nav-item" href="/i/bookmarks"><svg><use href="#i-bookmark"/></svg>Bookmarks</a>
+        <a class="nav-item" href="/profile"><svg><use href="#i-person"/></svg>Profile</a>
+      </nav>
+      <div class="post-wrap"><a class="post-btn" data-testid="SideNav_NewTweet_Button" href="/compose/post">Post</a></div>
+    </div>
+  </header>
+
+  <main role="main">
+    <div class="timeline" data-testid="primaryColumn">
+      <div class="tabs"><div class="tab active">For you</div><div class="tab">Following</div></div>
+      <div id="feed"></div>
+    </div>
+    <aside class="side">
+      <div class="search"><svg width="18" height="18"><use href="#i-search"/></svg>Search</div>
+      <section class="box">
+        <h2>Trending</h2>
+        <div class="trend"><small>Trending worldwide</small><strong>#ReadLater</strong><small>4.2M people pretending</small></div>
+        <div class="trend"><small>Food · Trending</small><strong>Focaccia dimples</strong><small>the discourse continues</small></div>
+        <div class="trend"><small>Technology · Trending</small><strong>Rubber duck promoted</strong><small>now a senior engineer</small></div>
+        <div class="trend"><small>Trending in Tier lists</small><strong>87 open tabs</strong><small>F tier, unanimously</small></div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<template id="post">
+  <article data-testid="tweet" tabindex="0">
+    <div data-testid="Tweet-User-Avatar"><img class="avatar" alt=""></div>
+    <div class="content">
+      <div data-testid="User-Name">
+        <a class="name" href="#"></a>
+        <a class="meta handle" href="#"></a>
+        <span class="meta">·</span>
+        <a class="meta status" href="#"><time></time></a>
+      </div>
+      <div data-testid="tweetText" lang="en"><span></span></div>
+      <div class="slot"></div>
+      <div role="group" aria-label="Post actions">
+        <div><button class="act" data-testid="reply" aria-label="Reply"><div class="circle"><svg><use href="#i-reply"/></svg></div><span data-n="reply"></span></button></div>
+        <div><button class="act" data-testid="retweet" aria-label="Repost"><div class="circle"><svg><use href="#i-repost"/></svg></div><span data-n="repost"></span></button></div>
+        <div><button class="act" data-testid="like" aria-label="Like"><div class="circle"><svg><use href="#i-like"/></svg></div><span data-n="like"></span></button></div>
+        <div><a class="act views" data-testid="analytics" href="#" aria-label="View post analytics"><div class="circle"><svg><use href="#i-views"/></svg></div><span data-n="views"></span></a></div>
+        <div><button class="act" data-testid="bookmark" aria-label="Bookmark"><div class="circle"><svg><use href="#i-bookmark"/></svg></div></button></div>
+        <div><button class="act" data-testid="share" aria-label="Share post"><div class="circle"><svg><use href="#i-share"/></svg></div></button></div>
+      </div>
+    </div>
+  </article>
+</template>
+
+<script src="/fixtures/x-home-posts.js"></script>
+</body>
+</html>

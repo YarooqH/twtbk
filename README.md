@@ -1,88 +1,142 @@
-# XMarks
+<p align="center">
+  <img src="public/XMarks-logos/Xmarks-logo-black-round.svg" width="96" height="96" alt="XMarks logo">
+</p>
 
-**Save it on X. Find it in XMarks.**
+<h1 align="center">XMarks</h1>
 
-> A privacy-first, local-first Chrome extension that lets you organize, search, and bulk-import your X (Twitter) bookmarks into a searchable reference library.
+<p align="center">
+  <strong>Save it on X. Find it in XMarks.</strong><br>
+  Search, sort and add notes to your X (Twitter) bookmarks.<br>
+  Free, no account, and everything stays in your browser.
+</p>
 
-X's native bookmark feature is highly limited—folders are locked behind a paid X subscription, search only matches keywords in post text, and there are no tags, notes, or offline backups. For free users, it's a single, chaotic chronological list. **XMarks** solves this for everyone by embedding directly into your X interface and building a powerful, local-first reference database.
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-1d9bf0" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/Chrome-Manifest%20V3-1d9bf0" alt="Chrome Manifest V3">
+  <img src="https://img.shields.io/badge/data-stays%20local-00ba7c" alt="Data stays local">
+</p>
 
----
+<p align="center">
+  <a href="https://yarooqh.github.io/xmarks/">Website</a> ·
+  <a href="#install">Install</a> ·
+  <a href="https://yarooqh.github.io/xmarks/privacy/">Privacy policy</a> ·
+  <a href="https://github.com/YarooqH/xmarks/issues">Report a bug</a>
+</p>
 
-## Key Features
+<p align="center">
+  <img src="docs/images/demo.gif" width="860" alt="XMarks demo: syncing bookmarks from X, saving a post with a category and a note, then finding it by searching the note in the dashboard">
+</p>
 
-* 🚀 **Automated Bulk Importer**
-  Open your native X Bookmarks page and click "Sync Bookmarks" in your sidebar. XMarks will automatically scroll through and index all your existing bookmarks in minutes, skipping duplicates. You can pause and resume the sync at any time.
-* 🔒 **Local-First & Privacy-First**
-  All your bookmark data, tags, categories, and notes are stored strictly inside your browser's `IndexedDB` database. There are no external databases, no cloud accounts, and no data leaks. Your data remains yours.
-* 👤 **Separate Libraries, One Per X Account If You Want**
-  Out of the box everything goes into one library. From the library menu in the dashboard sidebar you can add more libraries and choose which one new saves go to. In the same menu, turn on "Follow the X account I'm logged into" and XMarks saves each account's bookmarks to its own library, creating it the first time it sees that account; your existing library is linked to the first account it detects. All libraries live in the same browser profile, so anyone who can open that profile can open every library. Use separate Chrome profiles to keep people apart.
-* 🤖 **Local AI Auto-Categorizer**
-  Uses a semantic embedding model (~45MB, `all-MiniLM-L6-v2`) that runs locally via `Transformers.js` in the dashboard page. When enabled, it generates embeddings for each bookmark and cosine-matches them against your category names to auto-categorize your bookmarks. The model is downloaded once from Hugging Face the first time you turn the feature on and cached in your browser; after that it works offline, and your bookmark text never leaves your device.
-* 🎨 **Clean 3-Column Dashboard**
-  A full-page dashboard to search, browse, tag, and organize your bookmarks. Features a collapsible, X-style widget settings panel on the bottom-right for configuring save modes, accent colors, and AI settings.
-* ⚡ **Seamless X Integration**
-  Adds a pixel-perfect "Sync Bookmarks" button directly below X's native "Post" button that adapts to Light, Dim, and Dark themes. Features a space-aware popup menu that adjusts coordinates dynamically based on available viewport space.
-* 📂 **Backup & Portability**
-  Easy JSON data export and import tools so you can backup your library or transfer it to another browser.
+X bookmarks are one long list. Folders need a paid subscription, search only matches post text, and there are no tags, notes or backups. XMarks adds a save button to X and keeps a copy of everything you bookmark in a library you can search, sort and annotate.
 
----
+## How it works
 
-## Technical Stack
+### 1. Sync the bookmarks you already have
 
-* **Frontend:** React, TypeScript, Vite
-* **Styling:** Vanilla CSS (X-matching HSL variables, fluid layouts, collapsible transitions)
-* **Database:** IndexedDB (via Dexie.js)
-* **Local NLP:** Transformers.js (`@huggingface/transformers` with `all-MiniLM-L6-v2`)
-* **Extension Platform:** Chrome Extension Manifest V3 (MV3)
+Open your Bookmarks on X and click **Sync Bookmarks** under the Post button. XMarks scrolls through the list and keeps a copy of every post, skipping ones it already has. You can pause and pick up later.
 
----
+![The Sync Bookmarks panel on X's Bookmarks page](docs/images/sync.jpg)
 
-## Getting Started
+### 2. Save new posts as you scroll
 
-### Prerequisites
+A book button sits in every post's action bar. Click it, pick a category and add a note. If you'd rather keep using X's own bookmark button, switch to **Override Native** and XMarks saves a copy whenever you use it.
 
-* [Node.js](https://nodejs.org/) (v18 or higher recommended)
-* NPM (comes with Node.js)
+![The XMarks save popover on a post, with categories and a note field](docs/images/save.jpg)
 
-### Installation & Development
+### 3. Find it later
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd xmarks
-   ```
+The dashboard searches post text, quoted posts, authors, tags and your notes.
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+![The XMarks dashboard filtered by a search for "bread"](docs/images/search.jpg)
 
-3. **Build the extension:**
-   - For a production build:
-     ```bash
-     npm run build
-     ```
-   - For active development (with hot-reload):
-     ```bash
-     npm run dev
-     ```
+## Features
 
-4. **Load the extension in Chrome:**
-   - Open Chrome and navigate to `chrome://extensions/`
-   - Enable **Developer mode** (toggle in the top-right corner)
-   - Click **Load unpacked** (top-left)
-   - Select the `dist` directory in your project folder
+- **Categories, tags and notes.** Color-coded categories, free-form tags and a private note on any post.
+- **Bulk actions.** Tick posts, or select everything in view, then move, export or delete them in one go.
+- **Posts that outlast X.** Saved text stays readable if the author deletes the post, goes private or gets suspended. Images load from X, so those can disappear.
+- **One library per X account, if you want it.** Everything goes into one library by default. From the library menu in the sidebar you can add libraries, pick where new saves go, or turn on "Follow the X account I'm logged into" so each account gets its own.
+- **Optional auto-categorize.** A small embedding model (`all-MiniLM-L6-v2`, about 45 MB) sorts posts into your categories. It downloads once from Hugging Face when you switch it on and then runs in your browser. It's off by default.
+- **Export and import.** Save your whole library, or just the selected posts, to a JSON file with categories, tags and notes, and import it in another browser.
+- **Fits in with X.** The save button and menus follow X's Light, Dim and Dark themes. The dashboard has light, dark and system themes, four card densities and your choice of accent color.
 
----
+![The dashboard showing the Memes category](docs/images/categories.jpg)
 
-## Save Modes
+### Keyboard shortcuts
 
-XMarks supports two different modes of operation:
-1. **Injected (Default):** Adds a dedicated XMarks save button beside native X actions on each tweet. Clicking it pops open a folder and tag picker to organize the bookmark on the spot.
-2. **Native Override:** Captures when you click X's native bookmark button to automatically save a copy in your local XMarks library.
+| Key | Action |
+| --- | --- |
+| <kbd>/</kbd> | Search |
+| <kbd>E</kbd> | Edit the note on the post under your pointer |
+| <kbd>C</kbd> | New category |
+| <kbd>G</kbd> then <kbd>A</kbd> | Go to All Bookmarks |
+| <kbd>?</kbd> | Show all shortcuts |
 
----
+## Privacy
+
+- Your library lives in your browser's IndexedDB. There is no XMarks account, server or analytics.
+- The extension asks for `storage` and `unlimitedStorage`, and runs only on `x.com` and `twitter.com`.
+- Images and avatars in the dashboard load from X, like they do on X itself.
+- The only other download is the auto-categorize model, and only if you turn that feature on.
+
+All libraries share one browser profile, so anyone who can open that profile can open them. Use separate Chrome profiles to keep people apart. The full details are in the [privacy policy](https://yarooqh.github.io/xmarks/privacy/).
+
+## Install
+
+XMarks isn't on the Chrome Web Store yet. Until it is, build it from source. It works in Chrome, Edge, Brave and other Chromium browsers.
+
+You'll need [Node.js](https://nodejs.org/) 20.19+ or 22.12+.
+
+```bash
+git clone https://github.com/YarooqH/xmarks.git
+cd xmarks
+npm install
+npm run build
+```
+
+Then load it:
+
+1. Open `chrome://extensions`.
+2. Turn on **Developer mode** (top right).
+3. Click **Load unpacked** and choose the `dist` folder.
+4. Open [x.com/i/bookmarks](https://x.com/i/bookmarks) and click **Sync Bookmarks**.
+
+## Development
+
+```bash
+npm run dev     # build with hot reload into dist/
+npm test        # unit tests (Vitest)
+npm run lint    # oxlint
+```
+
+| Path | What's there |
+| --- | --- |
+| `src/content/` | Content script on X: save button, popover, Sync Bookmarks |
+| `src/dashboard/` | The full-page library (React) |
+| `src/background.ts` | Service worker: saves, imports, opening the dashboard |
+| `src/db/` | IndexedDB schema (Dexie) |
+| `landing/` | The website (Astro), deployed to GitHub Pages |
+| `store-assets/` | Scripts that capture the screenshots and the demo GIF |
+
+Built with React, TypeScript, Vite, Dexie and Transformers.js on Manifest V3.
+
+The screenshots and GIF in this README come from the real extension running against a fictional X timeline, with no network or X account. To regenerate them after a UI change (needs Microsoft Edge, and ffmpeg for the GIF):
+
+```bash
+npm run build
+cd store-assets
+npm install
+npm run capture   # screenshots -> store-assets/output/
+npm run demo      # demo GIF -> store-assets/output/demo/
+```
+
+Then copy the ones you want into `docs/images/`.
+
+## Contributing
+
+Bug reports and pull requests are welcome. For anything bigger than a small fix, please open an issue first so we can agree on the approach. Run `npm test` and `npm run lint` before sending a PR.
 
 ## License
 
 [MIT](LICENSE)
+
+XMarks is not affiliated with X Corp.

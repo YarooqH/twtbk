@@ -1,0 +1,14 @@
+{
+  "name": "xmarks-store-assets",
+  "private": true,
+  "type": "module",
+  "description": "Captures Chrome Web Store screenshots of the built extension using fictional demo data.",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "marketing": "node marketing.mjs",
+    "demo": "node demo.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
