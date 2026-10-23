@@ -30,6 +30,8 @@ landing/.astro
 .pi-subagents
 .agents
 
-store-assets
+# store-assets/ scripts are tracked; their output and the avatar photos are not
+store-assets/output/
+store-assets/fixtures/avatars/
 # Chrome Web Store upload packages
 release/
