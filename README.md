@@ -82,7 +82,9 @@ All libraries share one browser profile, so anyone who can open that profile can
 
 ## Install
 
-XMarks isn't on the Chrome Web Store yet. Until it is, build it from source. It works in Chrome, Edge, Brave and other Chromium browsers.
+Install XMarks from the [Chrome Web Store](https://chromewebstore.google.com/detail/hhdfgcjebkpakbcjaiikoceimfeogpih). It works in Chrome, Edge, Brave and other Chromium browsers.
+
+### From source
 
 You'll need [Node.js](https://nodejs.org/) 20.19+ or 22.12+.
 

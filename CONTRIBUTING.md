@@ -56,6 +56,36 @@ Fill in the pull request template. For UI changes, include a screenshot or a sho
 
 The README's images come from scripts in `store-assets/`. They run the built extension against a fictional X timeline. See [Development](README.md#development) for how to regenerate them.
 
+## Releasing (maintainers)
+
+The [Publish to Chrome Web Store](.github/workflows/publish-chrome.yml) workflow runs when a `v*.*.*` tag is pushed. It lints, tests and builds, uploads the zip to the store, submits it for review and attaches the zip to a GitHub release. The store publishes it once review passes.
+
+1. Bump `version` in `manifest.json` in a PR and merge it. The store rejects an upload whose version isn't higher than the live one.
+2. Tag the merge commit and push the tag:
+
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+
+The workflow fails if the tag doesn't match `manifest.json`. To retry a failed upload, or to stage a version and publish it from the dashboard yourself, run the workflow by hand from the Actions tab.
+
+Changes to the store listing (description, screenshots, privacy answers) aren't covered by the API. Make those in the [Developer Dashboard](https://chrome.google.com/webstore/devconsole/).
+
+### One-time setup
+
+The workflow signs in as a Google Cloud service account.
+
+1. In the [Google Cloud Console](https://console.cloud.google.com/), create or pick a project and enable the **Chrome Web Store API**.
+2. [Create a service account](https://console.cloud.google.com/iam-admin/serviceaccounts). It needs no roles. Under **Keys**, add a JSON key and download it.
+3. In the Developer Dashboard, open **Account** and add the service account's email. Copy the **Publisher ID** from the same page.
+4. In the GitHub repo, open **Settings → Environments**, create an environment named `chrome-web-store`, and add:
+   - secret `CWS_SERVICE_ACCOUNT_KEY`: the whole contents of the JSON key file
+   - variable `CWS_PUBLISHER_ID`: the Publisher ID
+
+   Adding yourself as a required reviewer on the environment makes every release wait for your approval.
+5. Delete the downloaded key file.
+
 ## License
 
 By contributing, you agree that your contributions are licensed under the [MIT License](LICENSE).
