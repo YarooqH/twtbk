@@ -1,0 +1,69 @@
+name: Bug report
+description: Something in XMarks isn't working as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. Please check the [existing issues](https://github.com/YarooqH/xmarks/issues) first.
+        For a security problem, use [private reporting](https://github.com/YarooqH/xmarks/security/advisories/new) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open x.com/home
+        2. Click the XMarks button on a post
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where is the problem?
+      options:
+        - Save button or popover on X
+        - Sync Bookmarks
+        - Dashboard
+        - Import or export
+        - Auto-categorize
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: XMarks version
+      description: Shown on chrome://extensions, or the commit you built from.
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 141 on Windows 11
+    validations:
+      required: true
+  - type: dropdown
+    id: x-theme
+    attributes:
+      label: X display theme
+      description: Only matters for problems on x.com.
+      options:
+        - Light
+        - Dim
+        - Lights out
+        - Not sure
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots, console errors, anything else
+      description: Errors from the page console or the service worker (chrome://extensions → XMarks → "service worker") help a lot. Blur anything private first.
